@@ -1,55 +1,26 @@
-# Prerequisites
-*.d
-
-# Object files
+# Arquivos gerados na compilação
 *.o
-*.ko
 *.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
 *.exe
 *.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+*.d
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Pastas de compilação
+/build/
+/bin/
+/obj/
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Organização das janelas do Dev-C++
+*.layout
 
-# debug information files
-*.dwo
+# Arquivos temporários e cópias de segurança
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+Desktop.ini
