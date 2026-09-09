@@ -26,7 +26,7 @@ void montar_mesa(tp_mesa *m, char nomes[4][NOME_MAX]){
     }
 }
 
-int quem_e_mao(tp_mesa *m){
+int mao_atual(tp_mesa *m){
     return m->ordem[0];
 }
 
