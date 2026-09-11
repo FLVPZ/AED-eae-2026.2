@@ -14,7 +14,7 @@ typedef struct{
     int topo;
 } tp_stack;
 
-void initiliaze(tp_stack *p){
+void ini_pilha(tp_stack *p){
     p->topo = 0;
 }
 

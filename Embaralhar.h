@@ -11,7 +11,7 @@ void inicializar_seed(){
 
 void embaralhar_baralho(tp_stack *p){
     // Ela já tem o baralho "organizado", basta colocar o endereço de memoria do stack do baralho que será usado em jogo criado na main.
-    initiliaze(p);
+    ini_pilha(p);
 
     tp_item baralho[40];
     char naipes[4] = {'C', 'O', 'E', 'P'};
