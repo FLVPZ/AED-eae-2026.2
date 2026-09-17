@@ -55,7 +55,7 @@ void exibir_mesa(tp_mesa* m) {
     printf("\nMESA\n");
     for (int i = 0; i < 4; i++) {
         int idx = m->ordem[i];
-        printf("%do a jogar: %-15s | Dupla %d %s\n",
+        printf("%dº a jogar: %-15s | Dupla %d %s\n",
             i + 1,
             m->jogadores[idx].nome,
             m->jogadores[idx].dupla,
