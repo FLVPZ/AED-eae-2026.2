@@ -4,21 +4,15 @@
 #include "STACK.h"
 #include "baralho.h"
 //Chama a biblioteca ja embaralhada
-void distribute_carts(tp_stack *s, tp_item player_1[], tp_item player_2[], tp_item player_3[], tp_item player_4[])	{
+void distribute_carts(tp_stack *s, tp_mesa *cadeira)	{
 	tp_item element;
 	
-	for(int j=0;j<3;j++)	{
-		pop(s, &element);
-		player_1[j] = element;
-		//
-		pop(s, &element);
-		player_2[j] = element;
-		//
-		pop(s, &element);
-		player_3[j] = element;
-		//
-		pop(s, &element);
-		player_4[j] = element;
+	for(int i=0;i<3;i++)	{
+		for(int j=0;j<4;j++)	{
+			int idx=cadeira->ordem[j];
+			pop(s, &element);
+			cadeira->jogadores[idx].mao[i] = element;
+		}
 	}
 }
 
