@@ -33,7 +33,7 @@ void manila(tp_stack *s, tp_item manila[])	{
     int j=0;
     
     vira(s, &item);
-    limp(s);
+    ini_pilha(s);
 	put_stack(s);
 	
 	if(item.valor != 7 && item.valor >= 1 && item.valor <= 12)	{
@@ -63,6 +63,5 @@ void manila(tp_stack *s, tp_item manila[])	{
 			}
 		}
 	}
-	printf("Vira: %d e %c\n\n", item.valor, item.naipe);
 }
 #endif
