@@ -14,13 +14,4 @@ void put_stack(tp_stack *s)	{
 		push(s, baralho[i]);
 	}
 }
-//Limpar todo o baralho
-void limp(tp_stack *s)	{
-	tp_item e;
-	while(!is_empty(s))		{
-		pop(s, &e);
-	}			  	
-}
-
-
 #endif
