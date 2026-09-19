@@ -8,60 +8,31 @@
 #include "fila.h"
 
 //Chama a biblioteca ja embaralhada
-void distribute_carts(tp_stack *s, tp_fila *f)	{
-	tp_item element;
+void distribuir_cartas(tp_stack *s, tp_fila *f)	{
+	tp_item elemento;
 	tp_jogador jogador;
 	for(int i=0;i<3;i++)	{
 		for(int j=0;j<4;j++)	{
 			removeFila(f, &jogador);
-			pop(s, &element);
-			jogador.mao[i] = element;
+			pop(s, &elemento);
+			jogador.mao[i] = elemento;
 			insereFila(f, jogador);
 		}
 	}
 }
 
-void vira(tp_stack* s, tp_item* item) {
-	pop(s, item);
+tp_item vira(tp_stack* s) {
+	tp_item item;
+	pop(s, &item);
+	return item;
 } 
 
 //De novo deve chamar a biblioteca embaralhada
-void manila(tp_stack *s, tp_item manila[])	{
-	tp_item item;
-    tp_item element;
-    int j=0;
-    
-    vira(s, &item);
-    ini_pilha(s);
-	put_stack(s);
-	
-	if(item.valor != 7 && item.valor >= 1 && item.valor <= 12)	{
-		for(int i=0;i<40;i++)	{
-			pop(s, &element);
-			if(element.valor == item.valor+1)	{
-				manila[j] = element;
-				j++;
-			}
-		}
-	}
-	else if(item.valor == 13)	{	
-		for(int i=0;i<40;i++)	{
-			pop(s, &element);
-			if(element.valor == 1)	{
-				manila[j] = element;
-				j++;
-			}
-		}
-	}
-	else if(item.valor == 7)	{
-		for(int i=0;i<40;i++)	{
-			pop(s, &element);
-			if(element.valor == 11)	{
-				manila[j] = element;
-				j++;
-			}
-		}
-	}
+void manilha(tp_item item, tp_item manilha[])	{
+    manilha[0] = {item.valor+1, 'O'};
+    manilha[1] = {item.valor+1, 'E'};
+    manilha[2] = {item.valor+1, 'C'};
+    manilha[3] = {item.valor+1, 'P'};
 }
 
 
@@ -100,6 +71,4 @@ void exibir_mao(tp_fila f){
 		printf("\n");
     }
 }
-
-
 #endif
