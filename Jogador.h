@@ -16,17 +16,19 @@ void limpar_buffer() { //limpa o buffer do teclado
     while ((c = getchar()) != '\n' && c != EOF); //a variável c é temporária e armazena os caracteres do buffer, até a quebra de linha ou o fim do arquivo.
 }
 
-// remove o \n que o fgets deixa no final do nome
-void remover_quebra_linha(char nome[]) {
-    nome[strcspn(nome, "\n")] = '\0';
-}
-
 void limpar_tela() { //pode ser chamada na main para limpar o terminal (não é obrigatória)
 #ifdef _WIN32 
     system("cls"); //se o OS for windows
 #else
     system("clear"); //se o OS for linus/mac
 #endif
+}
+
+void remover_quebra_linha(char *str) { //remove o enter do fgets na leitura de nomes
+    size_t len = strlen(str);
+    if (len > 0 && str[len - 1] == '\n') {
+        str[len - 1] = '\0';
+    }
 }
 
 // recebe o nome dos quatro jogadores na ordem em que vão ficar na mesa
