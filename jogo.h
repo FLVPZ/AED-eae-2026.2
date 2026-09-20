@@ -7,7 +7,7 @@
 #include "Jogador.h"
 #include "fila.h"
 
-//Chama a biblioteca ja embaralhada
+// distribui uma carta por vez até cada jogador ficar com três
 void distribuir_cartas(tp_stack *s, tp_fila *f)	{
 	tp_item elemento;
 	tp_jogador jogador;
@@ -21,16 +21,18 @@ void distribuir_cartas(tp_stack *s, tp_fila *f)	{
 	}
 }
 
+// retira a próxima carta do baralho para usar como vira
 tp_item vira(tp_stack* s) {
 	tp_item item;
 	pop(s, &item);
 	return item;
 } 
 
-//De novo deve chamar a biblioteca embaralhada
+// descobre o valor da manilha a partir da vira
 void manilha(tp_item item, tp_item manilha[])	{
     int valor_manilha;
 
+    // segue a ordem das cartas do truco paulista
     switch (item.valor) {
         case 4:  valor_manilha = 5; break;
         case 5:  valor_manilha = 6; break;
@@ -45,6 +47,7 @@ void manilha(tp_item item, tp_item manilha[])	{
         default: valor_manilha = 0; break;
     }
 
+    // cria uma manilha de cada naipe
     manilha[0] = (tp_item){valor_manilha, 'O'};
     manilha[1] = (tp_item){valor_manilha, 'E'};
     manilha[2] = (tp_item){valor_manilha, 'C'};
@@ -52,14 +55,15 @@ void manilha(tp_item item, tp_item manilha[])	{
 }
 
 
+// mostra as cartas dos jogadores sem alterar a ordem da mesa
 void exibir_mao(tp_fila f){
-	//mostra as mãos dos jogadores sem alterar a ordem da mesa
 	tp_jogador jogador;
     printf("Cartas dos jogadores: \n");
     for (int i = 0; i < 4; i++) {
         removeFila(&f, &jogador);
         printf("Cartas do jogador: %-30s ", jogador.nome);
 		for(int j = 0; j < 3; j++){
+			// transforma os valores das figuras em letras na hora de mostrar
 			if (jogador.mao[j].valor == 1)
 				printf("As de ");
 			else if (jogador.mao[j].valor == 11)
