@@ -16,6 +16,7 @@ void limpar_buffer() { //limpa o buffer do teclado
     while ((c = getchar()) != '\n' && c != EOF); //a variável c é temporária e armazena os caracteres do buffer, até a quebra de linha ou o fim do arquivo.
 }
 
+// remove o \n que o fgets deixa no final do nome
 void remover_quebra_linha(char nome[]) {
     nome[strcspn(nome, "\n")] = '\0';
 }
@@ -28,6 +29,7 @@ void limpar_tela() { //pode ser chamada na main para limpar o terminal (não é 
 #endif
 }
 
+// recebe o nome dos quatro jogadores na ordem em que vão ficar na mesa
 void cadastrar_jogadores(char nomes[4][NOME_MAX]) {
     int duplas[4] = { 1, 2, 1, 2 };
     for (int i = 0; i < 4; i++) {
@@ -44,6 +46,7 @@ void cadastrar_jogadores(char nomes[4][NOME_MAX]) {
     }
 }
 
+// coloca os jogadores na fila já alternando as duas duplas
 void montar_mesa(tp_fila* m, char nomes[4][NOME_MAX]) {
     int duplas[4] = { 1, 2, 1, 2 }; // parceiros sentados alternados
     tp_jogador jogador;
@@ -64,7 +67,8 @@ int posicao_do_jogador(tp_fila m, int posicao, tp_jogador* j_out) { //consulta o
     return 1; //sucesso
 }
 
-void exibir_mesa(tp_fila m) { //recebe uma cópia da fila para não alterar a original
+// usa uma cópia da fila, então mostrar a mesa não muda a ordem dos jogadores
+void exibir_mesa(tp_fila m) {
     printf("\nMESA\n");
     tp_jogador j;
 
