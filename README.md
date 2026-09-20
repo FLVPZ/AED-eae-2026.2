@@ -8,12 +8,12 @@ O jogo será desenvolvido em C, com quatro jogadores organizados em duas duplas,
 
 A primeira entrega prepara a mesa e o baralho. As cartas serão distribuídas e mostradas na tela. As jogadas ficam para a próxima unidade.
 
-- [ ] Cadastrar os quatro jogadores, mantendo nome, dupla e cartas de cada um juntos.
-- [ ] Organizar a mesa com as duplas alternadas: dupla 1, dupla 2, dupla 1, dupla 2.
-- [ ] Controlar a ordem dos jogadores e passar o primeiro para o fim a cada nova mão.
-- [ ] Criar e embaralhar as 40 cartas do baralho.
-- [ ] Retirar as cartas apenas pelo topo do baralho.
-- [ ] Distribuir três cartas para cada jogador.
-- [ ] Revelar a vira, calcular a manilha e mostrar as cartas de cada jogador.
-- [ ] Dividir o código em módulos e comentar o funcionamento.
+- [x] Cadastrar os quatro jogadores, mantendo nome, dupla e cartas de cada um juntos.
+- [x] Organizar a mesa com as duplas alternadas: dupla 1, dupla 2, dupla 1, dupla 2.
+- [x] Controlar a ordem dos jogadores e passar o primeiro para o fim a cada nova mão.
+- [x] Criar e embaralhar as 40 cartas do baralho.
+- [x] Retirar as cartas apenas pelo topo do baralho.
+- [x] Distribuir três cartas para cada jogador.
+- [x] Revelar a vira, calcular a manilha e mostrar as cartas de cada jogador.
+- [x] Dividir o código em módulos e comentar o funcionamento.
 - [ ] Preparar o relatório com a participação de cada integrante.
