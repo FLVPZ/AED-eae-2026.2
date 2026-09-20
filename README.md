@@ -16,4 +16,4 @@ A primeira entrega prepara a mesa e o baralho. As cartas serão distribuídas e 
 - [x] Distribuir três cartas para cada jogador.
 - [x] Revelar a vira, calcular a manilha e mostrar as cartas de cada jogador.
 - [x] Dividir o código em módulos e comentar o funcionamento.
-- [ ] Preparar o relatório com a participação de cada integrante.
+- [x] Preparar o relatório com a participação de cada integrante.
