@@ -16,6 +16,10 @@ void limpar_buffer() { //limpa o buffer do teclado
     while ((c = getchar()) != '\n' && c != EOF); //a variável c é temporária e armazena os caracteres do buffer, até a quebra de linha ou o fim do arquivo.
 }
 
+void remover_quebra_linha(char nome[]) {
+    nome[strcspn(nome, "\n")] = '\0';
+}
+
 void limpar_tela() { //pode ser chamada na main para limpar o terminal (não é obrigatória)
 #ifdef _WIN32 
     system("cls"); //se o OS for windows
