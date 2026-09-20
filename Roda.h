@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "Jogador.h"
 
-
+// passa o primeiro jogador para o fim da fila
 void passar_mao(tp_fila* f) {
     tp_jogador jogador;
     if (removeFila(f, &jogador)) {
@@ -12,6 +12,7 @@ void passar_mao(tp_fila* f) {
     }
 }
 
+// mostra a ordem sem mexer na fila original
 void exibir_ordem_rodada(tp_fila f) {
     printf("ORDEM DE JOGO\n");
     tp_jogador jogador;
