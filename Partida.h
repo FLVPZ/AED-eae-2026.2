@@ -1,0 +1,214 @@
+#ifndef PARTIDA_H
+#define PARTIDA_H
+
+#include <stdio.h>
+#include "STACK.h"
+#include "fila.h"
+#include "Jogador.h"
+#include "Embaralhar.h"
+#include "jogo.h"
+#include "Mao.h"
+#include "Roda.h"
+#include "Rodada.h"
+#include "Truco.h"
+#include "Historico.h"
+
+#define PONTOS_VITORIA 12
+
+typedef struct {
+    int numero;
+    tp_item vira;
+    int valor_manilha;
+    tp_aposta aposta;
+    int giro;            // posições que a roda girou dentro desta mão
+    int resultados[3];   // dupla que levou cada rodada (0 = empate)
+    int n_rodadas;
+    int dupla_vencedora;
+    int pontos;
+} tp_mao_atual;
+
+void mostrar_valor(int valor) {
+    switch (valor) {
+        case 1:  printf("As"); break;
+        case 11: printf("J");  break;
+        case 12: printf("Q");  break;
+        case 13: printf("K");  break;
+        default: printf("%d", valor);
+    }
+}
+
+void mostrar_carta(tp_item c) {
+    mostrar_valor(c.valor);
+    switch (c.naipe) {
+        case 'O': printf(" de Ouros");   break;
+        case 'E': printf(" de Espadas"); break;
+        case 'C': printf(" de Copas");   break;
+        case 'P': printf(" de Paus");    break;
+    }
+}
+
+void mostrar_cabecalho(const int placar[3], tp_mao_atual *m) {
+    printf("\nMao %d | Dupla 1: %d x Dupla 2: %d | vale %d | Vira: ",
+           m->numero, placar[1], placar[2], m->aposta.valor);
+    mostrar_carta(m->vira);
+    printf(" | Manilha: ");
+    mostrar_valor(m->valor_manilha);
+    printf("\n");
+}
+
+void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd) {
+    for (int i = 0; i < qtd; i++) {
+        printf("  %s jogou ", nomes[i]);
+        mostrar_carta(cartas[i]);
+        printf("\n");
+    }
+}
+
+// Cada um joga uma carta na ordem da roda. Retorna 1 se alguém correu do truco.
+int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3]) {
+    tp_item cartas[4];
+    int duplas[4];
+    char nomes[4][NOME_MAX];
+    int cartas_na_mao = 3 - m->n_rodadas;
+
+    printf("\n    Rodada %d    \n", m->n_rodadas + 1);
+
+    for (int i = 0; i < 4; i++) {
+        tp_jogador j;
+        posicao_do_jogador(*mesa, 0, &j);
+
+        int escolhida = 0;
+        while (escolhida == 0) {
+            mostrar_cabecalho(placar, m);
+            mostrar_cartas_jogadas(nomes, cartas, i);
+            printf("Vez de %s (Dupla %d)\n", j.nome, j.dupla);
+            exibir_mao_jogador_atual(j, cartas_na_mao);
+
+            printf("Carta [1-%d]", cartas_na_mao);
+            if (pode_pedir(m->aposta, j.dupla)) {
+                printf(" ou [T] pedir %s", nome_pedido(proximo_valor(m->aposta.valor)));
+            }
+            printf(": ");
+
+            char op = ler_opcao();
+            if (op >= '1' && op <= '0' + cartas_na_mao) {
+                escolhida = op - '0';
+            }
+            else if (op == 'T' && pode_pedir(m->aposta, j.dupla)) {
+                int r = negociar_truco(*mesa, &m->aposta, j, m->numero,
+                                       &m->dupla_vencedora, &m->pontos);
+                if (r == TRUCO_CORRIDO) {
+                    // os i jogadores que já jogaram foram para o fim da fila: volta a roda
+                    girar_roda(mesa, (4 - i) % 4);
+                    return 1;
+                }
+            }
+            else {
+                printf("Opcao invalida.\n");
+            }
+        }
+
+        int qtd = cartas_na_mao;
+        jogar_carta(&j, &qtd, escolhida, &cartas[i]);
+        strcpy(nomes[i], j.nome);
+        duplas[i] = j.dupla;
+
+        // o jogador volta para o fim da fila já sem a carta que jogou
+        tp_jogador descarte;
+        removeFila(mesa, &descarte);
+        insereFila(mesa, j);
+    }
+
+    int dupla_rodada;
+    int pos = vencedor_da_rodada(cartas, duplas, m->valor_manilha, &dupla_rodada);
+
+    printf("\nCartas da rodada:\n");
+    mostrar_cartas_jogadas(nomes, cartas, 4);
+    if (pos < 0) {
+        printf("Rodada empatada.\n");
+    }
+    else {
+        printf("Dupla %d leva a rodada com a carta de %s.\n", dupla_rodada, nomes[pos]);
+        // quem levou a rodada joga primeiro na próxima
+        girar_roda(mesa, pos);
+        m->giro += pos;
+    }
+
+    hist_registrar_rodada(m->numero, m->n_rodadas + 1, nomes, cartas, dupla_rodada);
+    m->resultados[m->n_rodadas] = dupla_rodada;
+    m->n_rodadas++;
+    return 0;
+}
+
+void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao) {
+    tp_stack baralho;
+    tp_item manilhas[4];
+    tp_mao_atual m;
+
+    m.numero = numero_mao;
+    m.giro = 0;
+    m.n_rodadas = 0;
+    m.dupla_vencedora = 0;
+    m.pontos = 0;
+    aposta_iniciar(&m.aposta);
+
+    embaralhar_baralho(&baralho);
+    distribuir_cartas(&baralho, mesa);
+    m.vira = vira(&baralho);
+    manilha(m.vira, manilhas);
+    m.valor_manilha = manilhas[0].valor;
+
+    printf("\n    MAO %d    \n", numero_mao);
+    exibir_mesa(*mesa);
+    exibir_ordem_rodada(*mesa);
+    hist_registrar_mao(numero_mao);
+
+    // se as 3 rodadas empatarem, a mão fica com a dupla de quem abriu a mão
+    tp_jogador primeiro;
+    posicao_do_jogador(*mesa, 0, &primeiro);
+
+    while (m.dupla_vencedora == 0) {
+        if (jogar_rodada(mesa, &m, placar)) break;
+
+        int venc = vencedor_da_mao(m.resultados, m.n_rodadas, primeiro.dupla);
+        if (venc != 0) {
+            m.dupla_vencedora = venc;
+            m.pontos = m.aposta.valor;
+        }
+    }
+
+    // desfaz os giros de quem ganhou rodada; o passar_mao da próxima mão é do jogar_partida
+    girar_roda(mesa, (4 - (m.giro % 4)) % 4);
+
+    placar[m.dupla_vencedora] += m.pontos;
+    printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
+}
+
+void jogar_partida(tp_fila *mesa) {
+    int placar[3] = { 0, 0, 0 };
+    int numero_mao = 0;
+
+    while (placar[1] < PONTOS_VITORIA && placar[2] < PONTOS_VITORIA) {
+        numero_mao++;
+        jogar_mao(mesa, placar, numero_mao);
+        passar_mao(mesa);
+    }
+
+    int vencedora = (placar[1] >= PONTOS_VITORIA) ? 1 : 2;
+    int pontos1 = placar[1] > PONTOS_VITORIA ? PONTOS_VITORIA : placar[1];
+    int pontos2 = placar[2] > PONTOS_VITORIA ? PONTOS_VITORIA : placar[2];
+
+    printf("\nFIM DE PARTIDA! Dupla %d venceu: ", vencedora);
+    tp_fila copia = *mesa;
+    tp_jogador j;
+    int primeiro_nome = 1;
+    while (removeFila(&copia, &j)) {
+        if (j.dupla == vencedora) {
+            printf("%s%s", primeiro_nome ? "" : " e ", j.nome);
+            primeiro_nome = 0;
+        }
+    }
+    printf("\nPlacar final: Dupla 1 = %d x Dupla 2 = %d\n", pontos1, pontos2);
+}
+
+#endif
