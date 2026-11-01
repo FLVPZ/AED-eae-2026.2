@@ -1,11 +1,41 @@
-
 #include <stdio.h>
-#ifndef Distribuicao_h
-#define Distribuicao_h
+#ifndef jogo_h
+#define jogo_h
 #include "STACK.h"
 #include "baralho.h"
 #include "Jogador.h"
 #include "fila.h"
+
+typedef struct {
+	tp_item carta;
+	int jogador	;	
+}tp_vencedor;
+
+int forca_valor(int valor) {
+    switch(valor) {
+        case 3:  return 10;
+        case 2:  return 9;
+        case 1:  return 8;  
+        case 13: return 7;  
+        case 12: return 6;  
+        case 11: return 5;  
+        case 7:  return 4;
+        case 6:  return 3;
+        case 5:  return 2;
+        case 4:  return 1;
+        default: return 0;
+    }
+}
+
+int forca_naipe(char naipe) {
+    switch(naipe) {
+        case 'P': return 4;
+        case 'C': return 3;  
+        case 'E': return 2;  
+        case 'O': return 1;  
+        default: return 0;
+    }
+}
 
 // distribui uma carta por vez até cada jogador ficar com três
 void distribuir_cartas(tp_stack *s, tp_fila *f)	{
@@ -32,14 +62,13 @@ tp_item vira(tp_stack* s) {
 void manilha(tp_item item, tp_item manilha[])	{
     int valor_manilha;
 
-    // segue a ordem das cartas do truco paulista
     switch (item.valor) {
         case 4:  valor_manilha = 5; break;
         case 5:  valor_manilha = 6; break;
         case 6:  valor_manilha = 7; break;
-        case 7:  valor_manilha = 12; break;
-        case 12: valor_manilha = 11; break;
-        case 11: valor_manilha = 13; break;
+        case 7:  valor_manilha = 11; break;
+        case 12: valor_manilha = 13; break;
+        case 11: valor_manilha = 12; break;
         case 13: valor_manilha = 1; break;
         case 1:  valor_manilha = 2; break;
         case 2:  valor_manilha = 3; break;
@@ -47,7 +76,6 @@ void manilha(tp_item item, tp_item manilha[])	{
         default: valor_manilha = 0; break;
     }
 
-    // cria uma manilha de cada naipe
     manilha[0] = (tp_item){valor_manilha, 'O'};
     manilha[1] = (tp_item){valor_manilha, 'E'};
     manilha[2] = (tp_item){valor_manilha, 'C'};
@@ -91,4 +119,67 @@ void exibir_mao(tp_fila f){
 		printf("\n");
     }
 }
+
+void cartas_rodada(tp_fila* mesa, tp_vencedor carta[], int rodada)	{	//rodada deve ser considerada a partir do numero 1.
+	if(mesa == NULL || rodada < 1 || rodada > 3)
+        return;
+    
+	for(int i=0;i<4;i++)	{
+		carta[i].carta = mesa->item[i].mao[rodada-1];
+		carta[i].jogador = i+1;
+	}
+	
+}
+
+int eh_manilha(tp_item carta, tp_item manilha[]) {
+    for(int i = 0; i<4 ;i++) {
+        if(carta.valor == manilha[i].valor && carta.naipe == manilha[i].naipe) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+
+int comparar_cartas(tp_item a, tp_item b, tp_item manilha[]) {
+    int manilha_a = eh_manilha(a, manilha);
+    int manilha_b = eh_manilha(b, manilha);
+
+    if(manilha_a && !manilha_b)
+        return 1;
+
+    if(!manilha_a && manilha_b)
+        return -1;
+
+    if(manilha_a && manilha_b)
+        return forca_naipe(a.naipe) - forca_naipe(b.naipe);
+
+    return forca_valor(a.valor) - forca_valor(b.valor);
+}
+
+void ordenar_cartas(tp_vencedor carta[], tp_item manilha[]) {
+    tp_vencedor aux;
+
+    for(int i=0;i<3;i++) {
+        for(int j=0;j<3-i;j++) {
+            if(comparar_cartas(carta[j].carta, carta[j+1].carta, manilha) < 0) {
+                aux = carta[j];
+                carta[j] = carta[j+1];
+                carta[j+1] = aux;
+            }
+        }
+    }
+}
+
+int vencedor_rodada(tp_vencedor carta[], tp_item manilha[]) {
+    ordenar_cartas(carta, manilha);
+
+    if(comparar_cartas(carta[0].carta, carta[1].carta, manilha) == 0)
+        return 0;
+
+    return carta[0].jogador;
+}
+
 #endif
