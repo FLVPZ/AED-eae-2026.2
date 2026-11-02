@@ -1,0 +1,26 @@
+# Arquivos gerados na compilação
+*.o
+*.obj
+*.exe
+*.out
+*.d
+
+# Pastas de compilação
+/build/
+/bin/
+/obj/
+
+# Organização das janelas do Dev-C++
+*.layout
+
+# Arquivos temporários e cópias de segurança
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+Desktop.ini
