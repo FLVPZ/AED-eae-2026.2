@@ -95,7 +95,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             if (pode_pedir(m->aposta, j.dupla)) {
                 printf(" ou [T] pedir %s", nome_pedido(proximo_valor(m->aposta.valor)));
             }
-            printf(": ");
+            printf(" ou [V] ver o VAR: ");
 
             char op = ler_opcao();
             if (op >= '1' && op <= '0' + cartas_na_mao) {
@@ -105,10 +105,25 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                 int r = negociar_truco(*mesa, &m->aposta, j, m->numero,
                                        &m->dupla_vencedora, &m->pontos);
                 if (r == TRUCO_CORRIDO) {
+                    // registra no VAR a rodada interrompida pelo corrido (cartas que ainda nao foram jogadas ficam vazias)
+                    for (int k = i; k < 4; k++) {
+                        cartas[k].valor = -1;
+                        cartas[k].naipe = 'A';
+                    }
+                    mao_var(&item_var, m->numero);
+                    rodada_var(&item_var, m->n_rodadas + 1);
+                    dupla_vencedora_var(&item_var, m->dupla_vencedora);
+                    cartas_var(&item_var, cartas, m->valor_manilha);
+                    aposta_var(&item_var, m->aposta.dupla_pediu, proximo_valor(m->aposta.valor), 1);
+                    adiciona_var(&item_var, v);
+
                     // os i jogadores que já jogaram foram para o fim da fila: volta a roda
                     girar_roda(mesa, (4 - i) % 4);
                     return 1;
                 }
+            }
+            else if (op == 'V') {
+                ver_var(v);
             }
             else {
                 printf("Opcao invalida.\n");
@@ -145,10 +160,16 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
 
     //Registro do VAR
     mao_var(&item_var, m->numero);
-    rodada_var(&item_var, m->n_rodadas);
+    rodada_var(&item_var, m->n_rodadas + 1);
     dupla_vencedora_var (&item_var, dupla_rodada);
     cartas_var(&item_var, cartas, m->valor_manilha);
-    aposta_var (&item_var, m->aposta.dupla_pediu, m->aposta.valor,m->aposta.encerrada);
+    if (m->aposta.valor == 1) {
+        aposta_var(&item_var, -1, -1, -1);   // ninguem pediu truco
+    }
+    else {
+        aposta_var(&item_var, m->aposta.ultima_dupla, m->aposta.valor, 0);   // pedido aceito
+    }
+    adiciona_var(&item_var, v);   // guarda a rodada na lista do VAR
 
     m->resultados[m->n_rodadas] = dupla_rodada;
     m->n_rodadas++;
@@ -197,8 +218,7 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
 
     placar[m.dupla_vencedora] += m.pontos;
     printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
-    //imprime o var após cada rodada
-    ver_var(v);
+    // o VAR agora é visto pela opção [V] na hora de jogar e no fim da partida
 }
 
 void jogar_partida(tp_fila *mesa, tp_listad *v) {

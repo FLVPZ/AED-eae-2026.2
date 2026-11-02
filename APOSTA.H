@@ -1,5 +1,5 @@
-#ifndef APOSTA.H
-#define APOSTA.H
+#ifndef APOSTA_H
+#define APOSTA_H
 
 typedef struct { //guarda as infos da aposta
     int valor; //quanto a mao vale agora
@@ -74,4 +74,4 @@ int correr_aposta(tp_aposta *a, int dupla,int *vencedora, int *pontos) { //uma d
     a->pedido = 0;
     return 1;
 }
-#endif
+#endif
