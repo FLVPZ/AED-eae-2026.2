@@ -10,6 +10,9 @@
 #include "jogo.h"
 #include "Mao.h"
 #include "Roda.h"
+#include "Rodada.h"
+#include "Truco.h"
+#include "Historico.h"
 #include "APOSTA.h"
 
 #define PONTOS_VITORIA 12
