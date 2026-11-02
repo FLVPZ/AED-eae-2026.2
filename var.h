@@ -47,21 +47,21 @@ void imprimir_var(tp_no_de *atu){
             printf("  ||  ");
 		}
 		printf("\n");
-		printf("A manilha da rodada foi: ");
-        imprimir_carta(atu->info.manilha);
+		printf("A manilha da rodada foi: %d", atu->info.manilha);
+        
         printf("\n");
     
 	if(atu->info.aposta[0]==-1){
 		printf("Nenhuma aposta realizada na rodada");
 	} else {
 		if(atu->info.aposta[0]==3){
-			if(atu->info.aposta[2]==1){
+			if(atu->info.aposta[2]==0){
 				printf("Truco pedido pela dupla %d // dupla %d aceitou!!", atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
 			} else{
 				printf("Truco pedido pela dupla %d // dupla %d recusou!!", atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
 			}
 		} else {
-			if(atu->info.aposta[2]==1){
+			if(atu->info.aposta[2]==0){
 				printf("%d pedido pela dupla %d // dupla %d aceitou!!", atu->info.aposta[0],atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
 			} else{
 				printf("%d pedido pela dupla %d // dupla %d recusou!!", atu->info.aposta[0],atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
@@ -120,12 +120,12 @@ void dupla_vencedora_var (tp_item_VAR *e, int dupla_vencedora){
 }
 
 //Chamar para adicionar as cartas e a manilha da rodada na variavel que vai ao VAR
-void cartas_var(tp_item_VAR *e, tp_item cartas[4], tp_item manilha){
+void cartas_var(tp_item_VAR *e, tp_item cartas[4], int manilha){
     for (int i = 0; i < 4; i++){
         e->cartas_jogadas[i] = cartas[i];
     }
-    e->manilha.naipe = manilha.naipe;
-    e->manilha.valor = manilha.valor;  
+    e->manilha = manilha;
+      
 }
 
 //Chamar para adicionar a variavel que vai ao VAR no VAR
@@ -139,12 +139,13 @@ int adiciona_var (tp_item_VAR *e, tp_listad *lista){
 
 //Chamar para a visualização do VAR
 void ver_var(tp_listad *var){
+    int cont = 1;
     int atual = 0;
     int escolha;
     int tam_VAR = tamanho_var(var);
     //Mover para a direira = 1, mover para a esquerda = -1;
     mostra_var(var, atual, 0);
-    while (true){
+    while (cont==1){
         printf("================MENU VAR================\n");
         printf("Digite 1 se quiser sair do VAR, 2 para avançar o VAR para a direita ou 3 para avançar o VAR para a esquerda.\n");
         scanf("%d", &escolha);
