@@ -25,7 +25,7 @@ void ordenar_mao(tp_jogador *j, int qtd_cartas) { //ordena as cartas em ordem cr
         tp_item chave = j->mao[i];
         int k = i - 1;
 
-        while (k >= 0 &&  ordem_naipe(j->mao[k]) > ordem_naipe(chave)) {
+        while (k >= 0 && ordem_valor(j->mao[k]) > ordem_valor(chave)) {
             j->mao[k + 1] = j->mao[k];
             k--;
         }
