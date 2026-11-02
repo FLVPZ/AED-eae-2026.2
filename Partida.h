@@ -1,6 +1,7 @@
 #ifndef PARTIDA_H
 #define PARTIDA_H
 
+#include "var.h"
 #include <stdio.h>
 #include "STACK.h"
 #include "fila.h"
@@ -9,9 +10,7 @@
 #include "jogo.h"
 #include "Mao.h"
 #include "Roda.h"
-#include "Rodada.h"
-#include "Truco.h"
-#include "Historico.h"
+#include "APOSTA.h"
 
 #define PONTOS_VITORIA 12
 
@@ -65,7 +64,12 @@ void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd)
 }
 
 // Cada um joga uma carta na ordem da roda. Retorna 1 se alguém correu do truco.
-int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3]) {
+int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad *v) {
+   
+    //iniciar item do var
+    tp_item_VAR item_var;
+    inicializa_variavel_var(&item_var);
+
     tp_item cartas[4];
     int duplas[4];
     char nomes[4][NOME_MAX];
@@ -133,14 +137,22 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3]) {
         girar_roda(mesa, pos);
         m->giro += pos;
     }
-
+    
     hist_registrar_rodada(m->numero, m->n_rodadas + 1, nomes, cartas, dupla_rodada);
+
+    //Registro do VAR
+    mao_var(&item_var, m->numero);
+    rodada_var(&item_var, m->n_rodadas);
+    dupla_vencedora_var (&item_var, dupla_rodada);
+    cartas_var(&item_var, cartas, m->valor_manilha);
+    aposta_var (&item_var, m->aposta.dupla_pediu, m->aposta.valor,m->aposta.encerrada);
+
     m->resultados[m->n_rodadas] = dupla_rodada;
     m->n_rodadas++;
     return 0;
 }
 
-void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao) {
+void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
     tp_stack baralho;
     tp_item manilhas[4];
     tp_mao_atual m;
@@ -168,7 +180,7 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao) {
     posicao_do_jogador(*mesa, 0, &primeiro);
 
     while (m.dupla_vencedora == 0) {
-        if (jogar_rodada(mesa, &m, placar)) break;
+        if (jogar_rodada(mesa, &m, placar, v)) break;
 
         int venc = vencedor_da_mao(m.resultados, m.n_rodadas, primeiro.dupla);
         if (venc != 0) {
@@ -182,15 +194,17 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao) {
 
     placar[m.dupla_vencedora] += m.pontos;
     printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
+    //imprime o var após cada rodada
+    ver_var(v);
 }
 
-void jogar_partida(tp_fila *mesa) {
+void jogar_partida(tp_fila *mesa, tp_listad *v) {
     int placar[3] = { 0, 0, 0 };
     int numero_mao = 0;
 
     while (placar[1] < PONTOS_VITORIA && placar[2] < PONTOS_VITORIA) {
         numero_mao++;
-        jogar_mao(mesa, placar, numero_mao);
+        jogar_mao(mesa, placar, numero_mao, v);
         passar_mao(mesa);
     }
 
@@ -209,6 +223,9 @@ void jogar_partida(tp_fila *mesa) {
         }
     }
     printf("\nPlacar final: Dupla 1 = %d x Dupla 2 = %d\n", pontos1, pontos2);
+    
+    //imprime o var apos a ultima rodada
+    ver_var(v);
 }
 
 #endif
