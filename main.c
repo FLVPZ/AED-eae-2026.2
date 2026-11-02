@@ -6,8 +6,13 @@
 #include "jogo.h"
 #include "Roda.h"
 #include "Partida.h"
+#include "var.h"
 
 int main() {
+
+    tp_listad *v;
+    v = inicializa_listad();
+    
     tp_fila mesa;
     char nomes[4][NOME_MAX];
 
@@ -17,7 +22,9 @@ int main() {
     cadastrar_jogadores(nomes);
     montar_mesa(&mesa, nomes);
 
-    jogar_partida(&mesa);
+    jogar_partida(&mesa, v);
+
+    Destroi_listad(v);
 
     return 0;
 }
