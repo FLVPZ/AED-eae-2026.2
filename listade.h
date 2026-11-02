@@ -8,9 +8,9 @@ typedef struct{
     int mao;
     int rodada;
     tp_item cartas_jogadas[4];
-    int aposta[3]; // POSIÇÃO 0 = Valor da ultima aposta pedida (-1 valor padrão para aposta 0); POSIÇÃO 1 = dupla que pediu a aposta; POSIÇÃO 2 = Outra dupla aceitou, 0->N, 1->S.
+    int aposta[3]; // POSIÇÃO 0 = Valor da ultima aposta pedida (-1 valor padrão para aposta 0); POSIÇÃO 1 = dupla que pediu a aposta; POSIÇÃO 2 = Outra dupla aceitou, 1->N, 0->S.
 	int dupla_vencedora;
-    tp_item manilha;
+    int manilha;
 } tp_item_VAR;
 
 typedef struct tp_no_aux{
