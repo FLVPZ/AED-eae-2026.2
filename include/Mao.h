@@ -4,7 +4,7 @@
 #include "STACK.h"
 #include "fila.h"
 
-int ordem_naipe(tp_item carta) { // retorna o peso da carta apenas em relação ao naipe (4: peso 1; 5: peso 2...)
+int ordem_valor(tp_item carta) { // retorna a força/peso do valor da carta (4: peso 1; 5: peso 2...)
     switch(carta.valor) {
         case 4:  return 1;
         case 5:  return 2;
@@ -25,7 +25,7 @@ void ordenar_mao(tp_jogador *j, int qtd_cartas) { //ordena as cartas em ordem cr
         tp_item chave = j->mao[i];
         int k = i - 1;
 
-        while (k >= 0 &&  ordem_naipe(j->mao[k]) > ordem_naipe(chave)) {
+        while (k >= 0 && ordem_valor(j->mao[k]) > ordem_valor(chave)) {
             j->mao[k + 1] = j->mao[k];
             k--;
         }
