@@ -3,6 +3,7 @@
 
 #include "var.h"
 #include <stdio.h>
+#include <ctype.h>
 #include "STACK.h"
 #include "fila.h"
 #include "Jogador.h"
@@ -19,12 +20,107 @@ typedef struct {
     tp_item vira;
     int valor_manilha;
     tp_aposta aposta;
-    int giro;            // posições que a roda girou dentro desta mão
-    int resultados[3];   // dupla que levou cada rodada (0 = empate)
+    int giro;            // Posições que a roda girou dentro desta mão
+    int resultados[3];   // Dupla que levou cada rodada (0 = empate)
     int n_rodadas;
     int dupla_vencedora;
     int pontos;
 } tp_mao_atual;
+
+// 1. Leitura de caractere com conversão para maiúscula
+char ler_opcao() {
+    char c = getchar();
+    limpar_buffer();
+    return toupper(c);
+}
+
+// 2. Retorna a descrição do pedido de aposta
+const char* nome_pedido(int valor) {
+    switch(valor) {
+        case 3: return "TRUCO";
+        case 6: return "SEIS";
+        case 12: return "DOZE";
+        default: return "AUMENTAR";
+    }
+}
+
+// 3. Negociação de Apostas entre as Duplas
+int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador solicitante, int *dupla_vencedora, int *pontos) {
+    int dupla_oposta = (solicitante.dupla == 1) ? 2 : 1;
+    pedir_aposta(a, solicitante.dupla);
+    
+    printf("\n*** DUPLA %d PEDIU %s! ***\n", solicitante.dupla, nome_pedido(a->pedido));
+    printf("Dupla %d, escolha: [A]ceitar, [F]azer aumento (%s), ou [C]orrer: ", 
+           dupla_oposta, nome_pedido(proximo_valor(a->pedido)));
+    
+    char resp = ler_opcao();
+    if (resp == 'A') {
+        aceitar_aposta(a, dupla_oposta);
+        printf("Aposta aceita! A mao agora vale %d pontos.\n", a->valor);
+        return APOSTA_CONTINUA;
+    } else if (resp == 'F' && pode_pedir(*a, dupla_oposta)) {
+        aumentar_aposta(a, dupla_oposta);
+        printf("Aumento pedido! A mao vale %d pontos.\n", a->pedido);
+        return APOSTA_CONTINUA;
+    } else {
+        correr_aposta(a, dupla_oposta, dupla_vencedora, pontos);
+        printf("Dupla %d correu! Dupla %d ganha %d ponto(s).\n", dupla_oposta, *dupla_vencedora, *pontos);
+        return APOSTA_CORRIDO;
+    }
+}
+
+// 4. Interface entre o vetor de rodadas e a função juiz do jogo.h
+int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int *dupla_vencedora) {
+    tp_vencedor arr[4];
+    tp_item manilhas[4] = {
+        {valor_manilha, 'O'}, {valor_manilha, 'E'}, 
+        {valor_manilha, 'C'}, {valor_manilha, 'P'}
+    };
+
+    for (int i = 0; i < 4; i++) {
+        arr[i].carta = cartas[i];
+        arr[i].jogador = i + 1;
+    }
+
+    int jog_venc = vencedor_rodada(arr, manilhas);
+    if (jog_venc == 0) {
+        *dupla_vencedora = 0;
+        return -1; // Empate
+    }
+
+    int idx = jog_venc - 1;
+    *dupla_vencedora = duplas[idx];
+    return idx;
+}
+
+// 5. Determina a dupla vencedora da mão (melhor de 3 rodadas)
+int vencedor_da_mao(int resultados[3], int n_rodadas, int dupla_mao) {
+    int v1 = 0, v2 = 0;
+    for (int i = 0; i < n_rodadas; i++) {
+        if (resultados[i] == 1) v1++;
+        else if (resultados[i] == 2) v2++;
+    }
+
+    if (v1 >= 2) return 1;
+    if (v2 >= 2) return 2;
+
+    // Critérios de desempate no Truco
+    if (n_rodadas >= 1 && resultados[0] == 0) {
+        if (n_rodadas >= 2 && resultados[1] != 0) return resultados[1];
+        if (n_rodadas == 3 && resultados[2] != 0) return resultados[2];
+        if (n_rodadas == 3 && resultados[1] == 0 && resultados[2] == 0) return dupla_mao;
+    }
+
+    if (n_rodadas >= 2 && resultados[1] == 0) {
+        if (resultados[0] != 0) return resultados[0];
+    }
+
+    if (n_rodadas == 3 && resultados[2] == 0) {
+        if (resultados[0] != 0) return resultados[0];
+    }
+
+    return 0; // Mão em andamento
+}
 
 void mostrar_valor(int valor) {
     switch (valor) {
@@ -63,10 +159,7 @@ void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd)
     }
 }
 
-// Cada um joga uma carta na ordem da roda. Retorna 1 se alguém correu do truco.
 int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad *v) {
-   
-    //iniciar item do var
     tp_item_VAR item_var;
     inicializa_variavel_var(&item_var);
 
@@ -86,6 +179,9 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             mostrar_cabecalho(placar, m);
             mostrar_cartas_jogadas(nomes, cartas, i);
             printf("Vez de %s (Dupla %d)\n", j.nome, j.dupla);
+            
+            // Requisito da Unidade: Ordenação da mão via Insertion Sort antes de exibir
+            ordenar_mao(&j, cartas_na_mao);
             exibir_mao_jogador_atual(j, cartas_na_mao);
 
             printf("Carta [1-%d]", cartas_na_mao);
@@ -101,8 +197,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             else if (op == 'T' && pode_pedir(m->aposta, j.dupla)) {
                 int r = negociar_truco(*mesa, &m->aposta, j,
                                        &m->dupla_vencedora, &m->pontos);
-                if (r == TRUCO_CORRIDO) {
-                    // registra no VAR a rodada interrompida pelo corrido (cartas que ainda nao foram jogadas ficam vazias)
+                if (r == APOSTA_CORRIDO) {
                     for (int k = i; k < 4; k++) {
                         cartas[k].valor = -1;
                         cartas[k].naipe = 'A';
@@ -114,7 +209,6 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                     aposta_var(&item_var, m->aposta.dupla_pediu, proximo_valor(m->aposta.valor), 1);
                     adiciona_var(&item_var, v);
 
-                    // os i jogadores que já jogaram foram para o fim da fila: volta a roda
                     girar_roda(mesa, (4 - i) % 4);
                     return 1;
                 }
@@ -132,7 +226,6 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
         strcpy(nomes[i], j.nome);
         duplas[i] = j.dupla;
 
-        // o jogador volta para o fim da fila já sem a carta que jogou
         tp_jogador descarte;
         removeFila(mesa, &descarte);
         insereFila(mesa, j);
@@ -148,23 +241,22 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
     }
     else {
         printf("Dupla %d leva a rodada com a carta de %s.\n", dupla_rodada, nomes[pos]);
-        // quem levou a rodada joga primeiro na próxima
         girar_roda(mesa, pos);
         m->giro += pos;
     }
 
-    //Registro do VAR
+    // Registro na Lista Duplamente Encadeada do VAR
     mao_var(&item_var, m->numero);
     rodada_var(&item_var, m->n_rodadas + 1);
     dupla_vencedora_var (&item_var, dupla_rodada);
     cartas_var(&item_var, cartas, m->valor_manilha);
     if (m->aposta.valor == 1) {
-        aposta_var(&item_var, -1, -1, -1);   // ninguem pediu truco
+        aposta_var(&item_var, -1, -1, -1);
     }
     else {
-        aposta_var(&item_var, m->aposta.ultima_dupla, m->aposta.valor, 0);   // pedido aceito
+        aposta_var(&item_var, m->aposta.ultima_dupla, m->aposta.valor, 0);
     }
-    adiciona_var(&item_var, v);   // guarda a rodada na lista do VAR
+    adiciona_var(&item_var, v);
 
     m->resultados[m->n_rodadas] = dupla_rodada;
     m->n_rodadas++;
@@ -193,7 +285,6 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
     exibir_mesa(*mesa);
     exibir_ordem_rodada(*mesa);
 
-    // se as 3 rodadas empatarem, a mão fica com a dupla de quem abriu a mão
     tp_jogador primeiro;
     posicao_do_jogador(*mesa, 0, &primeiro);
 
@@ -207,12 +298,10 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
         }
     }
 
-    // desfaz os giros de quem ganhou rodada; o passar_mao da próxima mão é do jogar_partida
     girar_roda(mesa, (4 - (m.giro % 4)) % 4);
 
     placar[m.dupla_vencedora] += m.pontos;
     printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
-    // o VAR agora é visto pela opção [V] na hora de jogar e no fim da partida
 }
 
 void jogar_partida(tp_fila *mesa, tp_listad *v) {
@@ -241,7 +330,6 @@ void jogar_partida(tp_fila *mesa, tp_listad *v) {
     }
     printf("\nPlacar final: Dupla 1 = %d x Dupla 2 = %d\n", pontos1, pontos2);
     
-    //imprime o var apos a ultima rodada
     ver_var(v);
 }
 
