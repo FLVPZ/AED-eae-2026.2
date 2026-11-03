@@ -1,12 +1,12 @@
 #include <stdio.h>
-#include "STACK.h"
-#include "fila.h"
-#include "Jogador.h"
-#include "Embaralhar.h"
-#include "jogo.h"
-#include "Roda.h"
-#include "Partida.h"
-#include "var.h"
+#include "include/STACK.h"
+#include "include/fila.h"
+#include "include/Jogador.h"
+#include "include/Embaralhar.h"
+#include "include/jogo.h"
+#include "include/Roda.h"
+#include "include/Partida.h"
+#include "include/var.h"
 
 int main() {
 
