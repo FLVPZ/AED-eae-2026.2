@@ -27,14 +27,7 @@ typedef struct {
     int pontos;
 } tp_mao_atual;
 
-// 1. Leitura de caractere com conversão para maiúscula
-char ler_opcao() {
-    char c = getchar();
-    limpar_buffer();
-    return toupper(c);
-}
-
-// 2. Retorna a descrição do pedido de aposta
+// retorna a descrição do pedido de aposta
 const char* nome_pedido(int valor) {
     switch(valor) {
         case 3: return "TRUCO";
@@ -44,7 +37,7 @@ const char* nome_pedido(int valor) {
     }
 }
 
-// 3. Negociação de Apostas entre as Duplas
+// negociação de Apostas entre as Duplas
 int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador solicitante, int *dupla_vencedora, int *pontos) {
     int dupla_oposta = (solicitante.dupla == 1) ? 2 : 1;
     pedir_aposta(a, solicitante.dupla);
@@ -69,7 +62,7 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador solicitante, int *dupl
     }
 }
 
-// 4. Interface entre o vetor de rodadas e a função juiz do jogo.h
+// interface entre o vetor de rodadas e a função juiz do jogo.h
 int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int *dupla_vencedora) {
     tp_vencedor arr[4];
     tp_item manilhas[4] = {
@@ -93,7 +86,7 @@ int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int 
     return idx;
 }
 
-// 5. Determina a dupla vencedora da mão (melhor de 3 rodadas)
+// determina a dupla vencedora da mão
 int vencedor_da_mao(int resultados[3], int n_rodadas, int dupla_mao) {
     int v1 = 0, v2 = 0;
     for (int i = 0; i < n_rodadas; i++) {
@@ -104,7 +97,7 @@ int vencedor_da_mao(int resultados[3], int n_rodadas, int dupla_mao) {
     if (v1 >= 2) return 1;
     if (v2 >= 2) return 2;
 
-    // Critérios de desempate no Truco
+    // critérios de desempate
     if (n_rodadas >= 1 && resultados[0] == 0) {
         if (n_rodadas >= 2 && resultados[1] != 0) return resultados[1];
         if (n_rodadas == 3 && resultados[2] != 0) return resultados[2];
