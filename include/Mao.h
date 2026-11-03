@@ -4,7 +4,7 @@
 #include "STACK.h"
 #include "fila.h"
 
-int ordem_valor(tp_item carta) { // retorna a força/peso do valor da carta (4: peso 1; 5: peso 2...)
+int ordem_naipe(tp_item carta) { // retorna o peso da carta apenas em relação ao naipe (4: peso 1; 5: peso 2...)
     switch(carta.valor) {
         case 4:  return 1;
         case 5:  return 2;
@@ -20,12 +20,12 @@ int ordem_valor(tp_item carta) { // retorna a força/peso do valor da carta (4: 
     }
 }
 
-void ordenar_mao(tp_jogador *j, int qtd_cartas) { //ordena as cartas em ordem crescente usando o Insertion Sort
+void ordenar_mao(tp_jogador *j, int qtd_cartas) { //ordena as cartas em ordem crescente usando o Inserction Sort
     for (int i = 1; i < qtd_cartas; i++) {
         tp_item chave = j->mao[i];
         int k = i - 1;
 
-        while (k >= 0 && ordem_valor(j->mao[k]) > ordem_valor(chave)) {
+        while (k >= 0 &&  ordem_naipe(j->mao[k]) > ordem_naipe(chave)) {
             j->mao[k + 1] = j->mao[k];
             k--;
         }
@@ -55,7 +55,7 @@ void exibir_mao_jogador_atual(tp_jogador j, int qtd_cartas) { //exibe apenas as 
     printf("\n");
 }
 
-int jogar_carta(tp_jogador *j, int *qtd_cartas, int escolha_usuario, tp_item *carta_jogada) { // remove a carta da mão e ajusta o vetor
+int jogar_carta(tp_jogador *j, int *qtd_cartas, int escolha_usuario, tp_item *carta_jogada) { //remove a carta da mao e 
     int indice = escolha_usuario - 1;
 
     if (indice < 0 || indice >= *qtd_cartas) {

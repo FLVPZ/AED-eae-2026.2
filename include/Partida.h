@@ -1,10 +1,8 @@
 #ifndef PARTIDA_H
 #define PARTIDA_H
 
+#include "var.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "STACK.h"
 #include "fila.h"
 #include "Jogador.h"
@@ -12,13 +10,12 @@
 #include "jogo.h"
 #include "Mao.h"
 #include "Roda.h"
+#include "Rodada.h"
+#include "Truco.h"
+#include "Historico.h"
 #include "APOSTA.h"
-#include "listade.h"
-#include "var.h"
 
 #define PONTOS_VITORIA 12
-#define TRUCO_CORRIDO 1
-#define TRUCO_ACEITO 0
 
 typedef struct {
     int numero;
@@ -31,23 +28,6 @@ typedef struct {
     int dupla_vencedora;
     int pontos;
 } tp_mao_atual;
-
-// Auxiliar para nomear o pedido de aposta (Truco / Seis / Doze)
-const char* nome_pedido(int valor) {
-    if (valor == 3) return "TRUCO";
-    if (valor == 6) return "SEIS";
-    if (valor == 12) return "DOZE";
-    return "AUMENTAR";
-}
-
-// Auxiliar para ler a opção informada pelo usuário e limpar o buffer do teclado
-char ler_opcao() {
-    char op;
-    scanf(" %c", &op);
-    limpar_buffer();
-    if (op >= 'a' && op <= 'z') op -= 32; // converte letras minúsculas para maiúsculas
-    return op;
-}
 
 void mostrar_valor(int valor) {
     switch (valor) {
@@ -86,54 +66,6 @@ void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd)
     }
 }
 
-// Determina o vencedor de uma rodada individual com base na força das cartas e manilhas
-int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int *dupla_vencedora) {
-    tp_item manilhas[4] = {
-        {valor_manilha, 'O'}, {valor_manilha, 'E'},
-        {valor_manilha, 'C'}, {valor_manilha, 'P'}
-    };
-
-    tp_vencedor v_cartas[4];
-    for (int i = 0; i < 4; i++) {
-        v_cartas[i].carta = cartas[i];
-        v_cartas[i].jogador = i;
-    }
-
-    ordenar_cartas(v_cartas, manilhas);
-
-    // Se a 1ª e a 2ª cartas empatarem em força
-    if (comparar_cartas(v_cartas[0].carta, v_cartas[1].carta, manilhas) == 0) {
-        *dupla_vencedora = 0;
-        return -1;
-    }
-
-    int idx_vencedor = v_cartas[0].jogador;
-    *dupla_vencedora = duplas[idx_vencedor];
-    return idx_vencedor;
-}
-
-// Determina a dupla vencedora da mão segundo os critérios do Truco (2 de 3 e empates)
-int vencedor_da_mao(int res[3], int n_rodadas, int dupla_primeiro) {
-    if (n_rodadas < 1) return 0;
-
-    int v1 = res[0];
-    int v2 = (n_rodadas >= 2) ? res[1] : 0;
-    int v3 = (n_rodadas >= 3) ? res[2] : 0;
-
-    if (v1 != 0 && v2 != 0 && v1 == v2) return v1;
-    if (n_rodadas == 3) {
-        if (v1 != 0 && v3 != 0 && v1 == v3) return v1;
-        if (v2 != 0 && v3 != 0 && v2 == v3) return v2;
-    }
-
-    if (v1 == 0 && n_rodadas >= 2 && v2 != 0) return v2;
-    if (v1 != 0 && v2 == 0 && n_rodadas >= 2) return v1;
-    if (n_rodadas == 3 && v3 == 0 && v1 != 0) return v1;
-    if (n_rodadas == 3 && v1 == 0 && v2 == 0 && v3 == 0) return dupla_primeiro;
-
-    return 0;
-}
-
 // Cada um joga uma carta na ordem da roda. Retorna 1 se alguém correu do truco.
 int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad *v) {
    
@@ -157,9 +89,6 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             mostrar_cabecalho(placar, m);
             mostrar_cartas_jogadas(nomes, cartas, i);
             printf("Vez de %s (Dupla %d)\n", j.nome, j.dupla);
-            
-            // Ordena a mão do jogador com o Insertion Sort
-            ordenar_mao(&j, cartas_na_mao);
             exibir_mao_jogador_atual(j, cartas_na_mao);
 
             printf("Carta [1-%d]", cartas_na_mao);
@@ -212,7 +141,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
         insereFila(mesa, j);
     }
 
-    int dupla_rodada = 0;
+    int dupla_rodada;
     int pos = vencedor_da_rodada(cartas, duplas, m->valor_manilha, &dupla_rodada);
 
     printf("\nCartas da rodada:\n");
@@ -226,6 +155,8 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
         girar_roda(mesa, pos);
         m->giro += pos;
     }
+    
+    hist_registrar_rodada(m->numero, m->n_rodadas + 1, nomes, cartas, dupla_rodada);
 
     //Registro do VAR
     mao_var(&item_var, m->numero);
@@ -266,6 +197,7 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
     printf("\n    MAO %d    \n", numero_mao);
     exibir_mesa(*mesa);
     exibir_ordem_rodada(*mesa);
+    hist_registrar_mao(numero_mao);
 
     // se as 3 rodadas empatarem, a mão fica com a dupla de quem abriu a mão
     tp_jogador primeiro;
