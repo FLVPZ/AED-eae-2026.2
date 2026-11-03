@@ -10,9 +10,6 @@
 #include "jogo.h"
 #include "Mao.h"
 #include "Roda.h"
-#include "Rodada.h"
-#include "Truco.h"
-#include "Historico.h"
 #include "APOSTA.h"
 
 #define PONTOS_VITORIA 12
@@ -102,7 +99,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                 escolhida = op - '0';
             }
             else if (op == 'T' && pode_pedir(m->aposta, j.dupla)) {
-                int r = negociar_truco(*mesa, &m->aposta, j, m->numero,
+                int r = negociar_truco(*mesa, &m->aposta, j,
                                        &m->dupla_vencedora, &m->pontos);
                 if (r == TRUCO_CORRIDO) {
                     // registra no VAR a rodada interrompida pelo corrido (cartas que ainda nao foram jogadas ficam vazias)
@@ -155,8 +152,6 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
         girar_roda(mesa, pos);
         m->giro += pos;
     }
-    
-    hist_registrar_rodada(m->numero, m->n_rodadas + 1, nomes, cartas, dupla_rodada);
 
     //Registro do VAR
     mao_var(&item_var, m->numero);
@@ -197,7 +192,6 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
     printf("\n    MAO %d    \n", numero_mao);
     exibir_mesa(*mesa);
     exibir_ordem_rodada(*mesa);
-    hist_registrar_mao(numero_mao);
 
     // se as 3 rodadas empatarem, a mão fica com a dupla de quem abriu a mão
     tp_jogador primeiro;

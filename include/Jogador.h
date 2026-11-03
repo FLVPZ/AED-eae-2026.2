@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "STACK.h"
 #include "fila.h"
@@ -29,6 +30,24 @@ void remover_quebra_linha(char *str) { //remove o enter do fgets na leitura de n
     if (len > 0 && str[len - 1] == '\n') {
         str[len - 1] = '\0';
     }
+}
+
+// lê a opção digitada
+char ler_opcao() {
+    char linha[64];
+
+    if (fgets(linha, sizeof(linha), stdin) == NULL) {
+        exit(0); // teclado fechado
+    }
+    if (strchr(linha, '\n') == NULL) {
+        limpar_buffer();
+    }
+
+    int i = 0;
+    while (linha[i] == ' ' || linha[i] == '\t') {
+        i++;
+    }
+    return (char)toupper((unsigned char)linha[i]);
 }
 
 // recebe o nome dos quatro jogadores na ordem em que vão ficar na mesa

@@ -23,11 +23,9 @@ O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos fica
 - `Jogador.h`: cadastro dos jogadores e montagem da mesa
 - `Roda.h`: ordem de jogo (quem é "mão" e giro da roda)
 - `Mao.h`: mão do jogador (jogar qualquer carta, ordenar, exibir)
-- `jogo.h`: distribuição, vira, manilha e força das cartas
-- `Rodada.h`: vencedor da rodada e da mão
-- `APOSTA.h` e `Truco.h`: pedir truco, aumentar, aceitar e correr
+- `jogo.h`: distribuição, vira, manilha, força das cartas e vencedor da rodada e da mão
+- `APOSTA.h`: pedir truco, aumentar, aceitar e correr
 - `listade.h` e `var.h`: lista duplamente encadeada e navegação do VAR
-- `Historico.h`: registro do histórico da partida
 - `Partida.h`: loop da partida, mãos e rodadas
 
 ## 1ª unidade

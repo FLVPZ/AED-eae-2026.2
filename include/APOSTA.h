@@ -1,6 +1,11 @@
 #ifndef APOSTA_H
 #define APOSTA_H
 
+#include <stdio.h>
+#include "fila.h"
+#include "Jogador.h"
+#include "Roda.h"
+
 typedef struct { //guarda as infos da aposta
     int valor; //quanto a mao vale agora
     int pedido; //valor que esta sendo pedido
@@ -52,7 +57,7 @@ int pedir_aposta(tp_aposta *a, int dupla) { //jogador pede truco,6 ou 12
     return 1;
 }
 
-int aceitar_aposta(tp_aposta *a, int dupla) { //dupla adversaria aceita o pedido
+int aceitar_aposta(tp_aposta *a) { //dupla adversaria aceita o pedido
     a->valor = a->pedido;
     a->ultima_dupla = a->dupla_pediu;
     a->pedido = 0;
@@ -67,11 +72,66 @@ int aumentar_aposta(tp_aposta *a, int dupla) { //dupla adversaria aumenta o pedi
     return 1;
 }
 
-int correr_aposta(tp_aposta *a, int dupla,int *vencedora, int *pontos) { //uma dupla desiste da aposta
+int correr_aposta(tp_aposta *a, int *vencedora, int *pontos) { //uma dupla desiste da aposta
     *vencedora = a->dupla_pediu;
     *pontos = a->valor; //ganha o valor anterior ao pedido
     a->encerrada = 1;
     a->pedido = 0;
     return 1;
 }
-#endif
+
+#define TRUCO_ACEITO 0
+#define TRUCO_CORRIDO 1
+
+// nome do pedido
+const char *nome_pedido(int valor) {
+    switch (valor) {
+        case 3:  return "TRUCO";
+        case 6:  return "SEIS";
+        case 12: return "DOZE";
+        default: return "";
+    }
+}
+
+// pede truco/seis/doze e a outra dupla responde até alguém aceitar ou correr
+int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
+                   int *vencedora, int *pontos) {
+
+    pedir_aposta(a, j.dupla);
+    printf("\n%s (Dupla %d) pede %s\n", j.nome, j.dupla, nome_pedido(a->pedido));
+
+    while (1) {
+        int dupla_resp = (a->dupla_pediu == 1) ? 2 : 1;
+        int novo = proximo_valor(a->pedido);
+        tp_jogador resp;
+        jogador_da_dupla(mesa, dupla_resp, &resp);
+
+        printf("Vez de %s (Dupla %d) responder, %s vale %d. [A] aceitar | [C] correr",
+               resp.nome, resp.dupla, nome_pedido(a->pedido), a->pedido);
+        if (novo != 0) {
+            printf(" | [T] pedir %s", nome_pedido(novo));
+        }
+        printf(": ");
+
+        char op = ler_opcao();
+        if (op == 'A') {
+            aceitar_aposta(a);
+            printf("%s aceitou, a mao vale %d\n", resp.nome, a->valor);
+            return TRUCO_ACEITO;
+        }
+        else if (op == 'C') {
+            correr_aposta(a, vencedora, pontos);
+            printf("%s correu, Dupla %d leva %d ponto(s)\n", resp.nome, *vencedora, *pontos);
+            return TRUCO_CORRIDO;
+        }
+        else if (op == 'T' && novo != 0) {
+            aumentar_aposta(a, dupla_resp);
+            printf("\n%s (Dupla %d) pede %s\n", resp.nome, resp.dupla, nome_pedido(a->pedido));
+        }
+        else {
+            printf("Opcao invalida.\n");
+        }
+    }
+}
+
+#endif
