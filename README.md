@@ -56,4 +56,4 @@ A segunda entrega coloca a mão para rolar e liga o VAR da mesa.
 - [x] Girar a roda a cada nova mão, aproveitando a roda da 1ª unidade.
 - [x] Ligar o VAR do começo ao fim da partida, registrando cada rodada com as cartas, a dupla vencedora e a aposta.
 - [x] Navegar no VAR rodada por rodada nos dois sentidos, atravessando de uma mão para a outra (opção `V` durante a jogada e no fim da partida).
-- [ ] Preparar o relatório com a participação de cada integrante.
+- [x] Preparar o relatório com a participação de cada integrante.
