@@ -27,41 +27,6 @@ typedef struct {
     int pontos;
 } tp_mao_atual;
 
-// retorna a descrição do pedido de aposta
-const char* nome_pedido(int valor) {
-    switch(valor) {
-        case 3: return "TRUCO";
-        case 6: return "SEIS";
-        case 12: return "DOZE";
-        default: return "AUMENTAR";
-    }
-}
-
-// negociação de Apostas entre as Duplas
-int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador solicitante, int *dupla_vencedora, int *pontos) {
-    int dupla_oposta = (solicitante.dupla == 1) ? 2 : 1;
-    pedir_aposta(a, solicitante.dupla);
-    
-    printf("\n*** DUPLA %d PEDIU %s! ***\n", solicitante.dupla, nome_pedido(a->pedido));
-    printf("Dupla %d, escolha: [A]ceitar, [F]azer aumento (%s), ou [C]orrer: ", 
-           dupla_oposta, nome_pedido(proximo_valor(a->pedido)));
-    
-    char resp = ler_opcao();
-    if (resp == 'A') {
-        aceitar_aposta(a, dupla_oposta);
-        printf("Aposta aceita! A mao agora vale %d pontos.\n", a->valor);
-        return APOSTA_CONTINUA;
-    } else if (resp == 'F' && pode_pedir(*a, dupla_oposta)) {
-        aumentar_aposta(a, dupla_oposta);
-        printf("Aumento pedido! A mao vale %d pontos.\n", a->pedido);
-        return APOSTA_CONTINUA;
-    } else {
-        correr_aposta(a, dupla_oposta, dupla_vencedora, pontos);
-        printf("Dupla %d correu! Dupla %d ganha %d ponto(s).\n", dupla_oposta, *dupla_vencedora, *pontos);
-        return APOSTA_CORRIDO;
-    }
-}
-
 // interface entre o vetor de rodadas e a função juiz do jogo.h
 int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int *dupla_vencedora) {
     tp_vencedor arr[4];
