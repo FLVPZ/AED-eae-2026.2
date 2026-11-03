@@ -17,8 +17,8 @@ int forca_valor(int valor) {
         case 2:  return 9;
         case 1:  return 8;  
         case 13: return 7;  
-        case 12: return 6;  
-        case 11: return 5;  
+        case 11: return 6;  
+        case 12: return 5;  
         case 7:  return 4;
         case 6:  return 3;
         case 5:  return 2;
@@ -66,9 +66,9 @@ void manilha(tp_item item, tp_item manilha[])	{
         case 4:  valor_manilha = 5; break;
         case 5:  valor_manilha = 6; break;
         case 6:  valor_manilha = 7; break;
-        case 7:  valor_manilha = 11; break;
-        case 12: valor_manilha = 13; break;
-        case 11: valor_manilha = 12; break;
+        case 7:  valor_manilha = 12; break;
+        case 12: valor_manilha = 11; break;
+        case 11: valor_manilha = 13; break;
         case 13: valor_manilha = 1; break;
         case 1:  valor_manilha = 2; break;
         case 2:  valor_manilha = 3; break;
