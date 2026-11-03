@@ -86,33 +86,6 @@ void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd)
     }
 }
 
-// Negociação de aposta (Truco, Seis ou Doze) entre as duplas adversárias
-int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador pediu, int num_mao, int *dupla_venc, int *pontos) {
-    int proximo = proximo_valor(a->valor);
-    int dupla_adversaria = (pediu.dupla == 1) ? 2 : 1;
-    
-    printf("\n*** %s (Dupla %d) pediu %s! ***\n", pediu.nome, pediu.dupla, nome_pedido(proximo));
-    printf("Dupla %d, qual a resposta?\n", dupla_adversaria);
-    printf("[1] Aceitar | [2] Correr | [3] Aumentar: ");
-    
-    char resp = ler_opcao();
-
-    if (resp == '1') {
-        aceitar_aposta(a, pediu.dupla);
-        printf("Aposta aceita! A mao agora vale %d ponto(s).\n", a->valor);
-        return TRUCO_ACEITO;
-    } else if (resp == '3' && pode_pedir(*a, dupla_adversaria)) {
-        aumentar_aposta(a, pediu.dupla);
-        tp_jogador adversario;
-        jogador_da_dupla(mesa, dupla_adversaria, &adversario);
-        return negociar_truco(mesa, a, adversario, num_mao, dupla_venc, pontos);
-    } else { // Desistiu / Correu
-        correr_aposta(a, dupla_adversaria, dupla_venc, pontos);
-        printf("Dupla %d correu! Dupla %d ganha %d ponto(s).\n", dupla_adversaria, *dupla_venc, *pontos);
-        return TRUCO_CORRIDO;
-    }
-}
-
 // Determina o vencedor de uma rodada individual com base na força das cartas e manilhas
 int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int *dupla_vencedora) {
     tp_item manilhas[4] = {
