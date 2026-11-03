@@ -138,7 +138,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             mostrar_cartas_jogadas(nomes, cartas, i);
             printf("Vez de %s (Dupla %d)\n", j.nome, j.dupla);
             
-            // Requisito da Unidade: Ordenação da mão via Insertion Sort antes de exibir
+            // ordenação da mão antes de exibir
             ordenar_mao(&j, cartas_na_mao);
             exibir_mao_jogador_atual(j, cartas_na_mao);
 
