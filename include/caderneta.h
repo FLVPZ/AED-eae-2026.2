@@ -51,7 +51,7 @@ ArvAVL* criarAVL(){
 	return raiz;
 }
 
-//Arrumar daqui a poico
+// Percursos para consultar a caderneta.
 void preOrd(ArvAVL* raiz){
    if(raiz==NULL) return;
    if(*raiz != NULL){
@@ -129,7 +129,8 @@ int estah_vaziaABB(ArvAVL* raiz){
 	return 0;
 }	
 
-int inserir(ArvAVL* raiz, info_caderneta info){	
+int inserir(ArvAVL* raiz, info_caderneta info){
+	if(raiz == NULL) return 0;
 	int res;
 	if(*raiz==NULL){
 		struct NO* novo;
@@ -189,6 +190,7 @@ void liberaABB(ArvAVL* raiz){
 }
 
 int consultarValorAVL(ArvAVL* raiz, char valor[]){
+	if(valor == NULL) return 0;
 	if(raiz == NULL) return 0;
 	if(*raiz == NULL) return 0;
 	struct NO* atual = *raiz;
@@ -209,6 +211,8 @@ int consultarValorAVL(ArvAVL* raiz, char valor[]){
 
 
 struct NO* acessar_jogador(ArvAVL* raiz, char nome[]){
+	if(raiz == NULL || nome == NULL || nome[0] == '\0'
+	   || strlen(nome) >= sizeof(((info_caderneta*)0)->nome_jogador)) return NULL;
 	if(consultarValorAVL(raiz, nome)==0){
 		info_caderneta novo;
 		strcpy(novo.nome_jogador, nome);
@@ -217,7 +221,7 @@ struct NO* acessar_jogador(ArvAVL* raiz, char nome[]){
 		novo.trucos_pedidos=0;
 		novo.trucos_corridos=0;
 		novo.trucos_recebidos=0;
-		inserir(raiz, novo);
+		if(!inserir(raiz, novo)) return NULL;
 	}
 	if(raiz == NULL) return NULL;
 	if(*raiz == NULL) return NULL;
@@ -244,7 +248,7 @@ int alt_NO(struct NO* no){
 int fb_NO(struct NO* no){
 	int esq = alt_NO(no->esq);
 	int dir = alt_NO(no->dir);
-	return labs(esq - dir);
+	return abs(esq - dir);
 }
 
 int maior(int x, int y){
@@ -281,7 +285,8 @@ void RotacaoRL(ArvAVL* raiz){
 	RotacaoRR(raiz);
 }
 
-int remover(ArvAVL* raiz, info_caderneta valor){	
+int remover(ArvAVL* raiz, info_caderneta valor){
+	if(raiz == NULL) return 0;
 	int res;
 	if(*raiz==NULL){ // Valor não encontrado!
 		printf("Nome %s nao encontrado na árvore!", valor.nome_jogador);
@@ -289,6 +294,7 @@ int remover(ArvAVL* raiz, info_caderneta valor){
 	} 
 	if(strcmp(valor.nome_jogador, (*raiz)->info.nome_jogador)<0){
 		if((res=remover(&(*raiz)->esq, valor))==1){
+			(*raiz)->alt = maior(alt_NO((*raiz)->esq), alt_NO((*raiz)->dir)) + 1;
 			if(fb_NO(*raiz) >= 2){
 				if(alt_NO((*raiz)->dir->esq) <= alt_NO((*raiz)->dir->dir)){
 					RotacaoRR(raiz);
@@ -299,6 +305,7 @@ int remover(ArvAVL* raiz, info_caderneta valor){
 		}				
 	}else if(strcmp(valor.nome_jogador, (*raiz)->info.nome_jogador)>0){
 		if((res=remover(&(*raiz)->dir, valor))==1){
+			(*raiz)->alt = maior(alt_NO((*raiz)->esq), alt_NO((*raiz)->dir)) + 1;
 			if(fb_NO(*raiz) >= 2){
 				if(alt_NO((*raiz)->esq->dir) <= alt_NO((*raiz)->esq->esq)){
 					RotacaoLL(raiz);
@@ -318,6 +325,7 @@ int remover(ArvAVL* raiz, info_caderneta valor){
 			struct NO* temp = buscarMenor((*raiz)->dir);
 			(*raiz)->info = temp->info;
 			remover(&(*raiz)->dir, (*raiz)->info);
+			(*raiz)->alt = maior(alt_NO((*raiz)->esq), alt_NO((*raiz)->dir)) + 1;
 			if(fb_NO(*raiz) >= 2){
 				if(alt_NO((*raiz)->esq->dir) <= alt_NO((*raiz)->esq->esq)){
 					RotacaoLL(raiz);
