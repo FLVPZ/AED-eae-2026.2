@@ -3,10 +3,13 @@
 #include <stdlib.h>
 #include "caderneta.h"
 
-double taxa_correu(info_caderneta info) { //calcula a taxa de fugas do truco de um fregues (usei a passagem por cópia das fichas dos jogadores)
-    int total_decisoes = info.trucos_pedidos + info.trucos_corridos;
-    if (total_decisoes == 0) return 0.0; //impedir divisao por 0
-    return ((double)info.trucos_corridos / total_decisoes) * 100.0; //encontrei pesquisando na internet, se chama "type cast" pra forçar a divisão de int em decimal (ex: 1.0/3 = 33.33%)
+// Percentual de pedidos recebidos que o jogador respondeu correndo.
+// Cada proposta (truco/seis/doze) conta para quem efetivamente a respondeu.
+// A integracao deve registrar o recebimento antes de aceitar, aumentar ou correr;
+// trucos_corridos deve ser incrementado para o mesmo jogador quando ele corre.
+double taxa_correu(info_caderneta info) {
+    if (info.trucos_recebidos <= 0) return 0.0;
+    return 100.0 * info.trucos_corridos / info.trucos_recebidos;
 }
 
 void no_avl(struct NO* no, struct NO** vetor, int* indice) { //usa mesma lógica de andar por arvore avl, mas guarda os endereços dos nós no vetor de ponteiros (o índice é por ponteiro tb pra permitir a recursividade)
@@ -17,12 +20,20 @@ void no_avl(struct NO* no, struct NO** vetor, int* indice) { //usa mesma lógica
     no_avl(no->dir, vetor, indice);
 } //percorre Em Ordem (como as chaves da AVL são os nomes, já vai estar em ordem alfabética)
 
+// Os dois murais devolvem um vetor de ponteiros: o chamador libera somente
+// o vetor com free(), nunca os nos da AVL. Falha ou vazio: NULL e total zero.
+// O percurso custa O(n); o insertion sort, O(n^2) no pior caso.
+// Empates mantem a ordem alfabetica produzida pelo percurso em ordem.
 struct NO** mural(ArvAVL* raiz, int* total_out) { //estrutura o vetor de maos ganhas
+    if (total_out == NULL) return NULL;
     *total_out = totalNOsABB(raiz);
     if (*total_out <= 0) return NULL;
 
     struct NO** vetor = (struct NO**)malloc((*total_out) * sizeof(struct NO*));
-    if (vetor == NULL) return NULL;
+    if (vetor == NULL) {
+        *total_out = 0;
+        return NULL;
+    }
 
     int idx = 0;
     no_avl(*raiz, vetor, &idx);
@@ -41,11 +52,15 @@ struct NO** mural(ArvAVL* raiz, int* total_out) { //estrutura o vetor de maos ga
 }
 
 struct NO** mural_vergonha(ArvAVL* raiz, int* total_out) { //exatamente a mesma lógica do mural padrão, mas ordena o vetor de fuga
+    if (total_out == NULL) return NULL;
     *total_out = totalNOsABB(raiz);
     if (*total_out <= 0) return NULL;
 
     struct NO** vetor = (struct NO**)malloc((*total_out) * sizeof(struct NO*));
-    if (vetor == NULL) return NULL;
+    if (vetor == NULL) {
+        *total_out = 0;
+        return NULL;
+    }
 
     int idx = 0;
     no_avl(*raiz, vetor, &idx);
