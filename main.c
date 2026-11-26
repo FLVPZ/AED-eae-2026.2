@@ -19,6 +19,7 @@ int main() {
     inicializar_seed();
     inicializaFila(&mesa);
 
+    criativo_apresentar();
     cadastrar_jogadores(nomes);
     montar_mesa(&mesa, nomes);
 
@@ -28,3 +29,4 @@ int main() {
 
     return 0;
 }
+
