@@ -11,6 +11,7 @@ typedef struct{
     int maos_ganhas;
     int trucos_pedidos;
     int trucos_corridos;
+    int trucos_recebidos; // pedidos de truco/seis/doze respondidos pelo jogador
 }info_caderneta;
 
 
@@ -215,6 +216,7 @@ struct NO* acessar_jogador(ArvAVL* raiz, char nome[]){
 		novo.maos_ganhas=0;
 		novo.trucos_pedidos=0;
 		novo.trucos_corridos=0;
+		novo.trucos_recebidos=0;
 		inserir(raiz, novo);
 	}
 	if(raiz == NULL) return NULL;
