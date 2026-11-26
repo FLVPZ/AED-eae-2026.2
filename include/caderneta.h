@@ -68,22 +68,15 @@ void preOrd(ArvAVL* raiz){
    }
 }
 
+// Uma linha por jogador; a main apresenta o cabecalho da tabela.
 void emOrd(ArvAVL* raiz){
-   if(raiz==NULL) return;
-   if(*raiz != NULL){
-   	  //printf("Contador:%d", contPrint);
-      emOrd(&((*raiz)->esq));
-
-	  printf("===============\n");	 
-      printf("Nome do jogador: %s\n", (*raiz)->info.nome_jogador);
-	  printf("Numero de partidas jogadas: %d\n", (*raiz)->info.partidas_jogadas);
-      printf("Numero de mãos ganhas: %d\n", (*raiz)->info.maos_ganhas);
-      printf("Numero de trucos pedidos: %d\n", (*raiz)->info.trucos_pedidos);
-	  printf("Numero de trucos corridos: %d\n", (*raiz)->info.trucos_corridos);
-	  printf("===============\n");	 
-
-      emOrd(&((*raiz)->dir));
-   }
+   if(raiz == NULL || *raiz == NULL) return;
+   emOrd(&((*raiz)->esq));
+   info_caderneta info = (*raiz)->info;
+   printf("  %-29.29s %4d %4d %5d %5d %5d\n", info.nome_jogador,
+          info.partidas_jogadas, info.maos_ganhas, info.trucos_pedidos,
+          info.trucos_recebidos, info.trucos_corridos);
+   emOrd(&((*raiz)->dir));
 }
 
 void posOrd(ArvAVL* raiz){

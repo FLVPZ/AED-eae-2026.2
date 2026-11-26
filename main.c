@@ -11,6 +11,8 @@
 #include "include/mural.h"
 
 int main() {
+    ui_iniciar();
+    ui_limpar();
 
     tp_listad *v;
     v = inicializa_listad();
@@ -29,6 +31,7 @@ int main() {
     inicializaFila(&mesa);
 
     criativo_apresentar();
+    ui_secao("QUEM SENTA NA MESA?");
     if (!cadastrar_jogadores(nomes)) {
         Destroi_listad(v);
         liberaABB(caderneta);
@@ -44,10 +47,12 @@ int main() {
     }
     montar_mesa(&mesa, nomes);
 
-    printf("\nCADERNETA DO BAR - ordem alfabetica\n");
+    ui_secao("CADERNETA DO BAR - ordem alfabetica");
+    printf("  %-29s %4s %4s %5s %5s %5s\n", "JOGADOR", "PART", "MAOS", "PEDIU", "RECEB", "FUGIU");
     emOrd(caderneta);
     printf("\nEstatisticas ainda nao sao atualizadas nem salvas nesta versao.\n");
     exibir_murais(caderneta);
+    ui_pausar("Tudo pronto. Abrir a mesa");
 
     jogar_partida(&mesa, v);
 

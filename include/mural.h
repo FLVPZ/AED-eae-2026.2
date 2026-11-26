@@ -2,6 +2,7 @@
 #define MURAL_H
 #include <stdlib.h>
 #include "caderneta.h"
+#include "interface.h"
 
 // Percentual de pedidos recebidos que o jogador respondeu correndo.
 // Cada proposta (truco/seis/doze) conta para quem efetivamente a respondeu.
@@ -87,28 +88,28 @@ void exibir_murais(ArvAVL* raiz) {
 
     int total = 0;
     struct NO** ranking = mural(raiz, &total);
-    printf("\nMURAL DO BAR - maos ganhas em ordem crescente\n");
+    ui_secao("MURAL DO BAR - maos ganhas em ordem crescente");
     if (ranking == NULL) {
         printf("Nao foi possivel montar o mural: memoria insuficiente.\n");
     } else {
         for (int i = 0; i < total; i++) {
-            printf("%s: %d mao(s) ganha(s)\n", ranking[i]->info.nome_jogador,
+            printf("  %-29.29s %4d mao(s) ganha(s)\n", ranking[i]->info.nome_jogador,
                    ranking[i]->info.maos_ganhas);
         }
         free(ranking);
     }
 
     ranking = mural_vergonha(raiz, &total);
-    printf("\nMURAL DA VERGONHA - taxa de fuga em ordem decrescente\n");
+    ui_secao("MURAL DA VERGONHA - taxa de fuga em ordem decrescente");
     if (ranking == NULL) {
         printf("Nao foi possivel montar o mural: memoria insuficiente.\n");
     } else {
         for (int i = 0; i < total; i++) {
             info_caderneta info = ranking[i]->info;
             if (info.trucos_recebidos == 0) {
-                printf("%s: sem pedidos recebidos\n", info.nome_jogador);
+                printf("  %-29.29s sem pedidos recebidos\n", info.nome_jogador);
             } else {
-                printf("%s: %.2f%% (%d fuga(s) / %d pedido(s) recebido(s))\n",
+                printf("  %-29.29s %6.2f%% (%d fuga(s) / %d pedido(s) recebido(s))\n",
                        info.nome_jogador, taxa_correu(info), info.trucos_corridos,
                        info.trucos_recebidos);
             }

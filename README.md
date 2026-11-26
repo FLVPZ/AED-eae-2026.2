@@ -2,7 +2,7 @@
 
 Projeto de Algoritmos e Estrutura de Dados do curso de Engenharia da Computação do SENAI CIMATEC, semestre 2026.2.
 
-O jogo é desenvolvido em C, com quatro jogadores organizados em duas duplas, seguindo a proposta de Truco Paulista.
+O jogo é desenvolvido em C, com quatro jogadores organizados em duas duplas, seguindo a proposta de Truco Paulista. A interface funciona no terminal, com o tema do Bar do Pato.
 
 ## Como compilar e jogar
 
@@ -14,6 +14,12 @@ gcc main.c -o truco
 No Windows (Dev-C++ ou gcc) é o mesmo comando, e o executável gerado é o `truco.exe`.
 
 Durante a jogada, use `S` para escolher um sinal ao parceiro. Nesse menu, use `0` para voltar ao jogo. Enviar um sinal mantém a sua vez. As manilhas aparecem com `[MANILHA]`, e a manilha de Paus recebe o destaque `[MANILHA - ZAP]`.
+
+A tela da mesa reúne o placar, as duplas, a vira, a manilha, as cartas já jogadas e a mão do jogador da vez. As cartas aparecem lado a lado, com cores de naipe e destaque dourado nas manilhas. Os menus de aposta, sinais e VAR mostram as teclas disponíveis. O último aviso permanece na mesa após consultar o VAR, enviar um sinal ou digitar uma opção inválida.
+
+Use de preferência um terminal com pelo menos 80 colunas e 28 linhas. Cores e limpeza de tela são ativadas automaticamente quando o console oferece suporte. Com a variável `NO_COLOR` definida, as cores são desativadas; com `TERM=dumb` ou saída redirecionada, não são enviados códigos de controle. Em janelas estreitas, as cartas passam para uma lista compacta. No Windows, se o console não aceitar sequências ANSI, a apresentação continua em texto simples. Os rótulos dos naipes e das manilhas aparecem também por escrito.
+
+Antes de começar e antes de conferir o VAR final, o terminal interativo aguarda Enter para permitir a leitura dos resumos. Esses passos não consomem entrada quando o programa recebe dados por redirecionamento.
 
 Os quatro nomes sao cadastrados na caderneta AVL. Nomes vazios, repetidos na mesma mesa ou com mais de 29 caracteres precisam ser informados novamente. A caderneta aparece em ordem alfabetica antes da partida, e os murais aparecem antes e depois do jogo.
 
@@ -33,7 +39,8 @@ O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos fica
 - `APOSTA.h`: pedir truco, aumentar, aceitar e correr
 - `listade.h` e `var.h`: lista duplamente encadeada e navegação do VAR
 - `Partida.h`: loop da partida, mãos e rodadas
-- `criativo.h`: destaque das manilhas e sinais escolhidos pelo jogador para o parceiro
+- `criativo.h`: destaque das manilhas e sinais fixos escolhidos pelo jogador para o parceiro
+- `interface.h`: tema do terminal, cores opcionais, cartas, cabeçalhos, avisos e pausas de leitura
 - `caderneta.h`: cadastro em arvore AVL integrado aos nomes da mesa, busca por nome, percursos e liberacao da arvore
 - `mural.h`: ordenacao e exibicao dos murais de maos ganhas e taxa de fuga, preservando os nos da caderneta
 
@@ -82,6 +89,7 @@ Andamento atual: a caderneta de Eduardo e os murais de Diego estão integrados a
 - [x] Exibir o mural da taxa de fuga calculada a partir dos contadores da caderneta.
 - [ ] Identificar e exibir a mão mais cara da partida.
 - [x] Implementar o item criativo: sinais do parceiro e marcação visual das manilhas.
+- [x] Organizar a interface no terminal com placar, cartas, comandos e resumos no tema do Bar do Pato.
 - [x] Corrigir as alturas e o balanceamento da AVL após remoções.
 - [x] Integrar a caderneta e os murais na `main.c`, com liberação dos vetores e da árvore.
 - [ ] Integrar os módulos de estatísticas e persistência quando estiverem prontos.

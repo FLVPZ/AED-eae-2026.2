@@ -5,6 +5,7 @@
 #include "fila.h"
 #include "Jogador.h"
 #include "Roda.h"
+#include "interface.h"
 
 typedef struct { //guarda as infos da aposta
     int valor; //quanto a mao vale agora
@@ -98,6 +99,7 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
                    int *vencedora, int *pontos) {
 
     pedir_aposta(a, j.dupla);
+    ui_secao("PEDIDO NA MESA");
     printf("\n%s (Dupla %d) pede %s\n", j.nome, j.dupla, nome_pedido(a->pedido));
 
     while (1) {
@@ -106,22 +108,26 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
         tp_jogador resp;
         jogador_da_dupla(mesa, dupla_resp, &resp);
 
-        printf("Vez de %s (Dupla %d) responder, %s vale %d. [A] aceitar | [C] correr",
-               resp.nome, resp.dupla, nome_pedido(a->pedido), a->pedido);
+        printf("  Resposta de %s (Dupla %d)\n", resp.nome, resp.dupla);
+        printf("  %s: a mao passa a valer %d ponto(s).\n", nome_pedido(a->pedido), a->pedido);
+        printf("  [A] Aceitar  [C] Correr");
         if (novo != 0) {
-            printf(" | [T] pedir %s", nome_pedido(novo));
+            printf("  [T] Pedir %s", nome_pedido(novo));
         }
-        printf(": ");
+        printf("\n  Sua escolha: ");
+        fflush(stdout);
 
         char op = ler_opcao();
         if (op == 'A') {
             aceitar_aposta(a);
             printf("%s aceitou, a mao vale %d\n", resp.nome, a->valor);
+            ui_aviso("%s aceitou. A mao vale %d ponto(s).", resp.nome, a->valor);
             return TRUCO_ACEITO;
         }
         else if (op == 'C') {
             correr_aposta(a, vencedora, pontos);
             printf("%s correu, Dupla %d leva %d ponto(s)\n", resp.nome, *vencedora, *pontos);
+            ui_aviso("%s correu. Dupla %d leva %d ponto(s).", resp.nome, *vencedora, *pontos);
             return TRUCO_CORRIDO;
         }
         else if (op == 'T' && novo != 0) {
