@@ -43,6 +43,7 @@ int main() {
         }
     }
     montar_mesa(&mesa, nomes);
+    criativo_carregar_sinais(&mesa);
 
     printf("\nCADERNETA DO BAR - ordem alfabetica\n");
     emOrd(caderneta);

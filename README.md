@@ -13,11 +13,13 @@ gcc main.c -o truco
 
 No Windows (Dev-C++ ou gcc) é o mesmo comando, e o executável gerado é o `truco.exe`.
 
-Durante a jogada, use `S` para escolher um sinal ao parceiro. Nesse menu, use `0` para voltar ao jogo. Enviar um sinal mantém a sua vez. As manilhas aparecem com `[MANILHA]`, e a manilha de Paus recebe o destaque `[MANILHA - ZAP]`.
+Durante a jogada, use `S` para escolher um sinal ao parceiro. Nesse menu, use `P` para personalizar e salvar seus três gestos ou `0` para voltar ao jogo. Na personalização, Enter mantém um gesto e `0` cancela todas as alterações. Enviar um sinal mantém a sua vez. As manilhas aparecem com `[MANILHA]`, e a manilha de Paus recebe o destaque `[MANILHA - ZAP]`.
+
+Os sinais personalizados são salvos em `sinais.txt`, na pasta de onde o programa é executado, e recuperados ao cadastrar o mesmo nome nas próximas execuções. O arquivo reúne as preferências dos jogadores; a última configuração completa de cada nome é usada. Sem configuração salva, são usados os gestos padrão. Se a gravação falhar, a configuração anterior é mantida. Nomes são comparados exatamente, incluindo maiúsculas e minúsculas.
 
 Os quatro nomes sao cadastrados na caderneta AVL. Nomes vazios, repetidos na mesma mesa ou com mais de 29 caracteres precisam ser informados novamente. A caderneta aparece em ordem alfabetica antes da partida, e os murais aparecem antes e depois do jogo.
 
-Esta integracao e parcial: os contadores ainda nao sao atualizados durante a partida e os dados ainda nao sao salvos em disco. Por isso, jogadores novos aparecem com zero maos ganhas e sem pedidos recebidos. Os modulos de estatisticas e persistencia serao conectados quando estiverem prontos.
+A integração da caderneta é parcial: seus contadores ainda não são atualizados durante a partida nem salvos em disco. Por isso, jogadores novos aparecem com zero mãos ganhas e sem pedidos recebidos. Os módulos de estatísticas e persistência da caderneta serão conectados quando estiverem prontos. O arquivo de sinais pertence apenas ao item criativo.
 
 ## Organização do projeto
 
@@ -33,7 +35,8 @@ O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos fica
 - `APOSTA.h`: pedir truco, aumentar, aceitar e correr
 - `listade.h` e `var.h`: lista duplamente encadeada e navegação do VAR
 - `Partida.h`: loop da partida, mãos e rodadas
-- `criativo.h`: destaque das manilhas e sinais escolhidos pelo jogador para o parceiro
+- `criativo.h`: destaque das manilhas e interface para enviar e personalizar os sinais do jogador
+- `sinais_arquivo.h`: leitura e gravação dos sinais por nome, usando `fopen`, `fgets`, `fprintf`, `fflush` e `fclose`
 - `caderneta.h`: cadastro em arvore AVL integrado aos nomes da mesa, busca por nome, percursos e liberacao da arvore
 - `mural.h`: ordenacao e exibicao dos murais de maos ganhas e taxa de fuga, preservando os nos da caderneta
 
@@ -69,7 +72,7 @@ A segunda entrega coloca a mão para rolar e liga o VAR da mesa.
 
 A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados salvos em disco e um item criativo.
 
-Andamento atual: a caderneta de Eduardo e os murais de Diego estão integrados ao cadastro e à exibição do jogo. A AVL foi corrigida e o item criativo está funcionando. Faltam a atualização das estatísticas durante a partida, a mão mais cara e a persistência em disco. Até esses módulos serem conectados, os jogadores novos aparecem com contadores zerados e os dados ficam somente na execução atual.
+Andamento atual: a caderneta de Eduardo e os murais de Diego estão integrados ao cadastro e à exibição do jogo. A AVL foi corrigida e o item criativo permite personalizar e recuperar os sinais por arquivo, aplicando manipulação de arquivos da terceira unidade. Faltam a atualização das estatísticas durante a partida, a mão mais cara e a persistência em disco. Até esses módulos serem conectados, os jogadores novos aparecem com contadores zerados e os dados da caderneta ficam somente na execução atual; as preferências de sinais já persistem entre execuções.
 
 - [ ] Concluir as correções solicitadas nas entregas anteriores.
 - [x] Encerrar a partida aos 12 pontos, mostrando a dupla vencedora e o placar final.
@@ -81,7 +84,8 @@ Andamento atual: a caderneta de Eduardo e os murais de Diego estão integrados a
 - [x] Exibir o mural com os jogadores em ordem crescente de maos ganhas.
 - [x] Exibir o mural da taxa de fuga calculada a partir dos contadores da caderneta.
 - [ ] Identificar e exibir a mão mais cara da partida.
-- [x] Implementar o item criativo: sinais do parceiro e marcação visual das manilhas.
+- [x] Implementar o item criativo: sinais personalizados do parceiro e marcação visual das manilhas.
+- [x] Salvar e recuperar os sinais por nome em arquivo, aplicando conteúdo da terceira unidade.
 - [x] Corrigir as alturas e o balanceamento da AVL após remoções.
 - [x] Integrar a caderneta e os murais na `main.c`, com liberação dos vetores e da árvore.
 - [ ] Integrar os módulos de estatísticas e persistência quando estiverem prontos.

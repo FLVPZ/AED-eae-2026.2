@@ -4,12 +4,15 @@
 #define MAX 5
 #include "STACK.h"
 #define NOME_MAX 30
+#define SINAIS_QTD 3
+#define SINAL_MAX 64
 
 // guarda os dados que precisam ficar juntos para cada jogador
 typedef struct {
     char nome[NOME_MAX];
     tp_item mao[3];
     int dupla;
+    char sinais[SINAIS_QTD][SINAL_MAX]; // preferencias do jogador, salvas por nome
 } tp_jogador;
 
 // fila usada para manter a ordem dos jogadores na mesa
@@ -37,6 +40,13 @@ int proximo(int pos){
 int filaCheia (tp_fila *f){
 	if(proximo(f->fim)==f->ini) return 1;
 	return 0;
+}
+
+// Atualiza o jogador da vez sem remover nem girar a fila.
+int atualizaPrimeiroFila(tp_fila *f, tp_jogador jogador) {
+    if (filaVazia(f)) return 0;
+    f->item[proximo(f->ini)] = jogador;
+    return 1;
 }
 
 // coloca o jogador no final da fila

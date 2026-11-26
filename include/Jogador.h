@@ -79,10 +79,17 @@ int cadastrar_jogadores(char nomes[4][NOME_MAX]) {
                 nomes[i][--tamanho] = '\0';
             }
             int repetido = 0;
+            int controle = 0;
+            for (size_t j = 0; j < tamanho; j++) {
+                if ((unsigned char)nomes[i][j] < 32 || nomes[i][j] == 127) controle = 1;
+            }
             for (int j = 0; j < i; j++) {
                 if (strcmp(nomes[i], nomes[j]) == 0) repetido = 1;
             }
-            if (tamanho == 0 || repetido) {
+            if (controle) {
+                printf("Use apenas caracteres de texto no nome.\n");
+                i--;
+            } else if (tamanho == 0 || repetido) {
                 printf("Informe um nome nao vazio e diferente dos demais jogadores.\n");
                 i--;
             }
@@ -96,7 +103,7 @@ int cadastrar_jogadores(char nomes[4][NOME_MAX]) {
 // coloca os jogadores na fila já alternando as duas duplas
 void montar_mesa(tp_fila* m, char nomes[4][NOME_MAX]) {
     int duplas[4] = { 1, 2, 1, 2 }; // parceiros sentados alternados
-    tp_jogador jogador;
+    tp_jogador jogador = {0};
     for (int i = 0; i < 4; i++) {
         strcpy(jogador.nome, nomes[i]);
         jogador.dupla = duplas[i];

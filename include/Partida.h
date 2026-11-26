@@ -125,6 +125,9 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             }
             else if (op == 'S') {
                 criativo_enviar_sinal(*mesa, &j);
+                // Conserva a personalizacao mesmo se a mao acabar por fuga
+                // antes de este jogador escolher uma carta.
+                atualizaPrimeiroFila(mesa, j);
             }
             else if (op == 'V') {
                 ver_var(v);
@@ -247,4 +250,3 @@ void jogar_partida(tp_fila *mesa, tp_listad *v) {
 }
 
 #endif
-

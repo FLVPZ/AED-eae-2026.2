@@ -24,3 +24,6 @@
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Preferencias locais dos jogadores (item criativo)
+/sinais.txt
