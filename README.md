@@ -13,6 +13,8 @@ gcc main.c -o truco
 
 No Windows (Dev-C++ ou gcc) é o mesmo comando, e o executável gerado é o `truco.exe`.
 
+Durante a jogada, use `S` para escolher um sinal ao parceiro. Nesse menu, use `0` para voltar ao jogo. Enviar um sinal mantém a sua vez. As manilhas aparecem com `[MANILHA]`, e a manilha de Paus recebe o destaque `[MANILHA - ZAP]`.
+
 ## Organização do projeto
 
 O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos ficam na pasta `include/`:
@@ -27,6 +29,7 @@ O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos fica
 - `APOSTA.h`: pedir truco, aumentar, aceitar e correr
 - `listade.h` e `var.h`: lista duplamente encadeada e navegação do VAR
 - `Partida.h`: loop da partida, mãos e rodadas
+- `criativo.h`: destaque das manilhas e sinais escolhidos pelo jogador para o parceiro
 - `caderneta.h`: cadastro acumulado em árvore AVL, busca por nome, percursos e liberação da árvore; ainda sem integração com a partida
 
 ## 1ª unidade
@@ -69,6 +72,7 @@ A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados s
 - [ ] Salvar os dados ao fim de cada mão e recuperar a caderneta ao abrir o programa novamente.
 - [ ] Exibir o mural com os jogadores em ordem crescente de mãos ganhas.
 - [ ] Mostrar a taxa de fuga do truco de cada jogador e a mão mais cara da partida.
-- [ ] Implementar o item criativo: sinais do parceiro e/ou marcação visual das manilhas.
+- [x] Implementar o item criativo: sinais do parceiro e marcação visual das manilhas.
 - [ ] Integrar os módulos da terceira unidade na `main.c`.
 - [ ] Preparar o relatório com a participação de cada integrante.
+

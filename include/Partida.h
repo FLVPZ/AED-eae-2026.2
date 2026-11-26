@@ -12,6 +12,7 @@
 #include "Mao.h"
 #include "Roda.h"
 #include "APOSTA.h"
+#include "criativo.h"
 
 #define PONTOS_VITORIA 12
 
@@ -27,58 +28,7 @@ typedef struct {
     int pontos;
 } tp_mao_atual;
 
-// interface entre o vetor de rodadas e a função juiz do jogo.h
-int vencedor_da_rodada(tp_item cartas[4], int duplas[4], int valor_manilha, int *dupla_vencedora) {
-    tp_vencedor arr[4];
-    tp_item manilhas[4] = {
-        {valor_manilha, 'O'}, {valor_manilha, 'E'}, 
-        {valor_manilha, 'C'}, {valor_manilha, 'P'}
-    };
-
-    for (int i = 0; i < 4; i++) {
-        arr[i].carta = cartas[i];
-        arr[i].jogador = i + 1;
-    }
-
-    int jog_venc = vencedor_rodada(arr, manilhas);
-    if (jog_venc == 0) {
-        *dupla_vencedora = 0;
-        return -1; // Empate
-    }
-
-    int idx = jog_venc - 1;
-    *dupla_vencedora = duplas[idx];
-    return idx;
-}
-
-// determina a dupla vencedora da mão
-int vencedor_da_mao(int resultados[3], int n_rodadas, int dupla_mao) {
-    int v1 = 0, v2 = 0;
-    for (int i = 0; i < n_rodadas; i++) {
-        if (resultados[i] == 1) v1++;
-        else if (resultados[i] == 2) v2++;
-    }
-
-    if (v1 >= 2) return 1;
-    if (v2 >= 2) return 2;
-
-    // critérios de desempate
-    if (n_rodadas >= 1 && resultados[0] == 0) {
-        if (n_rodadas >= 2 && resultados[1] != 0) return resultados[1];
-        if (n_rodadas == 3 && resultados[2] != 0) return resultados[2];
-        if (n_rodadas == 3 && resultados[1] == 0 && resultados[2] == 0) return dupla_mao;
-    }
-
-    if (n_rodadas >= 2 && resultados[1] == 0) {
-        if (resultados[0] != 0) return resultados[0];
-    }
-
-    if (n_rodadas == 3 && resultados[2] == 0) {
-        if (resultados[0] != 0) return resultados[0];
-    }
-
-    return 0; // Mão em andamento
-}
+// A apuração da rodada e da mão usa as funções de jogo.h.
 
 void mostrar_valor(int valor) {
     switch (valor) {
@@ -109,10 +59,12 @@ void mostrar_cabecalho(const int placar[3], tp_mao_atual *m) {
     printf("\n");
 }
 
-void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd) {
+void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd,
+                           int valor_manilha) {
     for (int i = 0; i < qtd; i++) {
         printf("  %s jogou ", nomes[i]);
         mostrar_carta(cartas[i]);
+        criativo_destacar_manilha(cartas[i], valor_manilha);
         printf("\n");
     }
 }
@@ -135,18 +87,18 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
         int escolhida = 0;
         while (escolhida == 0) {
             mostrar_cabecalho(placar, m);
-            mostrar_cartas_jogadas(nomes, cartas, i);
+            mostrar_cartas_jogadas(nomes, cartas, i, m->valor_manilha);
             printf("Vez de %s (Dupla %d)\n", j.nome, j.dupla);
             
             // ordenação da mão antes de exibir
             ordenar_mao(&j, cartas_na_mao);
-            exibir_mao_jogador_atual(j, cartas_na_mao);
+            criativo_exibir_mao(&j, cartas_na_mao, m->valor_manilha);
 
             printf("Carta [1-%d]", cartas_na_mao);
             if (pode_pedir(m->aposta, j.dupla)) {
                 printf(" ou [T] pedir %s", nome_pedido(proximo_valor(m->aposta.valor)));
             }
-            printf(" ou [V] ver o VAR: ");
+            printf(" ou [S] sinal ao parceiro ou [V] ver o VAR: ");
 
             char op = ler_opcao();
             if (op >= '1' && op <= '0' + cartas_na_mao) {
@@ -171,6 +123,9 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                     return 1;
                 }
             }
+            else if (op == 'S') {
+                criativo_enviar_sinal(*mesa, &j);
+            }
             else if (op == 'V') {
                 ver_var(v);
             }
@@ -193,7 +148,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
     int pos = vencedor_da_rodada(cartas, duplas, m->valor_manilha, &dupla_rodada);
 
     printf("\nCartas da rodada:\n");
-    mostrar_cartas_jogadas(nomes, cartas, 4);
+    mostrar_cartas_jogadas(nomes, cartas, 4, m->valor_manilha);
     if (pos < 0) {
         printf("Rodada empatada.\n");
     }
@@ -292,3 +247,4 @@ void jogar_partida(tp_fila *mesa, tp_listad *v) {
 }
 
 #endif
+
