@@ -26,6 +26,7 @@ typedef struct{
 
 tp_listad *inicializa_listad(){
 	tp_listad *lista=(tp_listad*) malloc(sizeof(tp_listad));
+	if(lista == NULL) return NULL;
 	lista->fim = NULL;
 	lista->ini = NULL;
 	return lista;

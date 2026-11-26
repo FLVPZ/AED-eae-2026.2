@@ -15,6 +15,10 @@ No Windows (Dev-C++ ou gcc) é o mesmo comando, e o executável gerado é o `tru
 
 Durante a jogada, use `S` para escolher um sinal ao parceiro. Nesse menu, use `0` para voltar ao jogo. Enviar um sinal mantém a sua vez. As manilhas aparecem com `[MANILHA]`, e a manilha de Paus recebe o destaque `[MANILHA - ZAP]`.
 
+Os quatro nomes sao cadastrados na caderneta AVL. Nomes vazios, repetidos na mesma mesa ou com mais de 29 caracteres precisam ser informados novamente. A caderneta aparece em ordem alfabetica antes da partida, e os murais aparecem antes e depois do jogo.
+
+Esta integracao e parcial: os contadores ainda nao sao atualizados durante a partida e os dados ainda nao sao salvos em disco. Por isso, jogadores novos aparecem com zero maos ganhas e sem pedidos recebidos. Os modulos de estatisticas e persistencia serao conectados quando estiverem prontos.
+
 ## Organização do projeto
 
 O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos ficam na pasta `include/`:
@@ -30,7 +34,8 @@ O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos fica
 - `listade.h` e `var.h`: lista duplamente encadeada e navegação do VAR
 - `Partida.h`: loop da partida, mãos e rodadas
 - `criativo.h`: destaque das manilhas e sinais escolhidos pelo jogador para o parceiro
-- `caderneta.h`: cadastro acumulado em árvore AVL, busca por nome, percursos e liberação da árvore; ainda sem integração com a partida
+- `caderneta.h`: cadastro em arvore AVL integrado aos nomes da mesa, busca por nome, percursos e liberacao da arvore
+- `mural.h`: ordenacao e exibicao dos murais de maos ganhas e taxa de fuga, preservando os nos da caderneta
 
 ## 1ª unidade
 
@@ -64,15 +69,30 @@ A segunda entrega coloca a mão para rolar e liga o VAR da mesa.
 
 A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados salvos em disco e um item criativo.
 
+Andamento atual: a caderneta de Eduardo e os murais de Diego estão integrados ao cadastro e à exibição do jogo. A AVL foi corrigida e o item criativo está funcionando. Faltam a atualização das estatísticas durante a partida, a mão mais cara e a persistência em disco. Até esses módulos serem conectados, os jogadores novos aparecem com contadores zerados e os dados ficam somente na execução atual.
+
 - [ ] Concluir as correções solicitadas nas entregas anteriores.
 - [x] Encerrar a partida aos 12 pontos, mostrando a dupla vencedora e o placar final.
 - [x] Criar a caderneta em árvore AVL, com busca por nome e cadastro de novos jogadores com os contadores zerados.
 - [x] Implementar a listagem da caderneta em ordem alfabética.
-- [ ] Integrar a caderneta ao cadastro e atualizar as estatísticas durante o jogo.
+- [x] Integrar a caderneta ao cadastro dos jogadores.
+- [ ] Atualizar partidas jogadas, mãos ganhas, pedidos feitos, pedidos recebidos e fugas durante o jogo.
 - [ ] Salvar os dados ao fim de cada mão e recuperar a caderneta ao abrir o programa novamente.
-- [ ] Exibir o mural com os jogadores em ordem crescente de mãos ganhas.
-- [ ] Mostrar a taxa de fuga do truco de cada jogador e a mão mais cara da partida.
+- [x] Exibir o mural com os jogadores em ordem crescente de maos ganhas.
+- [x] Exibir o mural da taxa de fuga calculada a partir dos contadores da caderneta.
+- [ ] Identificar e exibir a mão mais cara da partida.
 - [x] Implementar o item criativo: sinais do parceiro e marcação visual das manilhas.
-- [ ] Integrar os módulos da terceira unidade na `main.c`.
+- [x] Corrigir as alturas e o balanceamento da AVL após remoções.
+- [x] Integrar a caderneta e os murais na `main.c`, com liberação dos vetores e da árvore.
+- [ ] Integrar os módulos de estatísticas e persistência quando estiverem prontos.
 - [ ] Preparar o relatório com a participação de cada integrante.
 
+## Testes dos modulos integrados
+
+```
+gcc -std=c99 -Wall -Wextra -Werror -pedantic tests/test_caderneta.c -o teste_caderneta
+./teste_caderneta
+gcc -std=c99 -Wall -Wextra -Werror -pedantic tests/test_mural.c -o teste_mural -lm
+./teste_mural
+python3 tests/test_integracao.py
+```

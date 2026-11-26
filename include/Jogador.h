@@ -51,20 +51,46 @@ char ler_opcao() {
 }
 
 // recebe o nome dos quatro jogadores na ordem em que vão ficar na mesa
-void cadastrar_jogadores(char nomes[4][NOME_MAX]) {
+// Retorna zero se a entrada for encerrada antes de completar o cadastro.
+int cadastrar_jogadores(char nomes[4][NOME_MAX]) {
     int duplas[4] = { 1, 2, 1, 2 };
     for (int i = 0; i < 4; i++) {
         printf("Nome do Jogador %d (Dupla %d): ", i + 1, duplas[i]);
 
         if (fgets(nomes[i], NOME_MAX, stdin) != NULL) {
             if (strchr(nomes[i], '\n') == NULL) {
-                limpar_buffer(); //caso o nome seja maior que NOME_MAX
+                int seguinte = getchar();
+                if (seguinte != '\n' && seguinte != EOF) {
+                    limpar_buffer();
+                    printf("Nome muito longo. Use ate %d caracteres.\n", NOME_MAX - 1);
+                    i--;
+                    continue;
+                }
             }
             else {
                 remover_quebra_linha(nomes[i]);
             }
+            // A chave da caderneta nao pode ser vazia nem repetir na mesa.
+            size_t inicio = 0;
+            while (isspace((unsigned char)nomes[i][inicio])) inicio++;
+            memmove(nomes[i], nomes[i] + inicio, strlen(nomes[i] + inicio) + 1);
+            size_t tamanho = strlen(nomes[i]);
+            while (tamanho > 0 && isspace((unsigned char)nomes[i][tamanho - 1])) {
+                nomes[i][--tamanho] = '\0';
+            }
+            int repetido = 0;
+            for (int j = 0; j < i; j++) {
+                if (strcmp(nomes[i], nomes[j]) == 0) repetido = 1;
+            }
+            if (tamanho == 0 || repetido) {
+                printf("Informe um nome nao vazio e diferente dos demais jogadores.\n");
+                i--;
+            }
+        } else {
+            return 0;
         }
     }
+    return 1;
 }
 
 // coloca os jogadores na fila já alternando as duas duplas
