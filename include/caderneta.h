@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#ifndef CADERNETA_H
+#define CADERNETA_H
 
 typedef struct{
     char nome_jogador[50];
@@ -338,3 +340,4 @@ struct NO* buscarMenor(struct NO* atual){
 	return no1;
 }
 
+#endif
