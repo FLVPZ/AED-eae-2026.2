@@ -5,6 +5,7 @@
 #include "STACK.h"
 #include "fila.h"
 #include "Jogador.h"
+#include "interface.h"
 
 // Os destaques dependem da manilha já calculada pelo jogo.
 // Esta função só escreve na tela: não muda a carta nem sua força.
@@ -21,29 +22,7 @@ static void criativo_destacar_manilha(tp_item carta, int valor_manilha) {
 
 static void criativo_exibir_mao(const tp_jogador *j, int qtd_cartas,
                                int valor_manilha) {
-    printf("Sua mao: ");
-    for (int i = 0; i < qtd_cartas; i++) {
-        tp_item carta = j->mao[i];
-        printf("[%d] ", i + 1);
-
-        switch (carta.valor) {
-            case 1:  printf("As"); break;
-            case 11: printf("J"); break;
-            case 12: printf("Q"); break;
-            case 13: printf("K"); break;
-            default: printf("%d", carta.valor);
-        }
-        switch (carta.naipe) {
-            case 'O': printf(" de Ouros"); break;
-            case 'E': printf(" de Espadas"); break;
-            case 'C': printf(" de Copas"); break;
-            case 'P': printf(" de Paus"); break;
-        }
-
-        criativo_destacar_manilha(carta, valor_manilha);
-        if (i < qtd_cartas - 1) printf(" | ");
-    }
-    printf("\n");
+    ui_cartas(j->mao, qtd_cartas, valor_manilha);
 }
 
 // A fila recebida é uma cópia. O primeiro é quem está jogando;
@@ -71,13 +50,14 @@ static void criativo_enviar_sinal(tp_fila mesa, const tp_jogador *atual) {
     }
 
     for (;;) {
-        printf("\nSinal para %s (Dupla %d)\n", parceiro.nome, parceiro.dupla);
-        printf("[1] Piscar | [2] Levantar a sobrancelha | [3] Tocar na mesa | [0] Voltar: ");
+        ui_secao("SINAIS DO PARCEIRO");
+        printf("  Para %s (Dupla %d)\n", parceiro.nome, parceiro.dupla);
+        printf("  [1] Piscar  [2] Sobrancelha  [3] Tocar na mesa  [0] Voltar\n  Escolha: ");
         char op = ler_opcao();
         const char *gesto;
 
         switch (op) {
-            case '0': return;
+            case '0': ui_aviso("Sinal cancelado. Voce continua com a vez."); return;
             case '1': gesto = "pisca ;)"; break;
             case '2': gesto = "levanta a sobrancelha ^_^"; break;
             case '3': gesto = "toca na mesa: toc, toc!"; break;
@@ -88,15 +68,17 @@ static void criativo_enviar_sinal(tp_fila mesa, const tp_jogador *atual) {
 
         printf("\n[SINAL] %s %s para %s.\n", atual->nome, gesto, parceiro.nome);
         printf("%s continua com a vez.\n", atual->nome);
+        ui_aviso("Sinal: %s para %s. Sua vez continua.", gesto, parceiro.nome);
         return;
     }
 }
 
 static void criativo_apresentar(void) {
-    printf("\nTRUCO NO BAR DO PATO\n");
-    printf("As manilhas aparecem com [MANILHA]; a de Paus, com [MANILHA - ZAP].\n");
-    printf("Na sua vez, use [S] para enviar um sinal ao parceiro.\n");
-    printf("Combinem o significado dos gestos antes de jogar.\n\n");
+    ui_titulo("BAR DO PATO  |  TRUCO PAULISTA");
+    printf("  Quatro jogadores. Duas duplas. Uma conta de 12 pontos.\n");
+    printf("  [1-3] Jogar carta  [T] Truco  [S] Sinal  [V] VAR\n");
+    printf("  Manilhas em destaque; a de Paus e o ZAP.\n");
+    printf("  Combinem os sinais antes de jogar.\n");
 }
 
 #endif

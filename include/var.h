@@ -5,6 +5,7 @@
 #include "Jogador.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "interface.h"
 
 //Chamar todo inicio de mão
 void inicializa_variavel_var(tp_item_VAR *e){
@@ -53,13 +54,14 @@ void imprimir_carta(tp_item carta) {
 }
 
 void imprimir_var(tp_no_de *atu){
-	printf("\nVAR\n");
+	ui_titulo("VAR DO BAR  |  HISTORICO DA PARTIDA");
 	printf("Numero da rodada: %d\n", atu->info.rodada);
 	printf("Numero da mao: %d\n", atu->info.mao);
 	printf("Cartas jogadas: \n");
 		for(int j = 0; j < 4; j++){
+			printf("  Carta %d: ", j + 1);
 			imprimir_carta(atu->info.cartas_jogadas[j]);
-            printf("  ||  ");
+            printf("\n");
 		}
 		printf("\n");
 		printf("A manilha da rodada foi: ");
@@ -165,10 +167,12 @@ void ver_var(tp_listad *var){
     //Mover para a direira = 1, mover para a esquerda = -1;
     mostra_var(var, atual, 0);
     while (cont==1){
-        printf("\nMenu do VAR\n");
+        ui_secao("CONTROLE DO VAR");
         printf("Rodada %d de %d no VAR\n", atual + 1, tam_VAR);
-        printf("Digite 1 se quiser sair do VAR, 2 para avançar o VAR para a direita ou 3 para avançar o VAR para a esquerda.\n");
-        if (scanf("%d", &escolha) != 1){
+        printf("  [1] Voltar ao jogo  [2] Proxima rodada  [3] Rodada anterior\n  Sua escolha: ");
+        int leitura = scanf("%d", &escolha);
+        if (leitura == EOF) return;
+        if (leitura != 1){
             escolha = 0; // entrada que nao é numero
         }
         limpar_buffer();
@@ -177,14 +181,14 @@ void ver_var(tp_listad *var){
             break;
         } else if (escolha == 2){
             if(atual >= tam_VAR - 1){
-                printf("Opção indisponivel, o VAR já se encontra no final e não consegue se movimentar para a direita\n");
+                printf("Fim do VAR: nao ha proxima rodada.\n");
             } else {
                 mostra_var(var, atual, 1);
                 atual++;
             }
         } else if(escolha == 3){
             if(atual==0){
-                printf("Opção indisponivel, o VAR se encontra no inicio e não consegue se movimentar para a esquerda\n");
+                printf("Inicio do VAR: nao ha rodada anterior.\n");
             } else {
                 mostra_var(var, atual, -1);
                 atual--;

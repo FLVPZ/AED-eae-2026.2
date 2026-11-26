@@ -51,16 +51,40 @@ void mostrar_carta(tp_item c) {
 }
 
 void mostrar_cabecalho(const int placar[3], tp_mao_atual *m) {
-    printf("\nMao %d | Dupla 1: %d x Dupla 2: %d | vale %d | Vira: ",
-           m->numero, placar[1], placar[2], m->aposta.valor);
+    ui_titulo("BAR DO PATO  |  MESA DE TRUCO");
+    ui_cor("\033[1;33m");
+    printf("  DUPLA 1  %02d  x  %02d  DUPLA 2     META: 12\n", placar[1], placar[2]);
+    ui_cor("\033[0m");
+    printf("  MAO %d  |  RODADA %d/3  |  VALE %d PONTO(S)\n",
+           m->numero, m->n_rodadas + 1, m->aposta.valor);
+    printf("  Vira: ");
     mostrar_carta(m->vira);
     printf(" | Manilha: ");
     mostrar_valor(m->valor_manilha);
     printf("\n");
 }
 
+void mostrar_duplas(tp_fila mesa) {
+    for (int dupla = 1; dupla <= 2; dupla++) {
+        tp_fila copia = mesa;
+        tp_jogador j;
+        int primeiro = 1;
+        printf("  D%d: ", dupla);
+        while (removeFila(&copia, &j)) {
+            if (j.dupla == dupla) {
+                printf("%s%s", primeiro ? "" : " + ", j.nome);
+                primeiro = 0;
+            }
+        }
+        putchar('\n');
+    }
+}
+
 void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd,
                            int valor_manilha) {
+    printf("  NA MESA");
+    if (qtd == 0) printf(" - nenhuma carta jogada nesta rodada");
+    putchar('\n');
     for (int i = 0; i < qtd; i++) {
         printf("  %s jogou ", nomes[i]);
         mostrar_carta(cartas[i]);
@@ -86,19 +110,25 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
 
         int escolhida = 0;
         while (escolhida == 0) {
+            ui_limpar();
             mostrar_cabecalho(placar, m);
+            mostrar_duplas(*mesa);
+            ui_mostrar_aviso();
             mostrar_cartas_jogadas(nomes, cartas, i, m->valor_manilha);
+            ui_cor("\033[1;32m");
             printf("Vez de %s (Dupla %d)\n", j.nome, j.dupla);
+            ui_cor("\033[0m");
             
             // ordenação da mão antes de exibir
             ordenar_mao(&j, cartas_na_mao);
             criativo_exibir_mao(&j, cartas_na_mao, m->valor_manilha);
 
-            printf("Carta [1-%d]", cartas_na_mao);
+            printf("  [1-%d] Carta", cartas_na_mao);
             if (pode_pedir(m->aposta, j.dupla)) {
-                printf(" ou [T] pedir %s", nome_pedido(proximo_valor(m->aposta.valor)));
+                printf("  [T] %s", nome_pedido(proximo_valor(m->aposta.valor)));
             }
-            printf(" ou [S] sinal ao parceiro ou [V] ver o VAR: ");
+            printf("  [S] Sinal  [V] VAR\n  Sua escolha: ");
+            fflush(stdout);
 
             char op = ler_opcao();
             if (op >= '1' && op <= '0' + cartas_na_mao) {
@@ -128,14 +158,20 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             }
             else if (op == 'V') {
                 ver_var(v);
+                ui_aviso(tamanho_var(v) == 0
+                         ? "O VAR ainda nao tem rodadas registradas. Sua vez continua."
+                         : "Consulta do VAR encerrada. Voce continua com a vez.");
             }
             else {
                 printf("Opcao invalida.\n");
+                ui_aviso("Opcao invalida. Escolha uma carta ou um comando disponivel.");
             }
         }
 
         int qtd = cartas_na_mao;
         jogar_carta(&j, &qtd, escolhida, &cartas[i]);
+        ui_aviso("%s jogou %s de %s.", j.nome, ui_valor(cartas[i].valor),
+                 ui_naipe(cartas[i].naipe));
         strcpy(nomes[i], j.nome);
         duplas[i] = j.dupla;
 
@@ -151,9 +187,11 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
     mostrar_cartas_jogadas(nomes, cartas, 4, m->valor_manilha);
     if (pos < 0) {
         printf("Rodada empatada.\n");
+        ui_aviso("Rodada %d empatada.", m->n_rodadas + 1);
     }
     else {
         printf("Dupla %d leva a rodada com a carta de %s.\n", dupla_rodada, nomes[pos]);
+        ui_aviso("Dupla %d levou a rodada %d com %s.", dupla_rodada, m->n_rodadas + 1, nomes[pos]);
         girar_roda(mesa, pos);
         m->giro += pos;
     }
@@ -195,8 +233,6 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
     m.valor_manilha = manilhas[0].valor;
 
     printf("\n    MAO %d    \n", numero_mao);
-    exibir_mesa(*mesa);
-    exibir_ordem_rodada(*mesa);
 
     tp_jogador primeiro;
     posicao_do_jogador(*mesa, 0, &primeiro);
@@ -215,6 +251,7 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
 
     placar[m.dupla_vencedora] += m.pontos;
     printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
+    ui_aviso("Dupla %d levou a mao %d: +%d ponto(s).", m.dupla_vencedora, numero_mao, m.pontos);
 }
 
 void jogar_partida(tp_fila *mesa, tp_listad *v) {
@@ -231,6 +268,9 @@ void jogar_partida(tp_fila *mesa, tp_listad *v) {
     int pontos1 = placar[1] > PONTOS_VITORIA ? PONTOS_VITORIA : placar[1];
     int pontos2 = placar[2] > PONTOS_VITORIA ? PONTOS_VITORIA : placar[2];
 
+    ui_limpar();
+    ui_titulo("CONTA FECHADA  |  BAR DO PATO");
+    ui_cor("\033[1;33m");
     printf("\nFIM DE PARTIDA! Dupla %d venceu: ", vencedora);
     tp_fila copia = *mesa;
     tp_jogador j;
@@ -242,9 +282,10 @@ void jogar_partida(tp_fila *mesa, tp_listad *v) {
         }
     }
     printf("\nPlacar final: Dupla 1 = %d x Dupla 2 = %d\n", pontos1, pontos2);
+    ui_cor("\033[0m");
+    ui_pausar("Conferir o VAR da partida");
     
     ver_var(v);
 }
 
 #endif
-

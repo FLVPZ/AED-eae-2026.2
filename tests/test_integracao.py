@@ -30,7 +30,7 @@ def main():
         assert saida.count("MURAL DA VERGONHA -") == 2
         caderneta = saida.split("CADERNETA DO BAR - ordem alfabetica")[1]
         caderneta = caderneta.split("Estatisticas ainda")[0]
-        posicoes = [caderneta.index("Nome do jogador: " + nome)
+        posicoes = [caderneta.index("  " + nome)
                     for nome in ["Ana", "Bia", "Caio", "Davi"]]
         assert posicoes == sorted(posicoes)
         assert saida.count("sem pedidos recebidos") == 8
@@ -46,7 +46,7 @@ def main():
         # O limite de 29 caracteres e aceito; fechamento no cadastro e seguro.
         nome_limite = "N" * 29
         saida = jogar(executavel, nome_limite + "\nBia\nCaio\nAna\n" + "1\n" * 400)
-        assert "Nome do jogador: " + nome_limite in saida
+        assert "  " + nome_limite in saida
         assert "Nome muito longo" not in saida
         assert "FIM DE PARTIDA!" in saida
         assert "FIM DE PARTIDA!" not in jogar(executavel, "Ana\n")
