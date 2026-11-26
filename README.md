@@ -76,8 +76,6 @@ A segunda entrega coloca a mão para rolar e liga o VAR da mesa.
 
 A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados salvos em disco e um item criativo.
 
-Andamento atual: a caderneta de Eduardo e os murais de Diego estão integrados ao cadastro e à exibição do jogo. A AVL foi corrigida e o item criativo está funcionando. Faltam a atualização das estatísticas durante a partida, a mão mais cara e a persistência em disco. Até esses módulos serem conectados, os jogadores novos aparecem com contadores zerados e os dados ficam somente na execução atual.
-
 - [ ] Concluir as correções solicitadas nas entregas anteriores.
 - [x] Encerrar a partida aos 12 pontos, mostrando a dupla vencedora e o placar final.
 - [x] Criar a caderneta em árvore AVL, com busca por nome e cadastro de novos jogadores com os contadores zerados.
