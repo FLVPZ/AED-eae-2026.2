@@ -1,8 +1,7 @@
 #ifndef RODA_H
 #define RODA_H
 
-#include <stdio.h>
-#include "Jogador.h"
+#include "fila.h"
 
 // a roda é a fila da mesa: quem está na frente joga agora
 void passar_mao(tp_fila* f) {
@@ -28,20 +27,6 @@ int jogador_da_dupla(tp_fila f, int dupla, tp_jogador* j_out) {
         }
     }
     return 0;
-}
-
-// mostra a ordem sem mexer na fila original
-void exibir_ordem_rodada(tp_fila f) {
-    printf("ORDEM DE JOGO\n");
-    tp_jogador jogador;
-    for (int i = 0; i < 4; i++) {
-        removeFila(&f, &jogador);
-        printf("%do a jogar: %-30s | Dupla %d %s\n",
-            i + 1,
-            jogador.nome,
-            jogador.dupla,
-            (i == 0) ? "<-- [MAO DA RODADA]" : "");
-    }
 }
 
 #endif

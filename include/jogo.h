@@ -1,14 +1,7 @@
-#include <stdio.h>
 #ifndef jogo_h
 #define jogo_h
 #include "STACK.h"
-#include "Jogador.h"
 #include "fila.h"
-
-typedef struct {
-	tp_item carta;
-	int jogador	;	
-}tp_vencedor;
 
 int forca_valor(int valor) {
     switch(valor) {
@@ -79,106 +72,6 @@ void manilha(tp_item item, tp_item manilha[])	{
     manilha[1] = (tp_item){valor_manilha, 'E'};
     manilha[2] = (tp_item){valor_manilha, 'C'};
     manilha[3] = (tp_item){valor_manilha, 'P'};
-}
-
-
-// mostra as cartas dos jogadores sem alterar a ordem da mesa
-void exibir_mao(tp_fila f){
-	tp_jogador jogador;
-    printf("Cartas dos jogadores: \n");
-    for (int i = 0; i < 4; i++) {
-        removeFila(&f, &jogador);
-        printf("Cartas do jogador: %-30s ", jogador.nome);
-		for(int j = 0; j < 3; j++){
-			// transforma os valores das figuras em letras na hora de mostrar
-			if (jogador.mao[j].valor == 1)
-				printf("As de ");
-			else if (jogador.mao[j].valor == 11)
-				printf("J de ");
-			else if (jogador.mao[j].valor == 12)
-				printf("Q de ");
-			else if (jogador.mao[j].valor == 13)
-				printf("K de ");
-			else 
-				printf("%d de ", jogador.mao[j].valor);
-			
-			if (jogador.mao[j].naipe == 'E')
-				printf("Espadas ");
-			else if (jogador.mao[j].naipe == 'C')
-				printf("Copas ");
-			else if (jogador.mao[j].naipe == 'O')
-				printf("Ouros ");
-			else if (jogador.mao[j].naipe == 'P')
-				printf("Paus ");
-
-			printf("||");	
-			
-			
-		}
-		printf("\n");
-    }
-}
-
-void cartas_rodada(tp_fila* mesa, tp_vencedor carta[], int rodada)	{	//rodada deve ser considerada a partir do numero 1.
-	if(mesa == NULL || rodada < 1 || rodada > 3)
-        return;
-    
-	for(int i=0;i<4;i++)	{
-		carta[i].carta = mesa->item[i].mao[rodada-1];
-		carta[i].jogador = i+1;
-	}
-	
-}
-
-int eh_manilha(tp_item carta, tp_item manilha[]) {
-    for(int i = 0; i<4 ;i++) {
-        if(carta.valor == manilha[i].valor && carta.naipe == manilha[i].naipe) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-
-
-int comparar_cartas(tp_item a, tp_item b, tp_item manilha[]) {
-    int manilha_a = eh_manilha(a, manilha);
-    int manilha_b = eh_manilha(b, manilha);
-
-    if(manilha_a && !manilha_b)
-        return 1;
-
-    if(!manilha_a && manilha_b)
-        return -1;
-
-    if(manilha_a && manilha_b)
-        return forca_naipe(a.naipe) - forca_naipe(b.naipe);
-
-    return forca_valor(a.valor) - forca_valor(b.valor);
-}
-
-void ordenar_cartas(tp_vencedor carta[], tp_item manilha[]) {
-    tp_vencedor aux;
-
-    for(int i=0;i<3;i++) {
-        for(int j=0;j<3-i;j++) {
-            if(comparar_cartas(carta[j].carta, carta[j+1].carta, manilha) < 0) {
-                aux = carta[j];
-                carta[j] = carta[j+1];
-                carta[j+1] = aux;
-            }
-        }
-    }
-}
-
-int vencedor_rodada(tp_vencedor carta[], tp_item manilha[]) {
-    ordenar_cartas(carta, manilha);
-
-    if(comparar_cartas(carta[0].carta, carta[1].carta, manilha) == 0)
-        return 0;
-
-    return carta[0].jogador;
 }
 
 // força da carta: manilha ganha das comuns e desempata pelo naipe

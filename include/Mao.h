@@ -1,6 +1,5 @@
 #ifndef MAO_H
 #define MAO_H
-#include <stdio.h>
 #include "STACK.h"
 #include "fila.h"
 
@@ -31,28 +30,6 @@ void ordenar_mao(tp_jogador *j, int qtd_cartas) { //ordena as cartas em ordem cr
         }
         j->mao[k + 1] = chave;
     }
-}
-
-void exibir_mao_jogador_atual(tp_jogador j, int qtd_cartas) { //exibe apenas as cartas que o jogador ainda possui
-    printf("Sua mao: ");
-    for (int i = 0; i < qtd_cartas; i++) {
-        printf("[%d] ", i + 1);
-        
-        if (j.mao[i].valor == 1)       printf("As");
-        else if (j.mao[i].valor == 11) printf("J");
-        else if (j.mao[i].valor == 12) printf("Q");
-        else if (j.mao[i].valor == 13) printf("K");
-        else                           printf("%d", j.mao[i].valor);
-
-        switch(j.mao[i].naipe) {
-            case 'E': printf(" de Espadas "); break;
-            case 'C': printf(" de Copas "); break;
-            case 'O': printf(" de Ouros "); break;
-            case 'P': printf(" de Paus "); break;
-        }
-        if (i < qtd_cartas - 1) printf("| ");
-    }
-    printf("\n");
 }
 
 int jogar_carta(tp_jogador *j, int *qtd_cartas, int escolha_usuario, tp_item *carta_jogada) { //remove a carta da mao e 
