@@ -29,3 +29,6 @@ Desktop.ini
 # Dados locais da caderneta e do historico
 /caderneta.txt
 /historico.txt
+
+# Arquivos gerados pelo projeto grafico do Dev-C++
+/Makefile.win
