@@ -45,11 +45,6 @@ A tela da mesa reúne o placar, as duplas, a mão e a rodada atuais, o valor da 
 
 No encerramento, o programa anuncia a dupla vencedora e o placar. Após a pausa de leitura, abre o VAR; ao sair dele, mostra os murais finais.
 
-## Exibição no terminal
-
-Recomenda-se uma janela de pelo menos 80 colunas e 28 linhas. Quando há suporte, o programa usa cores e redesenha a mesa a cada decisão. Em janelas estreitas, as cartas passam para uma lista compacta.
-
-A variável `NO_COLOR` desativa as cores. Com `TERM=dumb`, saída redirecionada ou console sem suporte ANSI, a exibição fica em texto simples. Se a entrada estiver redirecionada, as pausas com Enter e a limpeza de tela são desativadas. No Windows, o programa tenta habilitar ANSI e usa texto simples se o console não aceitar. As informações essenciais também aparecem por escrito.
 
 ## Caderneta e arquivos de dados
 
@@ -131,4 +126,4 @@ A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados s
 - [x] Corrigir as alturas e o balanceamento da AVL após remoções.
 - [x] Integrar a caderneta e os murais na `main.c`, com liberação dos vetores e da árvore.
 - [x] Integrar a persistência na `main.c`, no fim de cada mão e no encerramento da partida.
-- [x] Relatório com a participação de cada integrante elaborado pela equipe fora do GitHub.
+- [x] Preparar o relatório com a participação de cada integrante.
