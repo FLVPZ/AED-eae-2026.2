@@ -2,50 +2,84 @@
 
 Projeto de Algoritmos e Estrutura de Dados do curso de Engenharia da Computação do SENAI CIMATEC, semestre 2026.2.
 
-O jogo é desenvolvido em C, com quatro jogadores organizados em duas duplas, seguindo a proposta de Truco Paulista. A interface funciona no terminal, com o tema do Bar do Pato.
+Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. A interface funciona no terminal, no tema do Bar do Pato, com placar, cartas e comandos visíveis durante a jogada.
 
-## Como compilar e jogar
+## Como compilar e executar
 
-```
-gcc main.c -o truco
+É necessário um compilador C com suporte a C99, como o GCC. Abra o terminal na pasta raiz do projeto, onde estão `main.c` e a pasta `include/`. Compile somente `main.c`; os módulos `.h` são incluídos pelo programa.
+
+### Linux e macOS
+
+```bash
+gcc -std=c99 -Wall -Wextra -pedantic main.c -o truco
 ./truco
 ```
 
-No Windows (Dev-C++ ou gcc) é o mesmo comando, e o executável gerado é o `truco.exe`.
+### Windows com GCC — PowerShell
 
-Durante a jogada, use `S` para escolher um sinal ao parceiro. Nesse menu, use `0` para voltar ao jogo. Enviar um sinal mantém a sua vez. As manilhas aparecem com `[MANILHA]`, e a manilha de Paus recebe o destaque `[MANILHA - ZAP]`.
+```powershell
+gcc -std=c99 -Wall -Wextra -pedantic main.c -o truco.exe
+.\truco.exe
+```
 
-A tela da mesa reúne o placar, as duplas, a vira, a manilha, as cartas já jogadas e a mão do jogador da vez. As cartas aparecem lado a lado, com cores de naipe e destaque dourado nas manilhas. Os menus de aposta, sinais e VAR mostram as teclas disponíveis. O último aviso permanece na mesa após consultar o VAR, enviar um sinal ou digitar uma opção inválida.
+No Prompt de Comando (CMD), use a mesma compilação e execute `truco.exe`. Se utilizar uma IDE, como o Dev-C++, compile `main.c` como C com suporte a C99 e mantenha a pasta `include/` junto do código.
 
-Use de preferência um terminal com pelo menos 80 colunas e 28 linhas. Cores e limpeza de tela são ativadas automaticamente quando o console oferece suporte. Com a variável `NO_COLOR` definida, as cores são desativadas; com `TERM=dumb` ou saída redirecionada, não são enviados códigos de controle. Em janelas estreitas, as cartas passam para uma lista compacta. No Windows, se o console não aceitar sequências ANSI, a apresentação continua em texto simples. Os rótulos dos naipes e das manilhas aparecem também por escrito.
+## Como jogar
 
-Antes de começar e antes de conferir o VAR final, o terminal interativo aguarda Enter para permitir a leitura dos resumos. Esses passos não consomem entrada quando o programa recebe dados por redirecionamento.
+Informe os quatro nomes na ordem da mesa: dupla 1, dupla 2, dupla 1, dupla 2. Assim, o primeiro e o terceiro jogadores são parceiros, assim como o segundo e o quarto. Os nomes não podem ser vazios, repetidos na mesma mesa, conter ponto e vírgula ou caracteres de controle. O limite é de 29 bytes; letras acentuadas podem ocupar mais de um byte, dependendo da codificação do terminal.
 
-A caderneta é recuperada de `caderneta.txt` antes do cadastro. Os nomes existentes mantêm seus contadores; jogadores novos entram com zero. Nomes vazios, repetidos na mesma mesa, com ponto e vírgula ou com mais de 29 caracteres precisam ser informados novamente. A caderneta aparece em ordem alfabética antes da partida, e os murais aparecem antes e depois do jogo.
+A caderneta aparece em ordem alfabética, seguida dos murais. Em terminal interativo com suporte ANSI, pressione Enter quando solicitado para abrir a mesa.
 
-Ao fim de cada mão, o programa salva a caderneta e acrescenta o número da mão, a dupla vencedora, os pontos e o placar em `historico.txt`. A caderneta também é salva no encerramento da partida. A atualização dos contadores durante o jogo e a mão mais cara ainda dependem do módulo de estatísticas.
+| Tela | Comando | Ação |
+| --- | --- | --- |
+| Mesa | `1`, `2` ou `3` | Jogar uma das cartas disponíveis na mão. |
+| Mesa | `T` | Pedir o próximo valor da aposta, quando essa opção estiver disponível. |
+| Mesa | `S` | Abrir o menu de sinais fixos para o parceiro. |
+| Mesa | `V` | Consultar o VAR sem passar a vez. |
+| Sinais | `1`, `2` ou `3` | Piscar, levantar a sobrancelha ou tocar na mesa. |
+| Sinais | `0` | Cancelar o sinal e voltar à jogada. |
+| Resposta à aposta | `A`, `C` ou `T` | Aceitar, correr ou aumentar, quando permitido. |
+| VAR | `1`, `2` ou `3` | Voltar, avançar uma rodada ou retornar à rodada anterior. |
 
-Cada linha de `caderneta.txt` contém `nome;partidas;maos;pedidos;corridos;recebidos`. A gravação usa um arquivo temporário e só substitui a caderneta depois de concluir a escrita. Se o arquivo existente estiver inválido ou no formato antigo sem pedidos recebidos, o programa informa o erro e o preserva. Os dois arquivos de dados ficam na pasta de execução e são ignorados pelo Git.
+A tela da mesa reúne o placar, as duplas, a mão e a rodada atuais, o valor da aposta, a vira, a manilha e as cartas já jogadas. As manilhas recebem o rótulo `[MANILHA]`; a de Paus recebe `[MANILHA - ZAP]`. Os sinais são apenas uma interação visual e mantêm o jogador na vez. Combinem o significado dos gestos antes da partida.
+
+No encerramento, o programa anuncia a dupla vencedora e o placar. Após a pausa de leitura, abre o VAR; ao sair dele, mostra os murais finais.
+
+## Exibição no terminal
+
+Recomenda-se uma janela de pelo menos 80 colunas e 28 linhas. Quando há suporte, o programa usa cores e redesenha a mesa a cada decisão. Em janelas estreitas, as cartas passam para uma lista compacta.
+
+A variável `NO_COLOR` desativa as cores. Com `TERM=dumb`, saída redirecionada ou console sem suporte ANSI, a exibição fica em texto simples. Se a entrada estiver redirecionada, as pausas com Enter e a limpeza de tela são desativadas. No Windows, o programa tenta habilitar ANSI e usa texto simples se o console não aceitar. As informações essenciais também aparecem por escrito.
+
+## Caderneta e arquivos de dados
+
+Ao iniciar, o programa procura `caderneta.txt` na pasta de execução, antes do cadastro. Se o arquivo não existir, começa com uma caderneta vazia. Jogadores encontrados pelo mesmo nome mantêm seus contadores; novos jogadores entram zerados. A comparação diferencia maiúsculas e minúsculas.
+
+Ao fim de cada mão, salva a caderneta e acrescenta o número da mão, a dupla vencedora, os pontos e o placar em `historico.txt`. A caderneta também é salva no encerramento da partida. Esses arquivos são criados pelo programa: não é necessário prepará-los manualmente. Execute sempre pela mesma pasta para recuperar os mesmos dados.
+
+Cada linha de `caderneta.txt` contém `nome;partidas;maos;pedidos;corridos;recebidos`. A gravação usa `caderneta.txt.tmp` e substitui a caderneta somente após concluir a escrita. Um arquivo inválido ou antigo, sem pedidos recebidos, é preservado e impede o início do jogo até que o problema seja resolvido. A caderneta, o histórico e o temporário são ignorados pelo Git.
+
+A atualização dos contadores durante o jogo e a exibição da mão mais cara continuam pendentes no checklist. O salvamento já preserva os contadores registrados na caderneta.
 
 ## Organização do projeto
 
-O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos ficam na pasta `include/`:
+O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, a exibição dos murais e a liberação da memória. Os módulos ficam em `include/`:
 
-- `STACK.h`: carta e pilha do baralho
-- `baralho.h` e `Embaralhar.h`: criação e embaralhamento das 40 cartas
-- `fila.h`: fila da mesa e struct do jogador
-- `Jogador.h`: cadastro dos jogadores e montagem da mesa
-- `Roda.h`: ordem de jogo (quem é "mão" e giro da roda)
-- `Mao.h`: mão do jogador (jogar qualquer carta, ordenar, exibir)
-- `jogo.h`: distribuição, vira, manilha, força das cartas e vencedor da rodada e da mão
-- `APOSTA.h`: pedir truco, aumentar, aceitar e correr
-- `listade.h` e `var.h`: lista duplamente encadeada e navegação do VAR
-- `Partida.h`: loop da partida, mãos e rodadas
-- `criativo.h`: destaque das manilhas e sinais fixos escolhidos pelo jogador para o parceiro
-- `interface.h`: tema do terminal, cores opcionais, cartas, cabeçalhos, avisos e pausas de leitura
-- `caderneta.h`: cadastro em arvore AVL integrado aos nomes da mesa, busca por nome, percursos e liberacao da arvore
-- `mural.h`: ordenacao e exibicao dos murais de maos ganhas e taxa de fuga, preservando os nos da caderneta
-- `disco.h`: recuperação e gravação da caderneta completa, incluindo pedidos recebidos, e histórico de pontos por mão
+- `STACK.h`: tipos da carta e da pilha, com operações sobre o topo do baralho.
+- `baralho.h` e `Embaralhar.h`: criação e embaralhamento das 40 cartas.
+- `fila.h`: estrutura do jogador e fila da mesa.
+- `Jogador.h`: leitura dos nomes, cadastro e montagem das duplas.
+- `Roda.h`: ordem dos jogadores e giro da mesa a cada nova mão.
+- `Mao.h`: ordenação da mão, escolha e remoção da carta jogada.
+- `jogo.h`: distribuição, vira, manilha, comparação das cartas e apuração dos vencedores.
+- `APOSTA.h`: pedidos de truco, seis e doze, aceite e fuga.
+- `listade.h` e `var.h`: histórico da partida e navegação nos dois sentidos.
+- `Partida.h`: condução das mãos e rodadas, placar e chamadas de salvamento.
+- `criativo.h`: sinais fixos para o parceiro e destaque visual das manilhas.
+- `interface.h`: apresentação no terminal, cartas, cores opcionais, avisos e pausas.
+- `caderneta.h`: cadastro em árvore AVL, busca por nome, percursos e liberação da árvore.
+- `mural.h`: ordenação e exibição dos murais de mãos ganhas e taxa de fuga.
+- `disco.h`: leitura e gravação da caderneta e histórico de pontos por mão.
 
 ## 1ª unidade
 
