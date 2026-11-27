@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
 #ifndef CADERNETA_H
 #define CADERNETA_H
 
@@ -14,7 +13,6 @@ typedef struct{
     int trucos_recebidos; // pedidos de truco/seis/doze respondidos pelo jogador
 }info_caderneta;
 
-
 typedef struct NO* ArvAVL;
 
 struct NO{
@@ -25,13 +23,9 @@ struct NO{
 };
 
 ArvAVL* criarAVL();
-void preOrd(ArvAVL* raiz);
 int consultarValorAVL(ArvAVL* raiz, char valor[]);
 void emOrd(ArvAVL* raiz);
-void posOrd(ArvAVL* raiz);
 int inserir(ArvAVL* raiz, info_caderneta valor) ;
-int remover(ArvAVL* raiz, info_caderneta valor); // Responsável pela busca do nó a ser removido
-struct NO* buscarMenor(struct NO* atual); // Busca o nó mais a esquerda de uma árvore
 struct NO* acessar_jogador(ArvAVL* raiz, char nome[]);
 int maior(int x, int y);
 int alt_NO(struct NO* no);
@@ -41,31 +35,12 @@ void RotacaoRR(ArvAVL* raiz);
 void RotacaoRL(ArvAVL* raiz);
 void RotacaoLR(ArvAVL* raiz);
 
-int contPrint=0;
-
 ArvAVL* criarAVL(){
 	ArvAVL* raiz = (ArvAVL*)malloc(sizeof(ArvAVL));
 	if(raiz!=NULL){
 		*raiz = NULL;
 	}
 	return raiz;
-}
-
-// Percursos para consultar a caderneta.
-void preOrd(ArvAVL* raiz){
-   if(raiz==NULL) return;
-   if(*raiz != NULL){
-	  printf("===============\n");	 
-      printf("Nome do jogador: %s\n", (*raiz)->info.nome_jogador);
-	  printf("Numero de partidas jogadas: %d\n", (*raiz)->info.partidas_jogadas);
-      printf("Numero de mãos ganhas: %d\n", (*raiz)->info.maos_ganhas);
-      printf("Numero de trucos pedidos: %d\n", (*raiz)->info.trucos_pedidos);
-	  printf("Numero de trucos corridos: %d\n", (*raiz)->info.trucos_corridos);
-	  printf("===============\n");	 
-
-      preOrd(&((*raiz)->esq));
-      preOrd(&((*raiz)->dir));
-   }
 }
 
 // Uma linha por jogador; a main apresenta o cabecalho da tabela.
@@ -77,35 +52,6 @@ void emOrd(ArvAVL* raiz){
           info.partidas_jogadas, info.maos_ganhas, info.trucos_pedidos,
           info.trucos_recebidos, info.trucos_corridos);
    emOrd(&((*raiz)->dir));
-}
-
-void posOrd(ArvAVL* raiz){
-   if(raiz==NULL) return;
-   if(*raiz != NULL){
-      posOrd(&((*raiz)->esq));
-      posOrd(&((*raiz)->dir));
-	  printf("===============\n");	 
-      printf("Nome do jogador: %s\n", (*raiz)->info.nome_jogador);
-	  printf("Numero de partidas jogadas: %d\n", (*raiz)->info.partidas_jogadas);
-      printf("Numero de mãos ganhas: %d\n", (*raiz)->info.maos_ganhas);
-      printf("Numero de trucos pedidos: %d\n", (*raiz)->info.trucos_pedidos);
-	  printf("Numero de trucos corridos: %d\n", (*raiz)->info.trucos_corridos);
-	  printf("===============\n");	 
-
-   }
-}
-// até aqui
-
-int alturaAVL(ArvAVL* raiz){
-	if(raiz == NULL) return 0;
-	if(*raiz == NULL) return 0;
-	int alt_esq = alturaAVL(&((*raiz)->esq));
-	int alt_dir = alturaAVL(&((*raiz)->dir));
-	if(alt_esq > alt_dir){
-		return alt_esq + 1;
-	}else{
-		return alt_dir + 1;
-	}
 }
 
 int totalNOsABB(ArvAVL* raiz){
@@ -167,7 +113,6 @@ int inserir(ArvAVL* raiz, info_caderneta info){
 	} 
 }
 
-
 void liberaNO(struct NO* no){
    if(no==NULL) return;
    liberaNO(no->esq);
@@ -200,8 +145,6 @@ int consultarValorAVL(ArvAVL* raiz, char valor[]){
 	}
 	return 0;
 }
-
-
 
 struct NO* acessar_jogador(ArvAVL* raiz, char nome[]){
 	if(raiz == NULL || nome == NULL || nome[0] == '\0'
@@ -276,71 +219,6 @@ void RotacaoLR(ArvAVL* raiz){
 void RotacaoRL(ArvAVL* raiz){
 	RotacaoLL(&(*raiz)->dir);
 	RotacaoRR(raiz);
-}
-
-int remover(ArvAVL* raiz, info_caderneta valor){
-	if(raiz == NULL) return 0;
-	int res;
-	if(*raiz==NULL){ // Valor não encontrado!
-		printf("Nome %s nao encontrado na árvore!", valor.nome_jogador);
-		return 0;	
-	} 
-	if(strcmp(valor.nome_jogador, (*raiz)->info.nome_jogador)<0){
-		if((res=remover(&(*raiz)->esq, valor))==1){
-			(*raiz)->alt = maior(alt_NO((*raiz)->esq), alt_NO((*raiz)->dir)) + 1;
-			if(fb_NO(*raiz) >= 2){
-				if(alt_NO((*raiz)->dir->esq) <= alt_NO((*raiz)->dir->dir)){
-					RotacaoRR(raiz);
-				}else{
-					RotacaoRL(raiz);
-				}
-			}
-		}				
-	}else if(strcmp(valor.nome_jogador, (*raiz)->info.nome_jogador)>0){
-		if((res=remover(&(*raiz)->dir, valor))==1){
-			(*raiz)->alt = maior(alt_NO((*raiz)->esq), alt_NO((*raiz)->dir)) + 1;
-			if(fb_NO(*raiz) >= 2){
-				if(alt_NO((*raiz)->esq->dir) <= alt_NO((*raiz)->esq->esq)){
-					RotacaoLL(raiz);
-				}else{
-					RotacaoLR(raiz);
-				}
-			}
-		}							
-	}else{ // raiz->info == valor...
-		if(((*raiz)->esq == NULL) || ((*raiz)->dir == NULL)){ // O Pai tem 1 ou nenhum filho
-			struct NO* noVelho = (*raiz);
-			if((*raiz)->esq != NULL) *raiz = (*raiz)->esq;
-			else *raiz = (*raiz)->dir;
-			free(noVelho);
-			return 1;
-		}else{ // o nó tem 2 filhos: precisamos substituir pelo nó mais a esquerda da subárvore da direita
-			struct NO* temp = buscarMenor((*raiz)->dir);
-			(*raiz)->info = temp->info;
-			remover(&(*raiz)->dir, (*raiz)->info);
-			(*raiz)->alt = maior(alt_NO((*raiz)->esq), alt_NO((*raiz)->dir)) + 1;
-			if(fb_NO(*raiz) >= 2){
-				if(alt_NO((*raiz)->esq->dir) <= alt_NO((*raiz)->esq->esq)){
-					RotacaoLL(raiz);
-				}else{
-					RotacaoLR(raiz);
-				}
-			}
-			return 1;			
-		}
-		
-	} 
-	return res;
-}
-
-struct NO* buscarMenor(struct NO* atual){
-	struct NO* no1 = atual;
-	struct NO* no2 = atual->esq;
-	while(no2 != NULL){
-		no1 = no2;
-		no2 = no1->esq;
-	}
-	return no1;
 }
 
 #endif

@@ -3,7 +3,6 @@
 
 #include "var.h"
 #include <stdio.h>
-#include <ctype.h>
 #include "STACK.h"
 #include "fila.h"
 #include "Jogador.h"

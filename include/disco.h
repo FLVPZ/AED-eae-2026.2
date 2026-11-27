@@ -282,7 +282,7 @@ int gravar_rodada_historico(const tp_item_VAR *registro) {
     return disco_fechar_escrita(arquivo, ok, DISCO_ARQUIVO_HISTORICO);
 }
 
-/* Mantem a linha antiga para a leitura dos historicos ja existentes. */
+/* Registra o resumo de pontos da mao no historico. */
 int gravar_historico(int numero_mao, int dupla_vencedora, int pontos,
                      const int placar[3]) {
     if (placar == NULL || numero_mao <= 0 || dupla_vencedora < 1
@@ -302,23 +302,6 @@ int encerrar_historico(const int placar[3], int maior_mao, int numero_maior_mao)
                      "Mao mais cara: %d ponto(s), mao %d.\n",
                      placar[1] >= 12 ? 1 : 2, placar[1], placar[2], maior_mao, numero_maior_mao) >= 0;
     return disco_fechar_escrita(arquivo, ok, DISCO_ARQUIVO_HISTORICO);
-}
-
-int ler_historico(void) {
-    FILE *arquivo = fopen(DISCO_ARQUIVO_HISTORICO, "r");
-    if (arquivo == NULL) return errno == ENOENT ? DISCO_AUSENTE : DISCO_ERRO;
-    char linha[200], dupla_vencedora[30];
-    int numero_mao, pontos, placar1, placar2;
-    while (fgets(linha, sizeof(linha), arquivo) != NULL) {
-        if (sscanf(linha, "%d;%29[^;];+%d;%dx%d", &numero_mao, dupla_vencedora,
-                   &pontos, &placar1, &placar2) == 5) {
-            printf("Mao %d | %s (+%d pt) | Placar: %d x %d\n",
-                   numero_mao, dupla_vencedora, pontos, placar1, placar2);
-        }
-    }
-    int ok = !ferror(arquivo);
-    if (fclose(arquivo) != 0) ok = 0;
-    return ok ? DISCO_CARREGADO : DISCO_ERRO;
 }
 
 #endif
