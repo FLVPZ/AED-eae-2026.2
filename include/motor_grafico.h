@@ -25,7 +25,14 @@ typedef struct {
     int manilha, giro, primeiro_dupla, resultados[3];
     int maior, numero_maior, erros_disco;
     char aviso[240];
+    char erro_disco[1024];
 } tp_motor_grafico;
+
+void motor_resultado_disco(tp_motor_grafico *m, int ok) {
+    if (ok) return;
+    m->erros_disco++;
+    snprintf(m->erro_disco, sizeof(m->erro_disco), "%s", disco_ultimo_erro);
+}
 
 int motor_atual(tp_motor_grafico *m, tp_jogador *j) {
     if (!posicao_do_jogador(m->mesa, 0, j)) return 0;
@@ -36,6 +43,10 @@ int motor_atual(tp_motor_grafico *m, tp_jogador *j) {
 void motor_nova_rodada(tp_motor_grafico *m) {
     m->qtd_mesa = 0;
     inicializa_variavel_var(&m->registro);
+    m->registro.mao = m->numero;
+    m->registro.rodada = m->rodada + 1;
+    m->registro.manilha = m->manilha;
+    m->registro.pontos_em_jogo = m->aposta.valor;
     for (int i = 0; i < 4; i++) {
         tp_jogador j;
         posicao_do_jogador(m->mesa, i, &j);
@@ -91,6 +102,8 @@ int motor_iniciar(tp_motor_grafico *m, char nomes[4][NOME_MAX]) {
     m->numero = m->maior = m->numero_maior = m->erros_disco = 0;
     inicializaFila(&m->mesa);
     montar_mesa(&m->mesa, nomes);
+    motor_resultado_disco(m, salvar_caderneta(m->caderneta));
+    motor_resultado_disco(m, iniciar_historico(m->mesa));
     motor_nova_mao(m);
     snprintf(m->aviso, sizeof(m->aviso), "Partida iniciada. Entregue o controle ao jogador da vez.");
     return 1;
@@ -104,6 +117,10 @@ void motor_registrar_rodada(tp_motor_grafico *m, int vencedora, int corrido) {
     if (corrido) aposta_var(&m->registro, m->aposta.dupla_pediu, proximo_valor(m->aposta.valor), 1);
     else if (m->aposta.valor == 1) aposta_var(&m->registro, -1, -1, -1);
     else aposta_var(&m->registro, m->aposta.ultima_dupla, m->aposta.valor, 0);
+    m->registro.pontos_em_jogo = m->aposta.valor;
+    m->registro.encerrada_por_fuga = corrido;
+    m->registro.em_andamento = 0;
+    motor_resultado_disco(m, gravar_rodada_historico(&m->registro));
     if (!adiciona_var(&m->registro, m->var)) {
         m->etapa = GUI_ERRO;
         snprintf(m->aviso, sizeof(m->aviso), "Memoria insuficiente para registrar o VAR. Encerre a partida.");
@@ -116,13 +133,14 @@ void motor_fechar_mao(tp_motor_grafico *m, int dupla, int pontos) {
     registrar_dupla_vencedora(m->caderneta, m->mesa, dupla);
     if (pontos > m->maior) m->numero_maior = m->numero;
     registrar_maior_mao(&m->maior, pontos);
-    if (!salvar_caderneta(m->caderneta)) m->erros_disco |= 1;
-    if (!gravar_historico(m->numero, dupla, pontos, m->placar)) m->erros_disco |= 2;
+    motor_resultado_disco(m, salvar_caderneta(m->caderneta));
+    motor_resultado_disco(m, gravar_historico(m->numero, dupla, pontos, m->placar));
     passar_mao(&m->mesa);
     m->visivel = 0;
     if (m->placar[dupla] >= 12) {
         registrar_partida_jogadores(m->caderneta, m->mesa);
-        if (!salvar_caderneta(m->caderneta)) m->erros_disco |= 1;
+        motor_resultado_disco(m, salvar_caderneta(m->caderneta));
+        motor_resultado_disco(m, encerrar_historico(m->placar, m->maior, m->numero_maior));
         m->etapa = GUI_FIM;
         snprintf(m->aviso, sizeof(m->aviso), "Dupla %d venceu! Mao mais cara: %d ponto(s), na mao %d.", dupla, m->maior, m->numero_maior);
     } else {
@@ -146,6 +164,7 @@ int motor_jogar(tp_motor_grafico *m, int escolha) {
     int qtd = 3 - m->rodada;
     motor_atual(m, &j);
     if (!jogar_carta(&j, &qtd, escolha, &m->cartas[m->qtd_mesa])) return 0;
+    registrar_jogada_var(&m->registro, m->qtd_mesa, j.nome, m->cartas[m->qtd_mesa]);
     snprintf(m->aviso, sizeof(m->aviso), "%s jogou %s de %s.", j.nome,
              ui_valor(m->cartas[m->qtd_mesa].valor), ui_naipe(m->cartas[m->qtd_mesa].naipe));
     removeFila(&m->mesa, &descarte);
@@ -176,6 +195,8 @@ void motor_preparar_resposta(tp_motor_grafico *m) {
     int dupla = m->aposta.dupla_pediu == 1 ? 2 : 1;
     jogador_da_dupla(m->mesa, dupla, &m->respondente);
     registrar_truco_recebido(m->caderneta, m->respondente.nome);
+    motor_resultado_disco(m, salvar_evento_truco(m->caderneta, m->pediu, m->aposta.dupla_pediu,
+                                               m->respondente.nome, m->aposta.pedido, 'P'));
     m->etapa = GUI_RESPOSTA;
     m->visivel = 0;
     snprintf(m->aviso, sizeof(m->aviso), "%s pediu %s. %s deve aceitar, correr ou aumentar.", m->pediu, nome_pedido(m->aposta.pedido), m->respondente.nome);
@@ -198,17 +219,24 @@ int motor_responder(tp_motor_grafico *m, char resposta) {
     registrar_negociacao_var(&m->registro, m->pediu, m->aposta.dupla_pediu,
                              m->respondente.nome, m->aposta.pedido, resposta);
     if (resposta == 'A') {
+        motor_resultado_disco(m, salvar_evento_truco(m->caderneta, m->pediu, m->aposta.dupla_pediu,
+                                                   m->respondente.nome, m->aposta.pedido, resposta));
         aceitar_aposta(&m->aposta);
+        m->registro.pontos_em_jogo = m->aposta.valor;
         m->etapa = GUI_VEZ;
         snprintf(m->aviso, sizeof(m->aviso), "%s aceitou. A mao vale %d ponto(s).", m->respondente.nome, m->aposta.valor);
     } else if (resposta == 'T') {
         registrar_truco_pedido(m->caderneta, m->respondente.nome);
+        motor_resultado_disco(m, salvar_evento_truco(m->caderneta, m->pediu, m->aposta.dupla_pediu,
+                                                   m->respondente.nome, m->aposta.pedido, resposta));
         strcpy(m->pediu, m->respondente.nome);
         aumentar_aposta(&m->aposta, m->respondente.dupla);
         motor_preparar_resposta(m);
     } else {
         int dupla, pontos;
         registrar_truco_corrido(m->caderneta, m->respondente.nome);
+        motor_resultado_disco(m, salvar_evento_truco(m->caderneta, m->pediu, m->aposta.dupla_pediu,
+                                                   m->respondente.nome, m->aposta.pedido, resposta));
         correr_aposta(&m->aposta, &dupla, &pontos);
         motor_registrar_rodada(m, dupla, 1);
         if (m->etapa == GUI_ERRO) return 0;

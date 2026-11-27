@@ -19,6 +19,8 @@ static HFONT fonte, fonte_titulo, fonte_carta;
 static HBRUSH fundo, papel;
 static int view_tipo, avisados;
 static tp_no_de *view_rodada;
+static tp_no_de view_parcial;
+static int view_tem_parcial;
 
 static void texto(HDC dc, int x, int y, int w, int h, const char *s, HFONT f, COLORREF cor) {
     RECT r={x,y,x+w,y+h};
@@ -78,11 +80,13 @@ static void atualizar(void) {
     SetWindowTextA(continuar_btn,jogo.etapa==GUI_FIM?"Jogar outra partida":jogo.etapa==GUI_MAO?"Comecar proxima mao":"Continuar");
     mostrar(var_btn,1); mostrar(stats_btn,1); mostrar(ajuda_btn,1);
     posicionar(var_btn,dir,510,276,40); posicionar(stats_btn,dir,560,276,40); posicionar(ajuda_btn,dir,610,276,36);
-    EnableWindow(var_btn,jogo.var&&jogo.var->ini);
+    EnableWindow(var_btn,(jogo.var&&jogo.var->ini)||vez||resposta);
     InvalidateRect(principal,NULL,TRUE);
     if(jogo.erros_disco!=avisados) {
         avisados=jogo.erros_disco;
-        MessageBoxA(principal,"Nao foi possivel salvar todos os dados. Confira a permissao de escrita na pasta do jogo. Os dados continuam na memoria.","Falha de gravacao",MB_OK|MB_ICONWARNING);
+        char erro[1600];
+        snprintf(erro,sizeof(erro),"%s\n\nPasta dos dados: %.400s\n\nOs dados da caderneta continuam na memoria. Feche o arquivo se estiver bloqueado e confira a permissao de escrita.",jogo.erro_disco,disco_diretorio);
+        MessageBoxA(principal,erro,"Falha de gravacao",MB_OK|MB_ICONWARNING);
     }
 }
 
@@ -173,15 +177,22 @@ static void preencher_view(int ordem) {
     SetWindowTextA(texto_view,"");char s[400];
     if(view_tipo==ID_VAR && view_rodada) {
         tp_item_VAR *v=&view_rodada->info;
-        snprintf(s,sizeof(s),"MAO %d - RODADA %d\r\nDupla vencedora: %d (0 = empate)\r\nManilha: %s\r\n\r\n",v->mao,v->rodada,v->dupla_vencedora,ui_valor(v->manilha));anexar(s);
+        snprintf(s,sizeof(s),"MAO %d - RODADA %d\r\nManilha: %s\r\n",v->mao,v->rodada,ui_valor(v->manilha));anexar(s);
+        if(!v->em_andamento&&!v->encerrada_por_fuga){snprintf(s,sizeof(s),"Dupla vencedora: %d (0 = empate)\r\n",v->dupla_vencedora);anexar(s);}
+        if(v->em_andamento)anexar("RODADA EM ANDAMENTO: somente cartas ja jogadas.\r\nAinda nao ha vencedora desta rodada.\r\n\r\n");
+        snprintf(s,sizeof(s),"Valor aceito da mao: %d ponto(s).\r\n",v->pontos_em_jogo);anexar(s);
+        if(v->encerrada_por_fuga){snprintf(s,sizeof(s),"Mao encerrada por fuga: Dupla %d recebeu %d ponto(s).\r\n",v->dupla_vencedora,v->pontos_em_jogo);anexar(s);}
         for(int i=0;i<4;i++) { if(v->cartas_jogadas[i].valor<1)snprintf(s,sizeof(s),"%s: nao jogou\r\n",v->jogadores[i]);else snprintf(s,sizeof(s),"%s: %s de %s\r\n",v->jogadores[i],ui_valor(v->cartas_jogadas[i].valor),ui_naipe(v->cartas_jogadas[i].naipe));anexar(s); }
         anexar("\r\nNEGOCIACAO DA APOSTA\r\n");
-        if(!v->qtd_negociacoes)anexar("Nenhum pedido novo nesta rodada.\r\n");
+        if(v->em_andamento&&jogo.etapa==GUI_RESPOSTA){snprintf(s,sizeof(s),"%s pediu %d. Aguardando resposta de %s.\r\n",jogo.pediu,jogo.aposta.pedido,jogo.respondente.nome);anexar(s);}
+        if(!v->qtd_negociacoes&&!(v->em_andamento&&jogo.etapa==GUI_RESPOSTA))anexar("Nenhum pedido novo nesta rodada.\r\n");
         for(int i=0;i<v->qtd_negociacoes;i++) {tp_negociacao_VAR *n=&v->negociacoes[i];snprintf(s,sizeof(s),"%s pediu %d. %s %s\r\n",n->pediu,n->valor,n->respondeu,n->resposta=='A'?"aceitou.":n->resposta=='C'?"correu.":"aumentou.");anexar(s);}
         EnableWindow(GetDlgItem(janela_view,ID_ANTERIOR),view_rodada->ant!=NULL);
-        EnableWindow(GetDlgItem(janela_view,ID_PROXIMA),view_rodada->prox!=NULL);
+        EnableWindow(GetDlgItem(janela_view,ID_PROXIMA),view_rodada->prox!=NULL||(view_tem_parcial&&view_rodada==jogo.var->fim));
     } else if(view_tipo==ID_STATS) {
         if(jogo.maior) {snprintf(s,sizeof(s),"MAO MAIS CARA DESTA PARTIDA: %d ponto(s), mao %d.\r\n\r\n",jogo.maior,jogo.numero_maior);anexar(s);}
+        anexar("Pasta dos arquivos de dados:\r\n");anexar(disco_diretorio);anexar("\r\n\r\n");
+        if(jogo.erros_disco){anexar("ATENCAO: houve falha de gravacao:\r\n");anexar(jogo.erro_disco);anexar("\r\n\r\n");}
         if(!*jogo.caderneta)anexar("Nenhum jogador cadastrado.\r\n");
         if(ordem==ID_ORDEM)listar_nomes(*jogo.caderneta);
         else {int n=0;struct NO **lista=ordem==ID_MAOS?mural(jogo.caderneta,&n):mural_vergonha(jogo.caderneta,&n);if(!lista&&*jogo.caderneta)anexar("Nao foi possivel montar o ranking.\r\n");for(int i=0;i<n;i++)linha_ficha(&lista[i]->info);free(lista);}
@@ -199,13 +210,30 @@ static LRESULT CALLBACK ViewProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         for(int i=0;i<total;i++){HWND b=CreateWindowExA(0,"BUTTON",labels[i],WS_CHILD|WS_VISIBLE|WS_TABSTOP,16+i*234,455,220,40,hwnd,(HMENU)(INT_PTR)ids[i],GetModuleHandle(NULL),NULL);SendMessage(b,WM_SETFONT,(WPARAM)fonte,TRUE);}
         preencher_view(ID_ORDEM);return 0;
     }
-    if(msg==WM_COMMAND){int id=LOWORD(wp);if(HIWORD(wp)!=BN_CLICKED||id<ID_ANTERIOR||id>ID_TAXA)return 0;if(id==ID_ANTERIOR&&view_rodada->ant)view_rodada=view_rodada->ant;if(id==ID_PROXIMA&&view_rodada->prox)view_rodada=view_rodada->prox;preencher_view(id);return 0;}
+    if(msg==WM_COMMAND){
+        int id=LOWORD(wp);
+        if(HIWORD(wp)!=BN_CLICKED||id<ID_ANTERIOR||id>ID_TAXA)return 0;
+        if(view_tipo==ID_VAR){
+            if(id==ID_ANTERIOR&&view_rodada->ant)view_rodada=view_rodada->ant;
+            if(id==ID_PROXIMA){
+                if(view_rodada->prox)view_rodada=view_rodada->prox;
+                else if(view_tem_parcial&&view_rodada==jogo.var->fim)view_rodada=&view_parcial;
+            }
+        }
+        preencher_view(id);return 0;
+    }
     if(msg==WM_CLOSE){DestroyWindow(hwnd);return 0;}
     if(msg==WM_DESTROY){janela_view=NULL;EnableWindow(principal,TRUE);SetActiveWindow(principal);return 0;}
     return DefWindowProcA(hwnd,msg,wp,lp);
 }
 static void abrir_view(int tipo) {
-    view_tipo=tipo;view_rodada=jogo.var?jogo.var->ini:NULL;
+    view_tipo=tipo;view_rodada=jogo.var?jogo.var->fim:NULL;
+    view_tem_parcial=jogo.etapa==GUI_VEZ||jogo.etapa==GUI_RESPOSTA;
+    if(view_tem_parcial){
+        memset(&view_parcial,0,sizeof(view_parcial));
+        view_parcial.info=jogo.registro;view_parcial.info.pontos_em_jogo=jogo.aposta.valor;
+        view_parcial.ant=view_rodada;view_rodada=&view_parcial;
+    }
     EnableWindow(principal,FALSE);
     HWND h=CreateWindowExA(WS_EX_DLGMODALFRAME,"PatoView",tipo==ID_VAR?"Historico da partida - VAR":"Caderneta e estatisticas",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,80,80,745,550,principal,NULL,GetModuleHandle(NULL),NULL);
     if(h)ShowWindow(h,SW_SHOW);else EnableWindow(principal,TRUE);
@@ -249,7 +277,7 @@ static LRESULT CALLBACK JanelaProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         else if(id==ID_SINAL)motor_sinal(&jogo,(int)SendMessage(gesto_combo,CB_GETCURSEL,0,0));
         else if(id==ID_CONTINUAR){if(jogo.etapa==GUI_FIM)jogo.etapa=GUI_CADASTRO;else motor_continuar(&jogo);}
         else if(id==ID_VAR||id==ID_STATS){abrir_view(id);return 0;}
-        else if(id==ID_AJUDA)MessageBoxA(hwnd,"INICIAR: informe quatro nomes; jogadores 1 e 3 sao parceiros.\n\nREVELAR CARTAS: entrega a vez ao jogador indicado.\nJOGAR: clique na carta desejada.\nPEDIR TRUCO: aumenta o valor da mao, se permitido.\nACEITAR / CORRER / AUMENTAR: respondem ao pedido.\nSINAL: selecione o gesto e envie; voce mantem a vez.\nCONTINUAR: confirma a leitura do resultado da rodada.\nHISTORICO: navega entre rodadas e maos.\nESTATISTICAS: consulta os jogadores e rankings.\n\nOs dados sao salvos no fim de cada mao. Uma partida concluida soma uma partida jogada para cada jogador.","Como jogar",MB_OK|MB_ICONINFORMATION);
+        else if(id==ID_AJUDA)MessageBoxA(hwnd,"INICIAR: informe quatro nomes; jogadores 1 e 3 sao parceiros.\n\nREVELAR CARTAS: entrega a vez ao jogador indicado.\nJOGAR: clique na carta desejada.\nPEDIR TRUCO: aumenta o valor da mao, se permitido.\nACEITAR / CORRER / AUMENTAR: respondem ao pedido.\nSINAL: selecione o gesto e envie; voce mantem a vez.\nCONTINUAR: confirma a leitura do resultado da rodada.\nHISTORICO: inclui a rodada em andamento, so com cartas ja jogadas.\nESTATISTICAS: consulta jogadores, rankings e a pasta dos arquivos.\n\nCaderneta e historico sao criados ao iniciar a partida. Pedidos e respostas de truco sao salvos na hora; os resultados sao salvos ao terminar a mao.","Como jogar",MB_OK|MB_ICONINFORMATION);
         atualizar();return 0;
     }
     if(msg==WM_DRAWITEM){desenhar_carta((DRAWITEMSTRUCT*)lp);return TRUE;}
@@ -261,9 +289,10 @@ static LRESULT CALLBACK JanelaProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
 }
 static int executar_janela(HINSTANCE instancia,int mostrar_janela) {
     SetProcessDPIAware();
+    if(!disco_iniciar()){MessageBoxA(NULL,"Nao foi possivel localizar a pasta dos arquivos de dados.","Erro",MB_OK|MB_ICONERROR);return 1;}
     jogo.caderneta=criarAVL();
     if(!jogo.caderneta)return 1;
-    if(carregar_caderneta(jogo.caderneta)==DISCO_ERRO){MessageBoxA(NULL,"Nao foi possivel carregar caderneta.txt. O arquivo foi preservado. Verifique o formato descrito no README.","Erro na caderneta",MB_OK|MB_ICONERROR);liberaABB(jogo.caderneta);return 1;}
+    if(carregar_caderneta(jogo.caderneta)==DISCO_ERRO){MessageBoxA(NULL,disco_ultimo_erro,"Erro na caderneta - arquivo preservado",MB_OK|MB_ICONERROR);liberaABB(jogo.caderneta);return 1;}
     inicializar_seed();
     fonte=CreateFontA(-18,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,"Segoe UI");
     fonte_titulo=CreateFontA(-28,0,0,0,FW_BOLD,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,"Segoe UI");

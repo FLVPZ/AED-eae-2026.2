@@ -22,6 +22,7 @@
  */
 static int interface_cores = 0;
 static int interface_interativa = 0;
+static int interface_ansi = 0;
 static int interface_largura = 72;
 static char interface_ultimo_aviso[160] = "";
 
@@ -53,7 +54,8 @@ void ui_iniciar(void) {
     const char *term = getenv("TERM");
     if (term != NULL && strcmp(term, "dumb") == 0) suporta_ansi = 0;
     interface_cores = saida_terminal && suporta_ansi && getenv("NO_COLOR") == NULL;
-    interface_interativa = saida_terminal && entrada_terminal && suporta_ansi;
+    interface_interativa = saida_terminal && entrada_terminal;
+    interface_ansi = saida_terminal && suporta_ansi;
 }
 
 void ui_cor(const char *cor) {
@@ -61,7 +63,27 @@ void ui_cor(const char *cor) {
 }
 
 void ui_limpar(void) {
-    if (interface_interativa) fputs("\033[2J\033[H", stdout);
+    if (!interface_interativa) return;
+    fflush(stdout);
+    if (interface_ansi) {
+        fputs("\033[2J\033[H", stdout);
+        fflush(stdout);
+    }
+#ifdef _WIN32
+    else {
+        /* Console antigo do Dev-C++ pode nao aceitar sequencias ANSI. */
+        HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFO info;
+        DWORD escritos;
+        COORD inicio = {0, 0};
+        if (GetConsoleScreenBufferInfo(console, &info)) {
+            DWORD tamanho = (DWORD)info.dwSize.X * (DWORD)info.dwSize.Y;
+            FillConsoleOutputCharacterA(console, ' ', tamanho, inicio, &escritos);
+            FillConsoleOutputAttribute(console, info.wAttributes, tamanho, inicio, &escritos);
+            SetConsoleCursorPosition(console, inicio);
+        }
+    }
+#endif
 }
 
 void ui_linha(void) {

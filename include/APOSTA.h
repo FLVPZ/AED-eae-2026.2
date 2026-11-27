@@ -8,6 +8,7 @@
 #include "interface.h"
 #include "estatisticas.h"
 #include "var.h"
+#include "disco.h"
 
 typedef struct { //guarda as infos da aposta
     int valor; //quanto a mao vale agora
@@ -97,6 +98,15 @@ const char *nome_pedido(int valor) {
 }
 
 // pede truco/seis/doze e a outra dupla responde até alguém aceitar ou correr
+void aposta_salvar_evento(ArvAVL *caderneta, const char *pediu, int dupla,
+                          const char *respondeu, int valor, char resposta) {
+    if (!salvar_evento_truco(caderneta, pediu, dupla, respondeu, valor, resposta)) {
+        fprintf(stderr, "\nFalha ao salvar a negociacao:\n%s\nPasta dos dados: %s\n",
+                disco_ultimo_erro, disco_diretorio);
+        ui_pausar("Conferir a falha de gravacao e continuar");
+    }
+}
+
 int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
                    int *vencedora, int *pontos, ArvAVL *caderneta, tp_item_VAR *registro) {
 
@@ -116,8 +126,12 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
         if (pedido_registrado != a->pedido) {
             registrar_truco_recebido(caderneta, resp.nome);
             pedido_registrado = a->pedido;
+            aposta_salvar_evento(caderneta, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, 'P');
         }
 
+        ui_limpar();
+        ui_titulo("PEDIDO NA MESA");
+        printf("%s (Dupla %d) pediu %s.\n", pediu_nome, a->dupla_pediu, nome_pedido(a->pedido));
         printf("  Resposta de %s (Dupla %d)\n", resp.nome, resp.dupla);
         printf("  %s: a mao passa a valer %d ponto(s).\n", nome_pedido(a->pedido), a->pedido);
         printf("  [A] Aceitar  [C] Correr");
@@ -130,6 +144,7 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
         char op = ler_opcao();
         if (op == 'A') {
             registrar_negociacao_var(registro, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, op);
+            aposta_salvar_evento(caderneta, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, op);
             aceitar_aposta(a);
             printf("%s aceitou, a mao vale %d\n", resp.nome, a->valor);
             ui_aviso("%s aceitou. A mao vale %d ponto(s).", resp.nome, a->valor);
@@ -138,6 +153,7 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
         else if (op == 'C') {
             registrar_negociacao_var(registro, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, op);
             registrar_truco_corrido(caderneta, resp.nome);
+            aposta_salvar_evento(caderneta, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, op);
             correr_aposta(a, vencedora, pontos);
             printf("%s correu, Dupla %d leva %d ponto(s)\n", resp.nome, *vencedora, *pontos);
             ui_aviso("%s correu. Dupla %d leva %d ponto(s).", resp.nome, *vencedora, *pontos);
@@ -146,6 +162,7 @@ int negociar_truco(tp_fila mesa, tp_aposta *a, tp_jogador j,
         else if (op == 'T' && novo != 0) {
             registrar_negociacao_var(registro, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, op);
             registrar_truco_pedido(caderneta, resp.nome);
+            aposta_salvar_evento(caderneta, pediu_nome, a->dupla_pediu, resp.nome, a->pedido, op);
             strcpy(pediu_nome, resp.nome);
             aumentar_aposta(a, dupla_resp);
             printf("\n%s (Dupla %d) pede %s\n", resp.nome, resp.dupla, nome_pedido(a->pedido));

@@ -8,6 +8,8 @@ Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jo
 
 A janela grafica usa o tema do Bar do Pato, com letras maiores, cartas clicaveis e botoes com o nome de cada acao. O menu lateral explica o que fazer em cada etapa. A mao fica oculta na troca de jogador ate clicar em **Revelar cartas**; as cartas de uma rodada permanecem visiveis ate clicar em **Continuar**. O botao **Ajuda** explica todos os comandos.
 
+O **VAR** permite consultar a primeira rodada enquanto ela acontece: mostra o nome de quem jogou e apenas as cartas que ja estao na mesa. A rodada em andamento aparece identificada e pode ser consultada junto das anteriores. A consulta nao passa a vez nem duplica registros.
+
 ### Abrir no Dev-C++ (recomendado no Windows)
 
 1. Baixe e extraia o projeto inteiro, mantendo a pasta `include/` junto de `gui.c`.
@@ -65,16 +67,22 @@ A caderneta aparece em ordem alfabética, seguida dos murais. Em terminal intera
 
 A tela da mesa reúne o placar, as duplas, a mão e a rodada atuais, o valor da aposta, a vira, a manilha e as cartas já jogadas. As manilhas recebem o rótulo `[MANILHA]`; a de Paus recebe `[MANILHA - ZAP]`. Os sinais são apenas uma interação visual e mantêm o jogador na vez. Combinem o significado dos gestos antes da partida.
 
+O comando `V` inclui a rodada em andamento desde a primeira jogada, com o autor de cada carta. A tela e limpa ao navegar no VAR e negociar truco; o console antigo do Windows tem uma alternativa nativa quando nao aceita ANSI. Ao terminar uma rodada ou mao, pressione Enter para ler o resultado antes de continuar.
+
 No encerramento, o programa anuncia a dupla vencedora e o placar. Após a pausa de leitura, abre o VAR; ao sair dele, mostra os murais finais.
 
 
 ## Caderneta e arquivos de dados
 
-Ao iniciar, o programa procura `caderneta.txt` na pasta de execução, antes do cadastro. Se o arquivo não existir, começa com uma caderneta vazia. Jogadores encontrados pelo mesmo nome mantêm seus contadores; novos jogadores entram zerados. A comparação diferencia maiúsculas e minúsculas.
+No Windows, `caderneta.txt` e `historico.txt` ficam na mesma pasta do executavel, tanto na janela quanto no terminal. No Linux/macOS, ficam na pasta de onde o programa foi executado. O terminal informa essa pasta; na janela, ela aparece em **Caderneta e estatisticas**.
 
-Ao fim de cada mão, salva a caderneta e acrescenta o número da mão, a dupla vencedora, os pontos e o placar em `historico.txt`. A caderneta também é salva no encerramento da partida. Esses arquivos são criados pelo programa: não é necessário prepará-los manualmente. Execute sempre pela mesma pasta para recuperar os mesmos dados.
+Antes do cadastro, o programa procura a caderneta nessa pasta. Se ela nao existir, comeca vazia. Jogadores encontrados pelo mesmo nome mantem seus contadores; novos jogadores entram zerados. A comparacao diferencia maiusculas e minusculas.
 
-Cada linha de `caderneta.txt` contém `nome;partidas;maos;pedidos;corridos;recebidos`. A gravação usa `caderneta.txt.tmp` e substitui a caderneta somente após concluir a escrita. Um arquivo inválido ou antigo, sem pedidos recebidos, é preservado e impede o início do jogo até que o problema seja resolvido. A caderneta, o histórico e o temporário são ignorados pelo Git.
+Ao iniciar a partida com os quatro nomes, o programa cria ou atualiza **os dois arquivos**. A caderneta e salva a cada pedido/resposta de truco, ao fim de cada mao e no encerramento. O historico recebe o inicio e as duplas, pedidos e respostas, as rodadas com os nomes e cartas de cada jogador, os pontos de cada mao e o resultado final. Sair antes do fim nao registra uma partida concluida, mas preserva as acoes ja gravadas.
+
+A caderneta tem um bloco descritivo por jogador, com partidas, maos ganhas, trucos pedidos, recebidos, fugas e taxa de fuga. As linhas com os seis campos `nome;partidas;maos;pedidos;corridos;recebidos` continuam presentes para recuperar a AVL; os comentarios explicativos comecam com `#`. Arquivos anteriores com os seis campos continuam sendo lidos. Nao e necessario editar os arquivos manualmente.
+
+A gravacao usa `caderneta.txt.tmp` e substitui a caderneta somente apos concluir a escrita. Um arquivo invalido ou antigo, sem pedidos recebidos, e preservado e impede o inicio do jogo ate que o problema seja resolvido. Falhas de gravacao informam o caminho do arquivo e o motivo; os dados da caderneta continuam na memoria. Se houver falha, confira a permissao de escrita e se outro programa bloqueou o arquivo. A caderneta, o historico e o temporario sao dados locais ignorados pelo Git.
 
 As estatísticas são acumuladas por nome: pedidos feitos, pedidos recebidos, fugas e mãos ganhas são atualizados durante o jogo; uma partida jogada é registrada para os quatro jogadores ao concluir a partida. Cada pedido de truco, seis ou doze conta uma vez para quem efetivamente responde, mesmo que digite opções inválidas antes de decidir. A taxa de fuga é `corridos / recebidos × 100`; sem pedidos recebidos, o mural informa essa condição. Cada mão ganha conta para os dois integrantes da dupla vencedora.
 
