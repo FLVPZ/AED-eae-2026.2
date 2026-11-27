@@ -13,6 +13,7 @@
 #include "Roda.h"
 #include "APOSTA.h"
 #include "criativo.h"
+#include "disco.h"
 
 #define PONTOS_VITORIA 12
 
@@ -214,7 +215,8 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
     return 0;
 }
 
-void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
+void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
+               ArvAVL *caderneta) {
     tp_stack baralho;
     tp_item manilhas[4];
     tp_mao_atual m;
@@ -252,15 +254,26 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v) {
     placar[m.dupla_vencedora] += m.pontos;
     printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
     ui_aviso("Dupla %d levou a mao %d: +%d ponto(s).", m.dupla_vencedora, numero_mao, m.pontos);
+    // A atualizacao das estatisticas desta mao deve entrar antes do salvamento.
+    int caderneta_salva = salvar_caderneta(caderneta);
+    int historico_salvo = gravar_historico(m.numero, m.dupla_vencedora, m.pontos, placar);
+    if (!caderneta_salva || !historico_salvo) {
+        fprintf(stderr, "Falha ao salvar %s%s%s. Os dados da caderneta continuam na memoria.\n",
+                caderneta_salva ? "" : "a caderneta",
+                !caderneta_salva && !historico_salvo ? " e " : "",
+                historico_salvo ? "" : "o historico");
+        ui_aviso("Falha na gravacao. Caderneta: %s; historico: %s.",
+                 caderneta_salva ? "salva" : "nao salva", historico_salvo ? "salvo" : "nao salvo");
+    }
 }
 
-void jogar_partida(tp_fila *mesa, tp_listad *v) {
+void jogar_partida(tp_fila *mesa, tp_listad *v, ArvAVL *caderneta) {
     int placar[3] = { 0, 0, 0 };
     int numero_mao = 0;
 
     while (placar[1] < PONTOS_VITORIA && placar[2] < PONTOS_VITORIA) {
         numero_mao++;
-        jogar_mao(mesa, placar, numero_mao, v);
+        jogar_mao(mesa, placar, numero_mao, v, caderneta);
         passar_mao(mesa);
     }
 
@@ -283,6 +296,12 @@ void jogar_partida(tp_fila *mesa, tp_listad *v) {
     }
     printf("\nPlacar final: Dupla 1 = %d x Dupla 2 = %d\n", pontos1, pontos2);
     ui_cor("\033[0m");
+    // Salva tambem os contadores de fim de partida quando forem integrados.
+    if (!salvar_caderneta(caderneta)) {
+        fprintf(stderr, "Nao foi possivel salvar a caderneta no encerramento.\n");
+        ui_aviso("Caderneta nao salva no encerramento. Confira o acesso ao arquivo.");
+    }
+    ui_mostrar_aviso();
     ui_pausar("Conferir o VAR da partida");
     
     ver_var(v);

@@ -23,7 +23,7 @@ def testar_terminal(exe, largura=80, sem_cor=False, simples=False):
     if sem_cor:
         ambiente["NO_COLOR"] = "1"
     processo = subprocess.Popen([str(exe)], stdin=slave, stdout=slave,
-                               stderr=slave, env=ambiente)
+                               stderr=slave, env=ambiente, cwd=exe.parent)
     os.close(slave)
 
     def ler_ate(marcador):

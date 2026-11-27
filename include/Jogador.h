@@ -79,10 +79,18 @@ int cadastrar_jogadores(char nomes[4][NOME_MAX]) {
                 nomes[i][--tamanho] = '\0';
             }
             int repetido = 0;
+            int nome_invalido = 0;
+            for (size_t j = 0; j < tamanho; j++) {
+                unsigned char c = (unsigned char)nomes[i][j];
+                if (c == ';' || c < 32 || c == 127) nome_invalido = 1;
+            }
             for (int j = 0; j < i; j++) {
                 if (strcmp(nomes[i], nomes[j]) == 0) repetido = 1;
             }
-            if (tamanho == 0 || repetido) {
+            if (nome_invalido) {
+                printf("O nome nao pode conter ponto e virgula ou caracteres de controle.\n");
+                i--;
+            } else if (tamanho == 0 || repetido) {
                 printf("Informe um nome nao vazio e diferente dos demais jogadores.\n");
                 i--;
             }
