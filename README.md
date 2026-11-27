@@ -59,7 +59,9 @@ Ao fim de cada mão, salva a caderneta e acrescenta o número da mão, a dupla v
 
 Cada linha de `caderneta.txt` contém `nome;partidas;maos;pedidos;corridos;recebidos`. A gravação usa `caderneta.txt.tmp` e substitui a caderneta somente após concluir a escrita. Um arquivo inválido ou antigo, sem pedidos recebidos, é preservado e impede o início do jogo até que o problema seja resolvido. A caderneta, o histórico e o temporário são ignorados pelo Git.
 
-A atualização dos contadores durante o jogo e a exibição da mão mais cara continuam pendentes no checklist. O salvamento já preserva os contadores registrados na caderneta.
+As estatísticas são acumuladas por nome: pedidos feitos, pedidos recebidos, fugas e mãos ganhas são atualizados durante o jogo; uma partida jogada é registrada para os quatro jogadores ao concluir a partida. Cada pedido de truco, seis ou doze conta uma vez para quem efetivamente responde, mesmo que digite opções inválidas antes de decidir. A taxa de fuga é `corridos / recebidos × 100`; sem pedidos recebidos, o mural informa essa condição. Cada mão ganha conta para os dois integrantes da dupla vencedora.
+
+No encerramento, o programa mostra a mão de maior valor efetivamente pontuado (1, 3, 6 ou 12); em empate, mantém a primeira. O VAR identifica quem jogou cada carta e registra toda a negociação realizada em cada rodada, incluindo aumentos, aceite e fuga.
 
 ## Organização do projeto
 
@@ -72,7 +74,8 @@ O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, 
 - `Roda.h`: ordem dos jogadores e giro da mesa a cada nova mão.
 - `Mao.h`: ordenação da mão, escolha e remoção da carta jogada.
 - `jogo.h`: distribuição, vira, manilha, comparação das cartas e apuração dos vencedores.
-- `APOSTA.h`: pedidos de truco, seis e doze, aceite e fuga.
+- `APOSTA.h`: pedidos de truco, seis e doze, aceite e fuga, com atualização das estatísticas e registro das negociações no VAR.
+- `estatisticas.h`: contadores por jogador, vitórias da dupla, partidas concluídas e maior valor de mão.
 - `listade.h` e `var.h`: histórico da partida e navegação nos dois sentidos.
 - `Partida.h`: condução das mãos e rodadas, placar e chamadas de salvamento.
 - `criativo.h`: sinais fixos para o parceiro e destaque visual das manilhas.
@@ -113,19 +116,19 @@ A segunda entrega coloca a mão para rolar e liga o VAR da mesa.
 
 A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados salvos em disco e um item criativo.
 
-- [ ] Concluir as correções solicitadas nas entregas anteriores.
+- [x] Revisar e corrigir os problemas identificados nas entregas anteriores.
 - [x] Encerrar a partida aos 12 pontos, mostrando a dupla vencedora e o placar final.
 - [x] Criar a caderneta em árvore AVL, com busca por nome e cadastro de novos jogadores com os contadores zerados.
 - [x] Implementar a listagem da caderneta em ordem alfabética.
 - [x] Integrar a caderneta ao cadastro dos jogadores.
-- [ ] Atualizar partidas jogadas, mãos ganhas, pedidos feitos, pedidos recebidos e fugas durante o jogo.
+- [x] Atualizar partidas jogadas, mãos ganhas, pedidos feitos, pedidos recebidos e fugas durante o jogo.
 - [x] Salvar os dados ao fim de cada mão e recuperar a caderneta ao abrir o programa novamente.
 - [x] Exibir o mural com os jogadores em ordem crescente de maos ganhas.
 - [x] Exibir o mural da taxa de fuga calculada a partir dos contadores da caderneta.
-- [ ] Identificar e exibir a mão mais cara da partida.
+- [x] Identificar e exibir a mão mais cara da partida.
 - [x] Implementar o item criativo: sinais do parceiro e marcação visual das manilhas.
 - [x] Organizar a interface no terminal com placar, cartas, comandos e resumos no tema do Bar do Pato.
 - [x] Corrigir as alturas e o balanceamento da AVL após remoções.
 - [x] Integrar a caderneta e os murais na `main.c`, com liberação dos vetores e da árvore.
 - [x] Integrar a persistência na `main.c`, no fim de cada mão e no encerramento da partida.
-- [ ] Preparar o relatório com a participação de cada integrante.
+- [x] Relatório com a participação de cada integrante elaborado pela equipe fora do GitHub.

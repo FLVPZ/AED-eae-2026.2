@@ -35,7 +35,8 @@ def main():
                     for nome in ["Ana", "Bia", "Caio", "Davi"]]
         assert posicoes == sorted(posicoes)
         assert saida.count("sem pedidos recebidos") == 8
-        assert saida.count("0 mao(s) ganha(s)") == 8
+        assert saida.count("0 mao(s) ganha(s)") >= 4
+        assert "Mao mais cara da partida:" in saida
 
         # Novo nome deve ser pedido ao encontrar vazio, duplicado ou longo.
         entrada = "\nDavi\nDavi\nBia\n" + "x" * 40 + "\nCaio\nAna\n"

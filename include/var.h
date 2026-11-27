@@ -9,6 +9,7 @@
 
 //Chamar todo inicio de mão
 void inicializa_variavel_var(tp_item_VAR *e){
+    memset(e, 0, sizeof(*e));
     e->mao = -1;
     e->rodada = -1;
     e->dupla_vencedora=-1;
@@ -22,6 +23,18 @@ void inicializa_variavel_var(tp_item_VAR *e){
         e->aposta[i] = -1;
       
     }
+}
+
+// Registra cada resposta valida antes de a aposta mudar de estado.
+void registrar_negociacao_var(tp_item_VAR *e, const char *pediu, int dupla,
+                              const char *respondeu, int valor, char resposta) {
+    if (e == NULL || e->qtd_negociacoes >= 3) return;
+    tp_negociacao_VAR *n = &e->negociacoes[e->qtd_negociacoes++];
+    snprintf(n->pediu, sizeof(n->pediu), "%s", pediu);
+    snprintf(n->respondeu, sizeof(n->respondeu), "%s", respondeu);
+    n->dupla_pediu = dupla;
+    n->valor = valor;
+    n->resposta = resposta;
 }
 
 // imprime o valor de uma carta (1 = As, 11 = J, 12 = Q, 13 = K)
@@ -59,7 +72,7 @@ void imprimir_var(tp_no_de *atu){
 	printf("Numero da mao: %d\n", atu->info.mao);
 	printf("Cartas jogadas: \n");
 		for(int j = 0; j < 4; j++){
-			printf("  Carta %d: ", j + 1);
+			printf("  %s: ", atu->info.jogadores[j][0] ? atu->info.jogadores[j] : "Jogador");
 			imprimir_carta(atu->info.cartas_jogadas[j]);
             printf("\n");
 		}
@@ -68,23 +81,16 @@ void imprimir_var(tp_no_de *atu){
 		imprimir_valor(atu->info.manilha);
         printf("\n");
     
-	if(atu->info.aposta[0]==-1){
-		printf("Nenhuma aposta realizada na rodada\n");
-	} else {
-		if(atu->info.aposta[0]==3){
-			if(atu->info.aposta[2]==0){
-				printf("Truco pedido pela dupla %d // dupla %d aceitou\n", atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
-			} else{
-				printf("Truco pedido pela dupla %d // dupla %d recusou\n", atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
-			}
-		} else {
-			if(atu->info.aposta[2]==0){
-				printf("%d pedido pela dupla %d // dupla %d aceitou\n", atu->info.aposta[0],atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
-			} else{
-				printf("%d pedido pela dupla %d // dupla %d recusou\n", atu->info.aposta[0],atu->info.aposta[1], ((atu->info.aposta[1]%2)+1));
-			}
-		}
-	}
+    if (atu->info.qtd_negociacoes == 0) {
+        printf("Nenhum novo pedido de aposta nesta rodada.\n");
+    }
+    for (int i = 0; i < atu->info.qtd_negociacoes; i++) {
+        const tp_negociacao_VAR *n = &atu->info.negociacoes[i];
+        printf("%s (Dupla %d) pediu %d; %s %s\n", n->pediu, n->dupla_pediu,
+               n->valor, n->respondeu, n->resposta == 'A' ? "aceitou." :
+               n->resposta == 'C' ? "correu." : "aumentou.");
+    }
+    if (atu->info.aposta[0] > 0) printf("Valor registrado da aposta: %d\n", atu->info.aposta[0]);
 
 	if(atu->info.dupla_vencedora == 0)
 		printf("Rodada empatada\n");

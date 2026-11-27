@@ -62,7 +62,7 @@ int main() {
     ui_secao("CADERNETA DO BAR - ordem alfabetica");
     printf("  %-29s %4s %4s %5s %5s %5s\n", "JOGADOR", "PART", "MAOS", "PEDIU", "RECEB", "FUGIU");
     emOrd(caderneta);
-    printf("\nCaderneta salva ao fim de cada mao; atualizacao das estatisticas pendente.\n");
+    printf("\nCaderneta e estatisticas salvas ao fim de cada mao.\n");
     exibir_murais(caderneta);
     ui_pausar("Tudo pronto. Abrir a mesa");
 

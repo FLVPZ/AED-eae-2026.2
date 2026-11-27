@@ -1,13 +1,26 @@
 #ifndef LISTADE_H
 #define LISTADE_H
 #include "STACK.h"
+#include "fila.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+// No maximo tres propostas por mao: truco, seis e doze.
+typedef struct {
+    char pediu[NOME_MAX];
+    char respondeu[NOME_MAX];
+    int dupla_pediu;
+    int valor;
+    char resposta;
+} tp_negociacao_VAR;
 
 typedef struct{
     int mao;
     int rodada;
     tp_item cartas_jogadas[4];
+    char jogadores[4][NOME_MAX];
+    tp_negociacao_VAR negociacoes[3];
+    int qtd_negociacoes;
     int aposta[3]; // POSIÇÃO 0 = Valor da ultima aposta pedida (-1 valor padrão para aposta 0); POSIÇÃO 1 = dupla que pediu a aposta; POSIÇÃO 2 = Outra dupla aceitou, 1->N, 0->S.
 	int dupla_vencedora;
     int manilha;
