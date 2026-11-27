@@ -94,9 +94,15 @@ void mostrar_cartas_jogadas(char nomes[4][NOME_MAX], tp_item cartas[4], int qtd,
     }
 }
 
-int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad *v) {
+int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad *v,
+                  ArvAVL *caderneta) {
     tp_item_VAR item_var;
     inicializa_variavel_var(&item_var);
+    for (int k = 0; k < 4; k++) {
+        tp_jogador jogador;
+        posicao_do_jogador(*mesa, k, &jogador);
+        strcpy(item_var.jogadores[k], jogador.nome);
+    }
 
     tp_item cartas[4];
     int duplas[4];
@@ -137,7 +143,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
             }
             else if (op == 'T' && pode_pedir(m->aposta, j.dupla)) {
                 int r = negociar_truco(*mesa, &m->aposta, j,
-                                       &m->dupla_vencedora, &m->pontos);
+                                       &m->dupla_vencedora, &m->pontos, caderneta, &item_var);
                 if (r == APOSTA_CORRIDO) {
                     for (int k = i; k < 4; k++) {
                         cartas[k].valor = -1;
@@ -215,7 +221,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
     return 0;
 }
 
-void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
+int jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
                ArvAVL *caderneta) {
     tp_stack baralho;
     tp_item manilhas[4];
@@ -240,7 +246,7 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
     posicao_do_jogador(*mesa, 0, &primeiro);
 
     while (m.dupla_vencedora == 0) {
-        if (jogar_rodada(mesa, &m, placar, v)) break;
+        if (jogar_rodada(mesa, &m, placar, v, caderneta)) break;
 
         int venc = vencedor_da_mao(m.resultados, m.n_rodadas, primeiro.dupla);
         if (venc != 0) {
@@ -254,7 +260,7 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
     placar[m.dupla_vencedora] += m.pontos;
     printf("\nDupla %d leva a mao e faz %d ponto(s).\n", m.dupla_vencedora, m.pontos);
     ui_aviso("Dupla %d levou a mao %d: +%d ponto(s).", m.dupla_vencedora, numero_mao, m.pontos);
-    // A atualizacao das estatisticas desta mao deve entrar antes do salvamento.
+    registrar_dupla_vencedora(caderneta, *mesa, m.dupla_vencedora);
     int caderneta_salva = salvar_caderneta(caderneta);
     int historico_salvo = gravar_historico(m.numero, m.dupla_vencedora, m.pontos, placar);
     if (!caderneta_salva || !historico_salvo) {
@@ -265,15 +271,19 @@ void jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
         ui_aviso("Falha na gravacao. Caderneta: %s; historico: %s.",
                  caderneta_salva ? "salva" : "nao salva", historico_salvo ? "salvo" : "nao salvo");
     }
+    return m.pontos;
 }
 
 void jogar_partida(tp_fila *mesa, tp_listad *v, ArvAVL *caderneta) {
     int placar[3] = { 0, 0, 0 };
     int numero_mao = 0;
+    int maior_mao = 0, numero_maior_mao = 0;
 
     while (placar[1] < PONTOS_VITORIA && placar[2] < PONTOS_VITORIA) {
         numero_mao++;
-        jogar_mao(mesa, placar, numero_mao, v, caderneta);
+        int pontos = jogar_mao(mesa, placar, numero_mao, v, caderneta);
+        if (pontos > maior_mao) numero_maior_mao = numero_mao;
+        registrar_maior_mao(&maior_mao, pontos);
         passar_mao(mesa);
     }
 
@@ -296,7 +306,8 @@ void jogar_partida(tp_fila *mesa, tp_listad *v, ArvAVL *caderneta) {
     }
     printf("\nPlacar final: Dupla 1 = %d x Dupla 2 = %d\n", pontos1, pontos2);
     ui_cor("\033[0m");
-    // Salva tambem os contadores de fim de partida quando forem integrados.
+    printf("Mao mais cara da partida: %d ponto(s), mao %d.\n", maior_mao, numero_maior_mao);
+    registrar_partida_jogadores(caderneta, *mesa);
     if (!salvar_caderneta(caderneta)) {
         fprintf(stderr, "Nao foi possivel salvar a caderneta no encerramento.\n");
         ui_aviso("Caderneta nao salva no encerramento. Confira o acesso ao arquivo.");
