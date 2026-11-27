@@ -2,7 +2,6 @@
 #ifndef jogo_h
 #define jogo_h
 #include "STACK.h"
-#include "baralho.h"
 #include "Jogador.h"
 #include "fila.h"
 

@@ -69,7 +69,7 @@ No encerramento, o programa mostra a mão de maior valor efetivamente pontuado (
 O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, a exibição dos murais e a liberação da memória. Os módulos ficam em `include/`:
 
 - `STACK.h`: tipos da carta e da pilha, com operações sobre o topo do baralho.
-- `baralho.h` e `Embaralhar.h`: criação e embaralhamento das 40 cartas.
+- `Embaralhar.h`: criação e embaralhamento das 40 cartas, com armazenamento na pilha.
 - `fila.h`: estrutura do jogador e fila da mesa.
 - `Jogador.h`: leitura dos nomes, cadastro e montagem das duplas.
 - `Roda.h`: ordem dos jogadores e giro da mesa a cada nova mão.
