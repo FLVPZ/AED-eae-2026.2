@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def jogar(executavel, entrada):
     resultado = subprocess.run(
-        [str(executavel)], input=entrada, text=True, capture_output=True, timeout=15
+        [str(executavel)], input=entrada, text=True, capture_output=True, timeout=15,
+        cwd=executavel.parent
     )
     assert resultado.returncode == 0, resultado.stderr
     return resultado.stdout
@@ -29,7 +30,7 @@ def main():
         assert saida.count("MURAL DO BAR -") == 2
         assert saida.count("MURAL DA VERGONHA -") == 2
         caderneta = saida.split("CADERNETA DO BAR - ordem alfabetica")[1]
-        caderneta = caderneta.split("Estatisticas ainda")[0]
+        caderneta = caderneta.split("Caderneta salva ao fim")[0]
         posicoes = [caderneta.index("  " + nome)
                     for nome in ["Ana", "Bia", "Caio", "Davi"]]
         assert posicoes == sorted(posicoes)

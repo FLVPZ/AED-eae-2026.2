@@ -21,9 +21,11 @@ Use de preferência um terminal com pelo menos 80 colunas e 28 linhas. Cores e l
 
 Antes de começar e antes de conferir o VAR final, o terminal interativo aguarda Enter para permitir a leitura dos resumos. Esses passos não consomem entrada quando o programa recebe dados por redirecionamento.
 
-Os quatro nomes sao cadastrados na caderneta AVL. Nomes vazios, repetidos na mesma mesa ou com mais de 29 caracteres precisam ser informados novamente. A caderneta aparece em ordem alfabetica antes da partida, e os murais aparecem antes e depois do jogo.
+A caderneta é recuperada de `caderneta.txt` antes do cadastro. Os nomes existentes mantêm seus contadores; jogadores novos entram com zero. Nomes vazios, repetidos na mesma mesa, com ponto e vírgula ou com mais de 29 caracteres precisam ser informados novamente. A caderneta aparece em ordem alfabética antes da partida, e os murais aparecem antes e depois do jogo.
 
-Esta integracao e parcial: os contadores ainda nao sao atualizados durante a partida e os dados ainda nao sao salvos em disco. Por isso, jogadores novos aparecem com zero maos ganhas e sem pedidos recebidos. Os modulos de estatisticas e persistencia serao conectados quando estiverem prontos.
+Ao fim de cada mão, o programa salva a caderneta e acrescenta o número da mão, a dupla vencedora, os pontos e o placar em `historico.txt`. A caderneta também é salva no encerramento da partida. A atualização dos contadores durante o jogo e a mão mais cara ainda dependem do módulo de estatísticas.
+
+Cada linha de `caderneta.txt` contém `nome;partidas;maos;pedidos;corridos;recebidos`. A gravação usa um arquivo temporário e só substitui a caderneta depois de concluir a escrita. Se o arquivo existente estiver inválido ou no formato antigo sem pedidos recebidos, o programa informa o erro e o preserva. Os dois arquivos de dados ficam na pasta de execução e são ignorados pelo Git.
 
 ## Organização do projeto
 
@@ -43,6 +45,7 @@ O `main.c`, o `README.md` e o `.gitignore` ficam na raiz. Todos os módulos fica
 - `interface.h`: tema do terminal, cores opcionais, cartas, cabeçalhos, avisos e pausas de leitura
 - `caderneta.h`: cadastro em arvore AVL integrado aos nomes da mesa, busca por nome, percursos e liberacao da arvore
 - `mural.h`: ordenacao e exibicao dos murais de maos ganhas e taxa de fuga, preservando os nos da caderneta
+- `disco.h`: recuperação e gravação da caderneta completa, incluindo pedidos recebidos, e histórico de pontos por mão
 
 ## 1ª unidade
 
@@ -82,7 +85,7 @@ A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados s
 - [x] Implementar a listagem da caderneta em ordem alfabética.
 - [x] Integrar a caderneta ao cadastro dos jogadores.
 - [ ] Atualizar partidas jogadas, mãos ganhas, pedidos feitos, pedidos recebidos e fugas durante o jogo.
-- [ ] Salvar os dados ao fim de cada mão e recuperar a caderneta ao abrir o programa novamente.
+- [x] Salvar os dados ao fim de cada mão e recuperar a caderneta ao abrir o programa novamente.
 - [x] Exibir o mural com os jogadores em ordem crescente de maos ganhas.
 - [x] Exibir o mural da taxa de fuga calculada a partir dos contadores da caderneta.
 - [ ] Identificar e exibir a mão mais cara da partida.
@@ -90,5 +93,5 @@ A terceira entrega fecha as contas do bar, com caderneta, estatísticas, dados s
 - [x] Organizar a interface no terminal com placar, cartas, comandos e resumos no tema do Bar do Pato.
 - [x] Corrigir as alturas e o balanceamento da AVL após remoções.
 - [x] Integrar a caderneta e os murais na `main.c`, com liberação dos vetores e da árvore.
-- [ ] Integrar os módulos de estatísticas e persistência quando estiverem prontos.
+- [x] Integrar a persistência na `main.c`, no fim de cada mão e no encerramento da partida.
 - [ ] Preparar o relatório com a participação de cada integrante.

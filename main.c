@@ -9,6 +9,7 @@
 #include "include/var.h"
 #include "include/caderneta.h"
 #include "include/mural.h"
+#include "include/disco.h"
 
 int main() {
     ui_iniciar();
@@ -23,6 +24,14 @@ int main() {
         liberaABB(caderneta);
         return 1;
     }
+    int carga = carregar_caderneta(caderneta);
+    if (carga == DISCO_ERRO) {
+        fprintf(stderr, "Nao foi possivel carregar caderneta.txt. O arquivo foi preservado.\n");
+        fprintf(stderr, "Confira o formato: nome;partidas;maos;pedidos;corridos;recebidos.\n");
+        Destroi_listad(v);
+        liberaABB(caderneta);
+        return 1;
+    }
     
     tp_fila mesa;
     char nomes[4][NOME_MAX];
@@ -31,6 +40,9 @@ int main() {
     inicializaFila(&mesa);
 
     criativo_apresentar();
+    if (carga == DISCO_CARREGADO) {
+        printf("  Caderneta recuperada: %d jogador(es).\n", totalNOsABB(caderneta));
+    }
     ui_secao("QUEM SENTA NA MESA?");
     if (!cadastrar_jogadores(nomes)) {
         Destroi_listad(v);
@@ -50,11 +62,11 @@ int main() {
     ui_secao("CADERNETA DO BAR - ordem alfabetica");
     printf("  %-29s %4s %4s %5s %5s %5s\n", "JOGADOR", "PART", "MAOS", "PEDIU", "RECEB", "FUGIU");
     emOrd(caderneta);
-    printf("\nEstatisticas ainda nao sao atualizadas nem salvas nesta versao.\n");
+    printf("\nCaderneta salva ao fim de cada mao; atualizacao das estatisticas pendente.\n");
     exibir_murais(caderneta);
     ui_pausar("Tudo pronto. Abrir a mesa");
 
-    jogar_partida(&mesa, v);
+    jogar_partida(&mesa, v, caderneta);
 
     exibir_murais(caderneta);
     Destroi_listad(v);
