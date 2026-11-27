@@ -14,6 +14,10 @@
 int main() {
     ui_iniciar();
     ui_limpar();
+    if (!disco_iniciar()) {
+        fprintf(stderr, "Nao foi possivel localizar a pasta dos arquivos de dados.\n");
+        return 1;
+    }
 
     tp_listad *v;
     v = inicializa_listad();
@@ -26,7 +30,7 @@ int main() {
     }
     int carga = carregar_caderneta(caderneta);
     if (carga == DISCO_ERRO) {
-        fprintf(stderr, "Nao foi possivel carregar caderneta.txt. O arquivo foi preservado.\n");
+        fprintf(stderr, "%s\nO arquivo foi preservado.\n", disco_ultimo_erro);
         fprintf(stderr, "Confira o formato: nome;partidas;maos;pedidos;corridos;recebidos.\n");
         Destroi_listad(v);
         liberaABB(caderneta);
@@ -58,11 +62,19 @@ int main() {
         }
     }
     montar_mesa(&mesa, nomes);
+    int caderneta_salva = salvar_caderneta(caderneta);
+    if (!caderneta_salva) fprintf(stderr, "%s\n", disco_ultimo_erro);
+    int historico_salvo = iniciar_historico(mesa);
+    if (!historico_salvo) fprintf(stderr, "%s\n", disco_ultimo_erro);
+    if (!caderneta_salva || !historico_salvo) ui_pausar("Conferir a falha de gravacao");
+    printf("\nPasta dos arquivos de dados: %s\n", disco_diretorio);
 
     ui_secao("CADERNETA DO BAR - ordem alfabetica");
     printf("  %-29s %4s %4s %5s %5s %5s\n", "JOGADOR", "PART", "MAOS", "PEDIU", "RECEB", "FUGIU");
     emOrd(caderneta);
-    printf("\nCaderneta e estatisticas salvas ao fim de cada mao.\n");
+    printf("\nArquivos iniciais: caderneta %s; historico %s.\n",
+           caderneta_salva ? "salva" : "NAO salva", historico_salvo ? "salvo" : "NAO salvo");
+    printf("Negociacoes sao salvas na hora; resultados, ao fim da mao.\n");
     exibir_murais(caderneta);
     ui_pausar("Tudo pronto. Abrir a mesa");
 

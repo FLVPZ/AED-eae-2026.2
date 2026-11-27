@@ -21,6 +21,9 @@ typedef struct{
     char jogadores[4][NOME_MAX];
     tp_negociacao_VAR negociacoes[3];
     int qtd_negociacoes;
+    int pontos_em_jogo; // valor aceito; na fuga, pontos efetivamente concedidos
+    int encerrada_por_fuga;
+    int em_andamento;
     int aposta[3]; // POSIÇÃO 0 = Valor da ultima aposta pedida (-1 valor padrão para aposta 0); POSIÇÃO 1 = dupla que pediu a aposta; POSIÇÃO 2 = Outra dupla aceitou, 1->N, 0->S.
 	int dupla_vencedora;
     int manilha;

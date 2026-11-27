@@ -14,6 +14,8 @@ void inicializa_variavel_var(tp_item_VAR *e){
     e->rodada = -1;
     e->dupla_vencedora=-1;
     e->manilha = -1;
+    e->pontos_em_jogo = 1;
+    e->em_andamento = 1;
     for (int i = 0; i < 4; i++) {
         e->cartas_jogadas[i].naipe = 'A';
         e->cartas_jogadas[i].valor = -1;
@@ -23,6 +25,13 @@ void inicializa_variavel_var(tp_item_VAR *e){
         e->aposta[i] = -1;
       
     }
+}
+
+/* Guarda a carta junto do nome no instante da jogada, antes de girar a fila. */
+void registrar_jogada_var(tp_item_VAR *e, int posicao, const char *nome, tp_item carta) {
+    if (e == NULL || nome == NULL || posicao < 0 || posicao >= 4) return;
+    snprintf(e->jogadores[posicao], sizeof(e->jogadores[posicao]), "%s", nome);
+    e->cartas_jogadas[posicao] = carta;
 }
 
 // Registra cada resposta valida antes de a aposta mudar de estado.
@@ -68,6 +77,7 @@ void imprimir_carta(tp_item carta) {
 
 void imprimir_var(tp_no_de *atu){
 	ui_titulo("VAR DO BAR  |  HISTORICO DA PARTIDA");
+    if (atu->info.em_andamento) printf("RODADA EM ANDAMENTO - somente cartas ja jogadas.\n");
 	printf("Numero da rodada: %d\n", atu->info.rodada);
 	printf("Numero da mao: %d\n", atu->info.mao);
 	printf("Cartas jogadas: \n");
@@ -91,6 +101,13 @@ void imprimir_var(tp_no_de *atu){
                n->resposta == 'C' ? "correu." : "aumentou.");
     }
     if (atu->info.aposta[0] > 0) printf("Valor registrado da aposta: %d\n", atu->info.aposta[0]);
+    printf("Valor aceito da mao: %d ponto(s)\n", atu->info.pontos_em_jogo);
+    if (atu->info.em_andamento) return;
+    if (atu->info.encerrada_por_fuga) {
+        printf("Mao encerrada por fuga: Dupla %d recebeu %d ponto(s).\n",
+               atu->info.dupla_vencedora, atu->info.pontos_em_jogo);
+        return;
+    }
 
 	if(atu->info.dupla_vencedora == 0)
 		printf("Rodada empatada\n");
@@ -105,7 +122,7 @@ void mostra_var(tp_listad *lista, int atual, int mudar) {
 	else {
     	tp_no_de *atu;     
         atu = lista->ini;
-		for (int i=0; i<atual; i++){
+        for (int i=0; i<atual && atu->prox != NULL; i++){
 			atu=atu->prox;
 		}
 		if(mudar==1 && atu->prox!=NULL){
@@ -151,6 +168,7 @@ void cartas_var(tp_item_VAR *e, tp_item cartas[4], int manilha){
 
 //Chamar para adicionar a variavel que vai ao VAR no VAR
 int adiciona_var (tp_item_VAR *e, tp_listad *lista){
+    e->em_andamento = 0;
     if(insere_no_VAR (lista, *e)==0) return 0;
     inicializa_variavel_var(e);
     return 1;
@@ -159,20 +177,29 @@ int adiciona_var (tp_item_VAR *e, tp_listad *lista){
 
 
 //Chamar para a visualização do VAR
-void ver_var(tp_listad *var){
+void ver_var_com_rodada(tp_listad *var, const tp_item_VAR *parcial){
     int cont = 1;
     int atual = 0;
     int escolha;
-    int tam_VAR = tamanho_var(var);
+    int salvas = tamanho_var(var);
+    int tam_VAR = salvas + (parcial != NULL);
+    if (parcial) atual = salvas;
 
     if (tam_VAR == 0){
         printf("\nO VAR ainda nao tem nenhuma rodada registrada.\n");
         return;
     }
 
-    //Mover para a direira = 1, mover para a esquerda = -1;
-    mostra_var(var, atual, 0);
+    char aviso[100] = "";
     while (cont==1){
+        ui_limpar();
+        if (parcial && atual == salvas) {
+            tp_no_de consulta = {0};
+            consulta.info = *parcial;
+            imprimir_var(&consulta);
+        } else mostra_var(var, atual, 0);
+        if (aviso[0]) printf("%s\n", aviso);
+        aviso[0] = '\0';
         ui_secao("CONTROLE DO VAR");
         printf("Rodada %d de %d no VAR\n", atual + 1, tam_VAR);
         printf("  [1] Voltar ao jogo  [2] Proxima rodada  [3] Rodada anterior\n  Sua escolha: ");
@@ -187,23 +214,25 @@ void ver_var(tp_listad *var){
             break;
         } else if (escolha == 2){
             if(atual >= tam_VAR - 1){
-                printf("Fim do VAR: nao ha proxima rodada.\n");
+                snprintf(aviso, sizeof(aviso), "Fim do VAR: nao ha proxima rodada.");
             } else {
-                mostra_var(var, atual, 1);
                 atual++;
             }
         } else if(escolha == 3){
             if(atual==0){
-                printf("Inicio do VAR: nao ha rodada anterior.\n");
+                snprintf(aviso, sizeof(aviso), "Inicio do VAR: nao ha rodada anterior.");
             } else {
-                mostra_var(var, atual, -1);
                 atual--;
             }
         } else {
-            printf("Opção invalida, digite um numero valido\n");
+            snprintf(aviso, sizeof(aviso), "Opcao invalida, digite um numero valido.");
         }
     }
 
+}
+
+void ver_var(tp_listad *var) {
+    ver_var_com_rodada(var, NULL);
 }
 
 #endif

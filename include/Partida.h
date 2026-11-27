@@ -98,6 +98,10 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                   ArvAVL *caderneta) {
     tp_item_VAR item_var;
     inicializa_variavel_var(&item_var);
+    item_var.mao = m->numero;
+    item_var.rodada = m->n_rodadas + 1;
+    item_var.manilha = m->valor_manilha;
+    item_var.pontos_em_jogo = m->aposta.valor;
     for (int k = 0; k < 4; k++) {
         tp_jogador jogador;
         posicao_do_jogador(*mesa, k, &jogador);
@@ -154,6 +158,13 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                     dupla_vencedora_var(&item_var, m->dupla_vencedora);
                     cartas_var(&item_var, cartas, m->valor_manilha);
                     aposta_var(&item_var, m->aposta.dupla_pediu, proximo_valor(m->aposta.valor), 1);
+                    item_var.pontos_em_jogo = m->pontos;
+                    item_var.encerrada_por_fuga = 1;
+                    item_var.em_andamento = 0;
+                    if (!gravar_rodada_historico(&item_var)) {
+                        fprintf(stderr, "Falha ao salvar VAR: %s\n", disco_ultimo_erro);
+                        ui_pausar("Conferir a falha de gravacao");
+                    }
                     adiciona_var(&item_var, v);
 
                     girar_roda(mesa, (4 - i) % 4);
@@ -164,10 +175,9 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
                 criativo_enviar_sinal(*mesa, &j);
             }
             else if (op == 'V') {
-                ver_var(v);
-                ui_aviso(tamanho_var(v) == 0
-                         ? "O VAR ainda nao tem rodadas registradas. Sua vez continua."
-                         : "Consulta do VAR encerrada. Voce continua com a vez.");
+                item_var.pontos_em_jogo = m->aposta.valor;
+                ver_var_com_rodada(v, &item_var);
+                ui_aviso("Consulta do VAR encerrada. Voce continua com a vez.");
             }
             else {
                 printf("Opcao invalida.\n");
@@ -177,6 +187,7 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
 
         int qtd = cartas_na_mao;
         jogar_carta(&j, &qtd, escolhida, &cartas[i]);
+        registrar_jogada_var(&item_var, i, j.nome, cartas[i]);
         ui_aviso("%s jogou %s de %s.", j.nome, ui_valor(cartas[i].valor),
                  ui_naipe(cartas[i].naipe));
         strcpy(nomes[i], j.nome);
@@ -214,10 +225,17 @@ int jogar_rodada(tp_fila *mesa, tp_mao_atual *m, const int placar[3], tp_listad 
     else {
         aposta_var(&item_var, m->aposta.ultima_dupla, m->aposta.valor, 0);
     }
+    item_var.pontos_em_jogo = m->aposta.valor;
+    item_var.em_andamento = 0;
+    if (!gravar_rodada_historico(&item_var)) {
+        fprintf(stderr, "Falha ao salvar VAR: %s\n", disco_ultimo_erro);
+        ui_pausar("Conferir a falha de gravacao");
+    }
     adiciona_var(&item_var, v);
 
     m->resultados[m->n_rodadas] = dupla_rodada;
     m->n_rodadas++;
+    ui_pausar("Rodada concluida. Continuar");
     return 0;
 }
 
@@ -262,7 +280,9 @@ int jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
     ui_aviso("Dupla %d levou a mao %d: +%d ponto(s).", m.dupla_vencedora, numero_mao, m.pontos);
     registrar_dupla_vencedora(caderneta, *mesa, m.dupla_vencedora);
     int caderneta_salva = salvar_caderneta(caderneta);
+    if (!caderneta_salva) fprintf(stderr, "%s\n", disco_ultimo_erro);
     int historico_salvo = gravar_historico(m.numero, m.dupla_vencedora, m.pontos, placar);
+    if (!historico_salvo) fprintf(stderr, "%s\n", disco_ultimo_erro);
     if (!caderneta_salva || !historico_salvo) {
         fprintf(stderr, "Falha ao salvar %s%s%s. Os dados da caderneta continuam na memoria.\n",
                 caderneta_salva ? "" : "a caderneta",
@@ -271,6 +291,7 @@ int jogar_mao(tp_fila *mesa, int placar[3], int numero_mao, tp_listad *v,
         ui_aviso("Falha na gravacao. Caderneta: %s; historico: %s.",
                  caderneta_salva ? "salva" : "nao salva", historico_salvo ? "salvo" : "nao salvo");
     }
+    ui_pausar("Mao concluida. Continuar");
     return m.pontos;
 }
 
@@ -309,8 +330,12 @@ void jogar_partida(tp_fila *mesa, tp_listad *v, ArvAVL *caderneta) {
     printf("Mao mais cara da partida: %d ponto(s), mao %d.\n", maior_mao, numero_maior_mao);
     registrar_partida_jogadores(caderneta, *mesa);
     if (!salvar_caderneta(caderneta)) {
-        fprintf(stderr, "Nao foi possivel salvar a caderneta no encerramento.\n");
+        fprintf(stderr, "Nao foi possivel salvar a caderneta no encerramento: %s\n", disco_ultimo_erro);
         ui_aviso("Caderneta nao salva no encerramento. Confira o acesso ao arquivo.");
+    }
+    if (!encerrar_historico(placar, maior_mao, numero_maior_mao)) {
+        fprintf(stderr, "Nao foi possivel concluir o historico: %s\n", disco_ultimo_erro);
+        ui_aviso("Historico nao salvo no encerramento. Confira o acesso ao arquivo.");
     }
     ui_mostrar_aviso();
     ui_pausar("Conferir o VAR da partida");
