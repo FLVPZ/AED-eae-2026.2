@@ -2,7 +2,7 @@
 
 Projeto de Algoritmos e Estrutura de Dados do curso de Engenharia da Computação do SENAI CIMATEC, semestre 2026.2.
 
-Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. O jogo é executado no terminal por `main.c`, com placar, cartas e comandos visíveis durante a jogada.
+Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. O jogo é executado no terminal por `main.c`, com placar, cartas e comandos visíveis durante a jogada. Há também uma interface gráfica de navegador, em `web/`, construída sobre a mesma lógica em C compilada para WebAssembly (veja "Interface gráfica (navegador)" abaixo).
 
 ## Como compilar e executar
 
@@ -64,6 +64,51 @@ As estatísticas são acumuladas por nome: pedidos feitos, pedidos recebidos, fu
 
 No encerramento, o programa mostra a mão de maior valor efetivamente pontuado (1, 3, 6 ou 12); em empate, mantém a primeira. O VAR identifica quem jogou cada carta e registra toda a negociação realizada em cada rodada, incluindo aumentos, aceite e fuga.
 
+## Interface gráfica (navegador)
+
+Além da versão de terminal, a pasta `web/` traz uma interface gráfica no tema
+"Bar do Pato": mesa de feltro, cartas grandes com manilhas e ZAP em destaque,
+placar, vira e valor da mão, pedidos de truco/seis/doze, sinais fixos entre
+parceiros e consulta ao VAR e à caderneta sem perder a vez. A mão de quem
+está jogando fica escondida sempre que o controle passa para outro jogador,
+até a pessoa confirmar que está pronta — pensado para "passar o celular/PC"
+em volta da mesa.
+
+**A interface gráfica não reimplementa as regras.** O arquivo
+`web/motor_web.c` inclui e chama diretamente os mesmos arquivos de
+`include/` usados por `main.c` (a pilha do baralho, a fila dos jogadores, a
+negociação de aposta, a AVL da caderneta e a lista do VAR); ele só expõe
+essas funções para a página em vez de um laço de terminal. Esse arquivo é
+compilado para WebAssembly e roda inteiramente no navegador: não é preciso
+instalar nada, nem ter permissão de administrador, nem ter compilador C
+instalado para **jogar**.
+
+### Como jogar (sem compilar nada)
+
+Abra `web/dist/index.html` com dois cliques em qualquer navegador atual
+(Chrome, Edge, Firefox) — funciona offline, sem servidor e sem internet,
+inclusive no Windows. O arquivo já traz o motor compilado embutido.
+
+### Como recompilar a interface gráfica (opcional)
+
+Só é necessário se você alterar `web/motor_web.c` ou algum arquivo de
+`include/`. Requer o [WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases)
+(clang com suporte a `wasm32-wasi`) e Python 3 para montar o arquivo final.
+
+```bash
+# baixe e extraia o wasi-sdk (ex.: wasi-sdk-24.0-x86_64-linux.tar.gz)
+cd web
+WASI_SDK_PATH=/caminho/para/wasi-sdk ./build_web.sh
+# gera web/dist/index.html e web/dist/motor.wasm
+```
+
+A persistência em disco (`caderneta.txt`/`historico.txt`, `include/disco.h`)
+continua sendo exclusiva da versão de terminal: um módulo WebAssembly rodando
+no navegador não tem acesso ao sistema de arquivos do jogador. Na interface
+gráfica, a caderneta (mesma árvore AVL, mesmas regras de taxa de fuga) é
+calculada em memória durante a sessão do navegador e reinicia a cada "Novo
+jogo"; a versão de terminal continua salvando tudo em arquivo, como antes.
+
 ## Organização do projeto
 
 O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, a exibição dos murais e a liberação da memória. Os módulos ficam em `include/`:
@@ -84,6 +129,12 @@ O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, 
 - `caderneta.h`: cadastro em árvore AVL, busca por nome, percursos e liberação da árvore.
 - `mural.h`: ordenação e exibição dos murais de mãos ganhas e taxa de fuga.
 - `disco.h`: leitura e gravação da caderneta e histórico de pontos por mão.
+
+A pasta `web/` contém a interface gráfica (veja a seção acima):
+`motor_web.c` (adaptador que chama a lógica de `include/` e expõe o estado
+do jogo em JSON), `index_template.html`, `style.css` e `app.js` (fonte da
+página) e `build_web.sh` (script que compila para WebAssembly e monta o
+arquivo final `web/dist/index.html`).
 
 ## 1ª unidade
 

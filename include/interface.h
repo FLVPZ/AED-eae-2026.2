@@ -12,6 +12,10 @@
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
+#elif defined(__wasm__)
+/* Build do navegador (WebAssembly): nao ha terminal de verdade por tras do
+ * motor; a pagina HTML cuida de toda a apresentacao. Mesma logica, sem
+ * ioctl/isatty que nao existem nesse alvo. */
 #else
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -42,6 +46,11 @@ void ui_iniciar(void) {
         int largura = info.srWindow.Right - info.srWindow.Left + 1;
         if (largura >= 36 && largura < interface_largura) interface_largura = largura;
     }
+#elif defined(__wasm__)
+    /* A pagina HTML e o terminal: nada para detectar aqui. */
+    saida_terminal = 0;
+    entrada_terminal = 0;
+    suporta_ansi = 0;
 #else
     saida_terminal = isatty(STDOUT_FILENO);
     entrada_terminal = isatty(STDIN_FILENO);
