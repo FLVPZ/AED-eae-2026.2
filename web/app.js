@@ -13,8 +13,7 @@
   const NOME_MAX = 30;
 
   // ---------------------------------------------------------------------
-  // Shim WASI minimo (mesmo propósito do web/../test_motor/wasi_shim.js
-  // usado nos testes automatizados em Node: aqui roda no navegador).
+  // Shim WASI minimo para as chamadas usadas pelo motor no navegador.
   // ---------------------------------------------------------------------
   function makeWasiShim(getMemory) {
     function mem() { return new DataView(getMemory().buffer); }
@@ -65,7 +64,7 @@
     const bytes = new Uint8Array(wasmMemory.buffer);
     const slotBase = base + indice * NOME_MAX;
     bytes.fill(0, slotBase, slotBase + NOME_MAX);
-    const codificado = new TextEncoder().encode(nome).slice(0, NOME_MAX - 1);
+    const codificado = new TextEncoder().encode(nome);
     bytes.set(codificado, slotBase);
   }
 
@@ -94,6 +93,7 @@
     const { instance } = await WebAssembly.instantiate(binario.buffer, importObj);
     wasmExports = instance.exports;
     wasmMemory = instance.exports.memory;
+    if (typeof wasmExports._initialize === "function") wasmExports._initialize();
     void memRef;
   }
 
@@ -476,6 +476,10 @@
   formCadastro.addEventListener("submit", (ev) => {
     ev.preventDefault();
     const nomes = [0, 1, 2, 3].map((i) => document.getElementById("nome-jogador-" + i).value.trim());
+    if (nomes.some((nome) => new TextEncoder().encode(nome).length >= NOME_MAX)) {
+      erroCadastro.textContent = "Um dos nomes ficou muito longo. Use um nome mais curto.";
+      return;
+    }
     for (let i = 0; i < 4; i++) escreverNomeNoScratch(i, nomes[i]);
     wasmExports.motor_definir_semente(Date.now() & 0x7fffffff);
     const ok = wasmExports.motor_iniciar();

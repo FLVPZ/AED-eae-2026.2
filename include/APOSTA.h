@@ -18,7 +18,6 @@ typedef struct { //guarda as infos da aposta
     int encerrada; //1 = alguem correu; 0 = continua
 } tp_aposta;
 
-#define APOSTA_CONTINUA 0
 #define APOSTA_CORRIDO 1
 
 void aposta_iniciar(tp_aposta *a) { //comeca uma nova mao com 1 ponto

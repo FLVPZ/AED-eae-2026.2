@@ -2,7 +2,6 @@
 #define LISTADE_H
 #include "STACK.h"
 #include "fila.h"
-#include <stdio.h>
 #include <stdlib.h>
 
 // No maximo tres propostas por mao: truco, seis e doze.

@@ -7,22 +7,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "STACK.h"
 #include "fila.h"
-
-#define NOME_MAX 30
+#include "caderneta.h"
 
 void limpar_buffer() { //limpa o buffer do teclado
     int c;
     while ((c = getchar()) != '\n' && c != EOF); //a variável c é temporária e armazena os caracteres do buffer, até a quebra de linha ou o fim do arquivo.
-}
-
-void limpar_tela() { //pode ser chamada na main para limpar o terminal (não é obrigatória)
-#ifdef _WIN32 
-    system("cls"); //se o OS for windows
-#else
-    system("clear"); //se o OS for linus/mac
-#endif
 }
 
 void remover_quebra_linha(char *str) { //remove o enter do fgets na leitura de nomes
@@ -78,6 +68,7 @@ int cadastrar_jogadores(char nomes[4][NOME_MAX]) {
             while (tamanho > 0 && isspace((unsigned char)nomes[i][tamanho - 1])) {
                 nomes[i][--tamanho] = '\0';
             }
+            primeira_letra_maiuscula(nomes[i]);
             int repetido = 0;
             int nome_invalido = 0;
             for (size_t j = 0; j < tamanho; j++) {
@@ -121,24 +112,5 @@ int posicao_do_jogador(tp_fila m, int posicao, tp_jogador* j_out) { //consulta o
     *j_out = temp;
     return 1; //sucesso
 }
-
-// usa uma cópia da fila, então mostrar a mesa não muda a ordem dos jogadores
-void exibir_mesa(tp_fila m) {
-    printf("\nMESA\n");
-    tp_jogador j;
-
-    for (int i = 0; i < 4; i++) {
-        if (removeFila(&m, &j)) {
-            if (i == 0) {
-                printf("Jogador %d: %s | Dupla %d (MAO)\n", i + 1, j.nome, j.dupla);
-            }
-            else {
-                printf("Jogador %d: %s | Dupla %d\n", i + 1, j.nome, j.dupla);
-            }
-        }
-    }
-}
-
-
 
 #endif

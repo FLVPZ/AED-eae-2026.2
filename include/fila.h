@@ -1,6 +1,5 @@
 #ifndef FILA_H
 #define FILA_H
-#include <stdio.h>
 #define MAX 5
 #include "STACK.h"
 #define NOME_MAX 30
@@ -55,10 +54,4 @@ int removeFila (tp_fila *f, tp_jogador*e){
 	return 1;
 }
 
-// retorna quantos jogadores estão na fila
-int tamanhoFila(tp_fila *f){
-	if (filaVazia(f)) return 0;
-	if (f->ini < f->fim) return f->fim - f->ini;
-	return MAX - 1 - f->ini + f->fim + 1;
-}
 #endif

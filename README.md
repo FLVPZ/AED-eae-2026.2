@@ -52,13 +52,13 @@ No encerramento, o programa anuncia a dupla vencedora e o placar. Após a pausa 
 
 No Windows, `caderneta.txt` e `historico.txt` ficam na mesma pasta do executável. No Linux/macOS, ficam na pasta de onde o programa foi executado. O terminal informa essa pasta ao iniciar a partida.
 
-Antes do cadastro, o programa procura a caderneta nessa pasta. Se ela nao existir, comeca vazia. Jogadores encontrados pelo mesmo nome mantem seus contadores; novos jogadores entram zerados. A comparacao diferencia maiusculas e minusculas.
+Antes do cadastro, o programa procura a caderneta nessa pasta. Se ela nao existir, comeca vazia. Jogadores encontrados pelo mesmo nome mantem seus contadores; novos jogadores entram zerados. Os nomes seguem a padronizacao da caderneta: primeira letra maiuscula e demais minusculas. A validacao de nomes repetidos usa essa mesma forma no terminal e no navegador.
 
 Ao iniciar a partida com os quatro nomes, o programa cria ou atualiza **os dois arquivos**. A caderneta e salva a cada pedido/resposta de truco, ao fim de cada mao e no encerramento. O historico recebe o inicio e as duplas, pedidos e respostas, as rodadas com os nomes e cartas de cada jogador, os pontos de cada mao e o resultado final. Sair antes do fim nao registra uma partida concluida, mas preserva as acoes ja gravadas.
 
 A caderneta tem um bloco descritivo por jogador, com partidas, maos ganhas, trucos pedidos, recebidos, fugas e taxa de fuga. As linhas com os seis campos `nome;partidas;maos;pedidos;corridos;recebidos` continuam presentes para recuperar a AVL; os comentarios explicativos comecam com `#`. Arquivos anteriores com os seis campos continuam sendo lidos. Nao e necessario editar os arquivos manualmente.
 
-A gravacao usa `caderneta.txt.tmp` e substitui a caderneta somente apos concluir a escrita. Um arquivo invalido ou antigo, sem pedidos recebidos, e preservado e impede o inicio do jogo ate que o problema seja resolvido. Falhas de gravacao informam o caminho do arquivo e o motivo; os dados da caderneta continuam na memoria. Se houver falha, confira a permissao de escrita e se outro programa bloqueou o arquivo. A caderneta, o historico e o temporario sao dados locais ignorados pelo Git.
+A gravacao usa `caderneta.txt.tmp` e substitui a caderneta somente apos concluir a escrita. Um arquivo invalido ou antigo, sem pedidos recebidos, e preservado e impede o inicio do jogo ate que o problema seja resolvido. Nomes de arquivos anteriores tambem sao padronizados durante a carga, mantendo os contadores. Se dois registros passarem a ter o mesmo nome, a carga e interrompida e o arquivo e preservado para revisao, sem somar ou apagar fichas automaticamente. Falhas de gravacao informam o caminho do arquivo e o motivo; os dados da caderneta continuam na memoria. Se houver falha, confira a permissao de escrita e se outro programa bloqueou o arquivo. A caderneta, o historico e o temporario sao dados locais ignorados pelo Git.
 
 As estatísticas são acumuladas por nome: pedidos feitos, pedidos recebidos, fugas e mãos ganhas são atualizados durante o jogo; uma partida jogada é registrada para os quatro jogadores ao concluir a partida. Cada pedido de truco, seis ou doze conta uma vez para quem efetivamente responde, mesmo que digite opções inválidas antes de decidir. A taxa de fuga é `corridos / recebidos × 100`; sem pedidos recebidos, o mural informa essa condição. Cada mão ganha conta para os dois integrantes da dupla vencedora.
 
@@ -91,16 +91,22 @@ inclusive no Windows. O arquivo já traz o motor compilado embutido.
 
 ### Como recompilar a interface gráfica (opcional)
 
-Só é necessário se você alterar `web/motor_web.c` ou algum arquivo de
-`include/`. Requer o [WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases)
-(clang com suporte a `wasm32-wasi`) e Python 3 para montar o arquivo final.
+Só é necessário se você alterar o motor em C ou os arquivos da interface.
+Requer Python 3 e um compilador com suporte a `wasm32-wasi`: o
+[WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases) ou o
+[Zig](https://ziglang.org/). O script pode ser executado da raiz do projeto.
 
 ```bash
 # baixe e extraia o wasi-sdk (ex.: wasi-sdk-24.0-x86_64-linux.tar.gz)
-cd web
-WASI_SDK_PATH=/caminho/para/wasi-sdk ./build_web.sh
+WASI_SDK_PATH=/caminho/para/wasi-sdk ./web/build_web.sh
+# alternativa, usada na compilacao desta versao:
+ZIG=/caminho/para/zig ./web/build_web.sh
 # gera web/dist/index.html e web/dist/motor.wasm
 ```
+
+O motor e compilado como modulo WASI reactor, inicializado pela pagina.
+O script atualiza o binario e o HTML juntos; nao e necessario manter um
+servidor para abrir o arquivo final. Esta versao foi recompilada com Zig 0.17.1.
 
 A persistência em disco (`caderneta.txt`/`historico.txt`, `include/disco.h`)
 continua sendo exclusiva da versão de terminal: um módulo WebAssembly rodando
@@ -114,7 +120,7 @@ jogo"; a versão de terminal continua salvando tudo em arquivo, como antes.
 O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, a exibição dos murais e a liberação da memória. Os módulos ficam em `include/`:
 
 - `STACK.h`: tipos da carta e da pilha, com operações sobre o topo do baralho.
-- `baralho.h` e `Embaralhar.h`: criação e embaralhamento das 40 cartas.
+- `Embaralhar.h`: criação e embaralhamento das 40 cartas, com armazenamento na pilha.
 - `fila.h`: estrutura do jogador e fila da mesa.
 - `Jogador.h`: leitura dos nomes, cadastro e montagem das duplas.
 - `Roda.h`: ordem dos jogadores e giro da mesa a cada nova mão.
@@ -128,7 +134,7 @@ O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, 
 - `interface.h`: apresentação no terminal, cartas, cores opcionais, avisos e pausas.
 - `caderneta.h`: cadastro em árvore AVL, busca por nome, percursos e liberação da árvore.
 - `mural.h`: ordenação e exibição dos murais de mãos ganhas e taxa de fuga.
-- `disco.h`: leitura e gravação da caderneta e histórico de pontos por mão.
+- `disco.h`: leitura e gravação da caderneta; registro de participantes, negociações, rodadas e resultados no histórico.
 
 A pasta `web/` contém a interface gráfica (veja a seção acima):
 `motor_web.c` (adaptador que chama a lógica de `include/` e expõe o estado

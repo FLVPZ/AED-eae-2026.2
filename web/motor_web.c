@@ -5,7 +5,7 @@
  * Este arquivo NAO reimplementa as regras do Truco. Ele inclui e chama
  * exatamente as mesmas estruturas e funcoes do motor em C usadas pela
  * versao de terminal (main.c / include/Partida.h): a pilha do baralho
- * (STACK.h/baralho.h/Embaralhar.h), a fila dos jogadores (fila.h/Roda.h),
+ * (STACK.h/Embaralhar.h), a fila dos jogadores (fila.h/Roda.h),
  * a logica de rodada e mao (jogo.h), a negociacao de aposta (APOSTA.h),
  * a arvore AVL da caderneta (caderneta.h/estatisticas.h) e a lista
  * duplamente encadeada do VAR (listade.h/var.h).
@@ -33,9 +33,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "../include/STACK.h"
-#include "../include/baralho.h"
 #include "../include/Embaralhar.h"
 #include "../include/fila.h"
 #include "../include/Jogador.h"
@@ -157,8 +157,8 @@ static const char *json_naipe_str(char naipe) {
 
 static int pode_pedir_(int dupla); /* ver definicao mais abaixo */
 
-static int eh_manilha_valor(tp_item carta) {
-    return M.manilha > 0 && carta.valor == M.manilha;
+static int eh_manilha_valor(tp_item carta, int valor_manilha) {
+    return valor_manilha > 0 && carta.valor == valor_manilha;
 }
 
 /* Encontra o indice do assento (0..3) a partir do nome do jogador. */
@@ -169,12 +169,19 @@ static int assento_do_nome(const char *nome) {
     return -1;
 }
 
-static int escrever_carta(char *buf, size_t tam, tp_item carta) {
+static int escrever_carta(char *buf, size_t tam, tp_item carta, int valor_manilha) {
     if (carta.valor < 1) return snprintf(buf, tam, "null");
     return snprintf(buf, tam, "{\"valor\":%d,\"naipe\":\"%s\",\"rotulo\":\"%s\",\"manilha\":%s,\"zap\":%s}",
                      carta.valor, json_naipe_str(carta.naipe), json_valor_str(carta.valor),
-                     eh_manilha_valor(carta) ? "true" : "false",
-                     (eh_manilha_valor(carta) && carta.naipe == 'P') ? "true" : "false");
+                     eh_manilha_valor(carta, valor_manilha) ? "true" : "false",
+                     (eh_manilha_valor(carta, valor_manilha) && carta.naipe == 'P') ? "true" : "false");
+}
+
+static const char *dono_da_carta(int posicao) {
+    const char *nome = M.registro.jogadores[posicao];
+    /* adiciona_var limpa o registro temporario; a rodada concluida esta na lista. */
+    if (!nome[0] && M.var && M.var->fim) nome = M.var->fim->info.jogadores[posicao];
+    return nome;
 }
 
 /* Quantidade de cartas que o assento ainda tem na mao (sem revelar o valor). */
@@ -182,7 +189,16 @@ static int cartas_restantes_do_assento(int seat_idx) {
     tp_jogador j;
     tp_fila copia = M.mesa;
     while (removeFila(&copia, &j)) {
-        if (strcmp(j.nome, M.assentos[seat_idx]) == 0) return 3 - M.rodada;
+        if (strcmp(j.nome, M.assentos[seat_idx]) == 0) {
+            int restantes = 3 - M.rodada;
+            if (M.etapa != FASE_RODADA &&
+                !((M.etapa == FASE_MAO || M.etapa == FASE_FIM) && !M.aposta.encerrada)) {
+                for (int i = 0; i < M.qtd_mesa; i++) {
+                    if (strcmp(j.nome, dono_da_carta(i)) == 0) restantes--;
+                }
+            }
+            return restantes;
+        }
     }
     return 0;
 }
@@ -201,20 +217,22 @@ int motor_estado_json(void) {
         M.etapa == FASE_RESPOSTA ? "negociacao" :
         M.etapa == FASE_RODADA ? "rodada_concluida" :
         M.etapa == FASE_MAO ? "mao_concluida" :
-        M.etapa == FASE_FIM ? "fim_partida" : "erro";
+        M.etapa == FASE_FIM ? "fim_partida" : M.etapa == FASE_CADASTRO ? "cadastro" : "erro";
 
-    tp_jogador atual;
+    tp_jogador atual = {0};
     posicao_do_jogador(M.mesa, 0, &atual);
     int seat_atual = assento_do_nome(atual.nome);
 
     char aviso_escapado[320];
     json_escapar(aviso_escapado, sizeof(aviso_escapado), M.aviso);
 
+    int rodada_exibida = (M.etapa == FASE_RODADA || M.etapa == FASE_MAO || M.etapa == FASE_FIM)
+                         && !M.aposta.encerrada ? M.rodada : M.rodada + 1;
     n += snprintf(b + n, tam - n,
         "{\"fase\":\"%s\",\"placar1\":%d,\"placar2\":%d,\"mao\":%d,\"rodada\":%d,"
         "\"valor_mao\":%d,\"vira\":", fase_txt, M.placar[1], M.placar[2], M.numero,
-        M.rodada + 1, M.aposta.valor);
-    n += escrever_carta(b + n, tam - n, M.vira);
+        rodada_exibida, M.aposta.valor);
+    n += escrever_carta(b + n, tam - n, M.vira, M.manilha);
     n += snprintf(b + n, tam - n, ",\"manilha_valor\":\"%s\",\"visivel\":%s,\"aviso\":\"%s\",",
                   M.manilha > 0 ? json_valor_str(M.manilha) : "?", M.visivel ? "true" : "false",
                   aviso_escapado);
@@ -241,7 +259,7 @@ int motor_estado_json(void) {
             n += snprintf(b + n, tam - n, ",\"mao\":[");
             for (int c = 0; c < qtd; c++) {
                 if (c) n += snprintf(b + n, tam - n, ",");
-                n += escrever_carta(b + n, tam - n, jcopia.mao[c]);
+                n += escrever_carta(b + n, tam - n, jcopia.mao[c], M.manilha);
             }
             n += snprintf(b + n, tam - n, "]");
         }
@@ -253,8 +271,8 @@ int motor_estado_json(void) {
     n += snprintf(b + n, tam - n, "\"mesa\":[");
     for (int i = 0; i < M.qtd_mesa; i++) {
         n += snprintf(b + n, tam - n, "%s{\"assento\":%d,\"carta\":", i ? "," : "",
-                      assento_do_nome(M.registro.jogadores[i]));
-        n += escrever_carta(b + n, tam - n, M.cartas[i]);
+                      assento_do_nome(dono_da_carta(i)));
+        n += escrever_carta(b + n, tam - n, M.cartas[i], M.manilha);
         n += snprintf(b + n, tam - n, "}");
     }
     n += snprintf(b + n, tam - n, "],");
@@ -335,7 +353,7 @@ static void escrever_rodada_var_json(char *b, size_t tam, int *n, const tp_item_
         char nome_escapado[NOME_MAX * 2];
         json_escapar(nome_escapado, sizeof(nome_escapado), v->jogadores[i][0] ? v->jogadores[i] : "?");
         *n += snprintf(b + *n, tam - *n, "%s{\"nome\":\"%s\",\"carta\":", i ? "," : "", nome_escapado);
-        *n += escrever_carta(b + *n, tam - *n, v->cartas_jogadas[i]);
+        *n += escrever_carta(b + *n, tam - *n, v->cartas_jogadas[i], v->manilha);
         *n += snprintf(b + *n, tam - *n, "}");
     }
     *n += snprintf(b + *n, tam - *n, "],\"negociacoes\":[");
@@ -462,11 +480,13 @@ __attribute__((export_name("motor_iniciar")))
 int motor_iniciar(void) {
     char nomes[4][NOME_MAX];
     for (int i = 0; i < 4; i++) {
-        snprintf(nomes[i], NOME_MAX, "%s", SCRATCH + i * NOME_MAX);
+        memcpy(nomes[i], SCRATCH + i * NOME_MAX, NOME_MAX);
+        nomes[i][NOME_MAX - 1] = '\0';
         if (!disco_nome_valido(nomes[i])) {
             snprintf(M.aviso, sizeof(M.aviso), "Preencha os quatro nomes, sem ponto e virgula.");
             return 0;
         }
+        primeira_letra_maiuscula(nomes[i]);
         for (int k = 0; k < i; k++) {
             if (strcmp(nomes[i], nomes[k]) == 0) {
                 snprintf(M.aviso, sizeof(M.aviso), "Use um nome diferente para cada jogador.");

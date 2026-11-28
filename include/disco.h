@@ -162,6 +162,7 @@ int disco_ler_registro(char *linha, info_caderneta *registro) {
     }
     if (!disco_nome_valido(campos[0])) return 0;
     strcpy(registro->nome_jogador, campos[0]);
+    primeira_letra_maiuscula(registro->nome_jogador);
     int *contadores[5] = {&registro->partidas_jogadas, &registro->maos_ganhas,
         &registro->trucos_pedidos, &registro->trucos_corridos, &registro->trucos_recebidos};
     for (int i = 0; i < 5; i++) {
@@ -186,7 +187,12 @@ int ler_caderneta_preOrd(ArvAVL* raiz, FILE* arquivo) {
         if (tamanho > 0 && linha[tamanho - 1] == '\r') linha[--tamanho] = '\0';
         if (tamanho == 0 || (linha[0] == '#' && strchr(linha, ';') == NULL)) continue;
         info_caderneta registro = {0};
-        if (!disco_ler_registro(linha, &registro) || !inserir(raiz, registro)) return 0;
+        if (!disco_ler_registro(linha, &registro)) return 0;
+        if (consultarValorAVL(raiz, registro.nome_jogador)) {
+            errno = EEXIST;
+            return 0;
+        }
+        if (!inserir(raiz, registro)) return 0;
     }
     return !ferror(arquivo);
 }
@@ -205,11 +211,15 @@ int carregar_caderneta(ArvAVL* raiz) {
         fclose(arquivo);
         return DISCO_ERRO;
     }
+    errno = 0;
     int ok = ler_caderneta_preOrd(carregada, arquivo);
+    int nomes_repetidos = !ok && errno == EEXIST;
     if (fclose(arquivo) != 0) ok = 0;
     if (!ok) {
-        errno = EINVAL;
-        disco_falha(DISCO_ARQUIVO_CADERNETA, "Caderneta invalida ou incompleta. Arquivo preservado");
+        errno = nomes_repetidos ? EEXIST : EINVAL;
+        disco_falha(DISCO_ARQUIVO_CADERNETA, nomes_repetidos
+                    ? "Nomes repetidos apos padronizacao. Arquivo preservado"
+                    : "Caderneta invalida ou incompleta. Arquivo preservado");
         liberaABB(carregada);
         return DISCO_ERRO;
     }
@@ -282,7 +292,7 @@ int gravar_rodada_historico(const tp_item_VAR *registro) {
     return disco_fechar_escrita(arquivo, ok, DISCO_ARQUIVO_HISTORICO);
 }
 
-/* Mantem a linha antiga para a leitura dos historicos ja existentes. */
+/* Registra o resumo de pontos da mao no historico. */
 int gravar_historico(int numero_mao, int dupla_vencedora, int pontos,
                      const int placar[3]) {
     if (placar == NULL || numero_mao <= 0 || dupla_vencedora < 1
@@ -302,23 +312,6 @@ int encerrar_historico(const int placar[3], int maior_mao, int numero_maior_mao)
                      "Mao mais cara: %d ponto(s), mao %d.\n",
                      placar[1] >= 12 ? 1 : 2, placar[1], placar[2], maior_mao, numero_maior_mao) >= 0;
     return disco_fechar_escrita(arquivo, ok, DISCO_ARQUIVO_HISTORICO);
-}
-
-int ler_historico(void) {
-    FILE *arquivo = fopen(DISCO_ARQUIVO_HISTORICO, "r");
-    if (arquivo == NULL) return errno == ENOENT ? DISCO_AUSENTE : DISCO_ERRO;
-    char linha[200], dupla_vencedora[30];
-    int numero_mao, pontos, placar1, placar2;
-    while (fgets(linha, sizeof(linha), arquivo) != NULL) {
-        if (sscanf(linha, "%d;%29[^;];+%d;%dx%d", &numero_mao, dupla_vencedora,
-                   &pontos, &placar1, &placar2) == 5) {
-            printf("Mao %d | %s (+%d pt) | Placar: %d x %d\n",
-                   numero_mao, dupla_vencedora, pontos, placar1, placar2);
-        }
-    }
-    int ok = !ferror(arquivo);
-    if (fclose(arquivo) != 0) ok = 0;
-    return ok ? DISCO_CARREGADO : DISCO_ERRO;
 }
 
 #endif
