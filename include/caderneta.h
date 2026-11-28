@@ -46,6 +46,7 @@ ArvAVL* criarAVL(){
 }
 
 void primeira_letra_maiuscula(char valor[]){
+	if (valor == NULL || valor[0] == '\0') return;
 	for(int i=0; valor[i] != '\0'; i++){
 		valor[i] = tolower((unsigned char)valor[i]);
 	}
@@ -159,9 +160,9 @@ int consultarValorAVL(ArvAVL* raiz, char valor[]){
 }
 
 struct NO* acessar_jogador(ArvAVL* raiz, char nome[]){
-	primeira_letra_maiuscula(nome);
 	if(raiz == NULL || nome == NULL || nome[0] == '\0'
 	   || strlen(nome) >= sizeof(((info_caderneta*)0)->nome_jogador)) return NULL;
+	primeira_letra_maiuscula(nome);
 	if(consultarValorAVL(raiz, nome)==0){
 		info_caderneta novo;
 		strcpy(novo.nome_jogador, nome);

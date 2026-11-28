@@ -40,6 +40,17 @@ static int criativo_encontrar_parceiro(tp_fila mesa, tp_jogador *parceiro) {
     return 0;
 }
 
+// Os tres sinais fixos do item criativo. Usado pelo terminal e pela
+// interface grafica, para o gesto nunca divergir entre as duas.
+static const char *criativo_gesto_texto(int opcao) {
+    switch (opcao) {
+        case 1: return "pisca ;)";
+        case 2: return "levanta a sobrancelha ^_^";
+        case 3: return "toca na mesa: toc, toc!";
+        default: return NULL;
+    }
+}
+
 // O jogador escolhe o gesto. Nenhuma carta do parceiro é consultada,
 // e enviar um sinal não joga carta, não muda a aposta e não passa a vez.
 static void criativo_enviar_sinal(tp_fila mesa, const tp_jogador *atual) {
@@ -54,16 +65,16 @@ static void criativo_enviar_sinal(tp_fila mesa, const tp_jogador *atual) {
         printf("  Para %s (Dupla %d)\n", parceiro.nome, parceiro.dupla);
         printf("  [1] Piscar  [2] Sobrancelha  [3] Tocar na mesa  [0] Voltar\n  Escolha: ");
         char op = ler_opcao();
-        const char *gesto;
 
-        switch (op) {
-            case '0': ui_aviso("Sinal cancelado. Voce continua com a vez."); return;
-            case '1': gesto = "pisca ;)"; break;
-            case '2': gesto = "levanta a sobrancelha ^_^"; break;
-            case '3': gesto = "toca na mesa: toc, toc!"; break;
-            default:
-                printf("Opcao invalida.\n");
-                continue;
+        if (op == '0') {
+            ui_aviso("Sinal cancelado. Voce continua com a vez.");
+            return;
+        }
+
+        const char *gesto = (op >= '1' && op <= '3') ? criativo_gesto_texto(op - '0') : NULL;
+        if (gesto == NULL) {
+            printf("Opcao invalida.\n");
+            continue;
         }
 
         printf("\n[SINAL] %s %s para %s.\n", atual->nome, gesto, parceiro.nome);

@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bar do Pato | Truco</title>
+<style>
+/* Bar do Pato - Truco | tema visual da mesa de bar */
+:root {
+  --madeira-1: #3b2415;
+  --madeira-2: #5a3620;
+  --madeira-3: #6e4428;
+  --feltro-1: #0b4a33;
+  --feltro-2: #0e5c40;
+  --feltro-borda: #06301f;
+  --ouro: #e3b23c;
+  --ouro-forte: #f4cf6b;
+  --creme: #f6ecd9;
+  --vermelho: #b5342a;
+  --preto-carta: #20201c;
+  --dupla1: #d99a2b;
+  --dupla2: #2b8fd9;
+  --aviso-bg: rgba(11, 20, 15, 0.92);
+  --sombra: rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100vh;
+  background:
+    repeating-linear-gradient(100deg, rgba(0,0,0,0.08) 0 2px, transparent 2px 6px),
+    radial-gradient(ellipse at 50% 0%, var(--madeira-3), var(--madeira-1) 75%);
+  color: var(--creme);
+  font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+.escondido { display: none !important; }
+
+/* ---------- Topo / marca do bar ---------- */
+.topo-bar {
+  text-align: center;
+  padding: 10px 8px 4px;
+}
+.logo-bar {
+  display: inline-block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  letter-spacing: 2px;
+  color: var(--ouro-forte);
+  text-shadow: 0 0 10px rgba(244,207,107,0.45), 0 2px 0 #2a1708;
+}
+.logo-bar .pato { font-size: 1.3rem; margin: 0 6px; }
+.subtitulo-bar {
+  color: #d9c7a8;
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* ---------- Tela de cadastro ---------- */
+.tela-cadastro {
+  max-width: 480px;
+  margin: 10px auto;
+  background: linear-gradient(160deg, var(--madeira-3), var(--madeira-2));
+  border: 3px solid var(--madeira-1);
+  border-radius: 14px;
+  padding: 20px 22px 26px;
+  box-shadow: 0 10px 30px var(--sombra);
+}
+.tela-cadastro h2 { margin-top: 0; color: var(--ouro-forte); text-align: center; }
+.tela-cadastro p.explicacao { font-size: 0.85rem; color: #e5d8bf; text-align: center; margin-top: -6px;}
+.campo-dupla { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.rotulo-dupla {
+  width: 76px; flex-shrink: 0; font-size: 0.78rem; font-weight: bold; text-align: center;
+  padding: 6px 4px; border-radius: 8px; color: #241400;
+}
+.rotulo-dupla.d1 { background: var(--dupla1); }
+.rotulo-dupla.d2 { background: var(--dupla2); color: #06151f; }
+.campo-dupla input {
+  flex: 1; padding: 9px 10px; border-radius: 8px; border: 2px solid #22140a;
+  background: #fbf3e2; font-size: 1rem;
+}
+.erro-cadastro { color: #ffb4a8; min-height: 1.2em; font-size: 0.85rem; text-align: center; margin-top: 6px;}
+.botao-grande {
+  display: block; width: 100%; margin-top: 16px; padding: 12px; font-size: 1.05rem;
+  font-weight: bold; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(180deg, var(--ouro-forte), var(--ouro));
+  color: #2a1a04; box-shadow: 0 4px 0 #8a5c12, 0 8px 14px var(--sombra);
+  transition: transform .08s ease;
+}
+.botao-grande:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a5c12; }
+
+/* ---------- Mesa principal ---------- */
+.area-jogo { max-width: 760px; margin: 0 auto 90px; padding: 0 8px; }
+
+.placar-topo {
+  display: flex; justify-content: center; gap: 10px; align-items: center;
+  margin: 4px auto 8px; flex-wrap: wrap;
+}
+.chip-placar {
+  background: var(--aviso-bg); border: 2px solid var(--ouro); border-radius: 10px;
+  padding: 6px 14px; font-weight: bold; font-size: 0.95rem; display: flex; gap: 6px; align-items: center;
+}
+.chip-placar .d1 { color: var(--dupla1); }
+.chip-placar .d2 { color: var(--dupla2); }
+.chip-info {
+  background: rgba(0,0,0,0.3); border-radius: 10px; padding: 6px 12px; font-size: 0.8rem; color: #e9dcc2;
+}
+.chip-valor-mao {
+  background: var(--vermelho); border-radius: 10px; padding: 6px 12px; font-size: 0.85rem; font-weight: bold;
+  box-shadow: 0 0 10px rgba(181,52,42,0.7);
+}
+
+.mesa-oval {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  border-radius: 50% / 46%;
+  background:
+    radial-gradient(ellipse at 50% 40%, var(--feltro-2), var(--feltro-1) 70%);
+  border: 14px solid var(--madeira-2);
+  outline: 4px solid var(--madeira-1);
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.55), 0 14px 26px var(--sombra);
+}
+.mesa-oval::before {
+  content: "🦆";
+  position: absolute; left: 50%; top: 14%; transform: translate(-50%,-50%);
+  font-size: 1.6rem; opacity: 0.35; filter: grayscale(0.2);
+}
+.mesa-oval::after {
+  content: "BAR DO PATO";
+  position: absolute; left: 50%; bottom: 10%; transform: translate(-50%,0);
+  font-size: 0.6rem; letter-spacing: 3px; color: rgba(227,178,60,0.35); font-weight: bold;
+}
+
+.assento {
+  position: absolute;
+  width: 128px;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+.assento[data-pos="0"] { left: 50%; top: 94%; }
+.assento[data-pos="1"] { left: 94%; top: 50%; }
+.assento[data-pos="2"] { left: 50%; top: 6%; }
+.assento[data-pos="3"] { left: 6%; top: 50%; }
+
+.cartao-assento {
+  background: rgba(10, 20, 14, 0.78);
+  border: 2px solid rgba(227,178,60,0.35);
+  border-radius: 10px;
+  padding: 5px 7px;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  transition: box-shadow .25s ease, border-color .25s ease, transform .25s ease;
+}
+.cartao-assento .nome { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cartao-assento .dupla-tag {
+  display: inline-block; margin-top: 2px; padding: 1px 7px; border-radius: 8px; font-size: 0.62rem; font-weight: bold;
+}
+.cartao-assento .dupla-tag.d1 { background: var(--dupla1); color: #241400; }
+.cartao-assento .dupla-tag.d2 { background: var(--dupla2); color: #06151f; }
+.cartao-assento .contagem { opacity: 0.75; font-size: 0.64rem; margin-top: 2px; }
+.assento.vez .cartao-assento {
+  border-color: var(--ouro-forte);
+  box-shadow: 0 0 16px 2px rgba(244,207,107,0.65);
+  transform: scale(1.07);
+}
+.assento.vez .cartao-assento::before { content: "👉 "; }
+
+.mini-cartas-dorso { display: flex; gap: 2px; justify-content: center; margin-top: 2px; }
+.mini-dorso {
+  width: 10px; height: 14px; border-radius: 2px;
+  background: repeating-linear-gradient(45deg, #7a1f1f, #7a1f1f 2px, #5c1414 2px, #5c1414 4px);
+  border: 1px solid #2d0b0b;
+}
+
+.centro-mesa {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 60%; height: 56%;
+  display: grid; place-items: center;
+}
+.vira-area {
+  position: absolute; left: 8px; top: 8px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.vira-area .rotulo-mini { font-size: 0.6rem; color: #d9c7a8; letter-spacing: 1px; }
+
+.cartas-na-mesa { position: relative; width: 100%; height: 100%; }
+.carta-mesa-pos {
+  position: absolute; transform: translate(-50%, -50%);
+}
+.carta-mesa-pos[data-pos="0"] { left: 50%; top: 78%; }
+.carta-mesa-pos[data-pos="1"] { left: 82%; top: 50%; }
+.carta-mesa-pos[data-pos="2"] { left: 50%; top: 22%; }
+.carta-mesa-pos[data-pos="3"] { left: 18%; top: 50%; }
+
+/* ---------- Carta de baralho ---------- */
+.carta {
+  width: 58px; height: 84px; border-radius: 7px; background: var(--creme);
+  border: 2px solid #c9b989; box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+  position: relative; display: flex; flex-direction: column; justify-content: space-between;
+  padding: 3px 4px; font-weight: 800; user-select: none;
+}
+.carta.vermelha { color: var(--vermelho); }
+.carta.preta { color: var(--preto-carta); }
+.carta .canto { font-size: 0.78rem; line-height: 1; }
+.carta .canto.inferior { align-self: flex-end; transform: rotate(180deg); }
+.carta .naipe-centro { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 1.5rem; }
+.carta.manilha { border-color: var(--ouro-forte); box-shadow: 0 0 10px 1px rgba(244,207,107,0.85), 0 3px 6px rgba(0,0,0,0.5); }
+.carta.manilha::after {
+  content: "MANILHA"; position: absolute; bottom: 2px; left: 0; right: 0; text-align: center;
+  font-size: 0.42rem; letter-spacing: 0.5px; color: #7a5a06; font-weight: 900;
+}
+.carta.zap { border-color: #ffd94d; animation: brilhoZap 1.6s ease-in-out infinite; }
+.carta.zap::after { content: "ZAP 👑"; color: #8a1f0a; }
+@keyframes brilhoZap {
+  0%,100% { box-shadow: 0 0 10px 2px rgba(255,217,77,0.7), 0 3px 6px rgba(0,0,0,0.5); }
+  50% { box-shadow: 0 0 20px 6px rgba(255,217,77,0.95), 0 3px 6px rgba(0,0,0,0.5); }
+}
+.carta.dorso {
+  background: repeating-linear-gradient(45deg, #7a1f1f, #7a1f1f 5px, #5c1414 5px, #5c1414 10px);
+  border-color: #2d0b0b;
+}
+.carta.pequena { width: 40px; height: 58px; }
+.carta.pequena .naipe-centro { font-size: 1.05rem; }
+.carta.pequena .canto { font-size: 0.6rem; }
+
+.carta-entra {
+  animation: entraCarta .45s cubic-bezier(.2,.9,.3,1.1) both;
+}
+@keyframes entraCarta {
+  from { transform: translateY(-40px) scale(.4) rotate(-12deg); opacity: 0; }
+  to { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+}
+
+/* ---------- Mao do jogador da vez ---------- */
+.painel-vez {
+  margin: 14px auto 0; max-width: 620px; text-align: center;
+}
+.painel-vez .quem {
+  font-size: 1rem; font-weight: bold; color: var(--ouro-forte); margin-bottom: 6px;
+}
+.leque-mao { display: flex; justify-content: center; gap: 8px; min-height: 110px; align-items: flex-end; flex-wrap: wrap;}
+.carta-jogavel { cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.carta-jogavel:hover { transform: translateY(-10px) scale(1.04); box-shadow: 0 10px 14px rgba(0,0,0,0.5); }
+.carta-jogavel:active { transform: translateY(-2px) scale(0.98); }
+.carta-saindo { animation: sobeSai .35s ease forwards; }
+@keyframes sobeSai { to { transform: translateY(-120px) scale(0.6); opacity: 0; } }
+
+.aviso-mesa {
+  text-align: center; margin: 8px auto; max-width: 560px; min-height: 1.4em;
+  font-size: 0.9rem; color: #f1e6cc; font-style: italic;
+}
+
+/* ---------- Barra de acoes ---------- */
+.barra-acoes {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(0deg, rgba(10,8,5,0.96), rgba(10,8,5,0.75));
+  border-top: 2px solid var(--madeira-1);
+  z-index: 20;
+}
+.botao {
+  border: none; border-radius: 9px; padding: 10px 14px; font-weight: bold; font-size: 0.85rem;
+  cursor: pointer; color: var(--creme); box-shadow: 0 3px 0 rgba(0,0,0,0.4);
+  transition: transform .08s ease;
+}
+.botao:active { transform: translateY(2px); box-shadow: none; }
+.botao:disabled { opacity: 0.35; cursor: default; }
+.botao.truco { background: linear-gradient(180deg, #d9452f, #a5291a); }
+.botao.sinal { background: linear-gradient(180deg, #2e7d5b, #1d5b40); }
+.botao.var { background: linear-gradient(180deg, #4c6fa5, #314a73); }
+.botao.stats { background: linear-gradient(180deg, #8a6d3b, #5e4a26); }
+.botao.secundario { background: linear-gradient(180deg, #555, #333); }
+.botao.ajuda { background: linear-gradient(180deg, #6b4c8a, #46305c); }
+
+/* ---------- Overlays ---------- */
+.sobreposicao {
+  position: fixed; inset: 0; background: rgba(5,8,6,0.92); z-index: 40;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  animation: fadeIn .25s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.cartao-overlay {
+  background: linear-gradient(160deg, var(--madeira-3), var(--madeira-2));
+  border: 3px solid var(--ouro); border-radius: 16px; padding: 26px 24px; max-width: 420px; width: 100%;
+  text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+}
+.cartao-overlay h2 { color: var(--ouro-forte); margin-top: 0; }
+.cartao-overlay .nome-destaque { font-size: 1.4rem; font-weight: 900; color: var(--creme); margin: 6px 0 14px; }
+.padrao-dorso-grande {
+  width: 100%; height: 70px; border-radius: 10px; margin-bottom: 14px;
+  background: repeating-linear-gradient(45deg, #7a1f1f, #7a1f1f 8px, #5c1414 8px, #5c1414 16px);
+  border: 2px solid #2d0b0b;
+}
+
+.modal-caixa {
+  background: linear-gradient(160deg, #233a30, #15251e);
+  border: 3px solid var(--ouro); border-radius: 14px; padding: 18px; max-width: 540px; width: 100%;
+  max-height: 86vh; overflow-y: auto; box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+}
+.modal-caixa h2 { margin-top: 0; color: var(--ouro-forte); text-align: center; }
+.modal-fechar-linha { text-align: right; }
+
+.linha-var-rodada { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px;}
+.linha-var-rodada.andamento { border: 2px dashed var(--ouro); }
+.linha-var-rodada .titulo-var { font-weight: bold; color: var(--ouro-forte); margin-bottom: 4px; }
+.linha-var-rodada .jogada-var { font-size: 0.85rem; display: flex; justify-content: space-between; padding: 1px 0; }
+.linha-var-rodada .negociacao-var { font-size: 0.78rem; color: #cfe4d6; margin-top: 4px; }
+.controle-var { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
+
+table.tabela-stats { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+table.tabela-stats th, table.tabela-stats td { padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.12); text-align: center; }
+table.tabela-stats th { color: var(--ouro-forte); }
+table.tabela-stats td:first-child, table.tabela-stats th:first-child { text-align: left; }
+
+.lista-ajuda li { margin-bottom: 8px; font-size: 0.88rem; }
+
+.popover-sinal {
+  position: absolute; bottom: 60px; background: #10261a; border: 2px solid var(--ouro);
+  border-radius: 10px; padding: 10px; display: flex; gap: 6px; z-index: 30; left: 50%; transform: translateX(-50%);
+}
+
+.tela-fim { max-width: 480px; margin: 40px auto; text-align: center; }
+.tela-fim .trofeu { font-size: 3rem; }
+.tela-fim .vencedor { font-size: 1.4rem; font-weight: 900; color: var(--ouro-forte); }
+
+@media (max-width: 420px) {
+  .carta { width: 48px; height: 70px; }
+  .carta .naipe-centro { font-size: 1.2rem; }
+  .assento { width: 100px; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="topo-bar">
+  <div class="logo-bar">BAR <span class="pato">🦆</span> DO PATO</div>
+  <div class="subtitulo-bar">Truco Paulista — 4 jogadores, 2 duplas, 12 pontos</div>
+</div>
+
+<div id="carregando" style="text-align:center;padding:30px;">Carregando a mesa…</div>
+
+<!-- ======================= TELA DE CADASTRO ======================= -->
+<div id="tela-cadastro" class="tela-cadastro escondido">
+  <h2>Quem senta na mesa?</h2>
+  <p class="explicacao">Jogadores 1 e 3 formam a Dupla 1; jogadores 2 e 4 formam a Dupla 2. Sentem-se alternados, como numa mesa de bar de verdade.</p>
+  <form id="form-cadastro">
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d1">Dupla 1</span>
+      <input id="nome-jogador-0" maxlength="29" placeholder="Jogador 1" required autocomplete="off">
+    </div>
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d2">Dupla 2</span>
+      <input id="nome-jogador-1" maxlength="29" placeholder="Jogador 2" required autocomplete="off">
+    </div>
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d1">Dupla 1</span>
+      <input id="nome-jogador-2" maxlength="29" placeholder="Jogador 3" required autocomplete="off">
+    </div>
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d2">Dupla 2</span>
+      <input id="nome-jogador-3" maxlength="29" placeholder="Jogador 4" required autocomplete="off">
+    </div>
+    <div class="erro-cadastro" id="erro-cadastro"></div>
+    <button class="botao-grande" type="submit">Abrir a mesa 🂠</button>
+  </form>
+  <button class="botao secundario" type="button" id="botao-ajuda-cadastro" style="margin-top:10px;width:100%;" onclick="document.getElementById('modal-ajuda').classList.remove('escondido')">? Nunca joguei truco — como funciona?</button>
+</div>
+
+<!-- ======================= TELA DE FIM DE PARTIDA ======================= -->
+<div id="tela-fim" class="tela-fim escondido">
+  <div class="trofeu">🏆</div>
+  <div class="vencedor" id="fim-vencedor"></div>
+  <p id="fim-placar"></p>
+  <p id="fim-mao-cara"></p>
+  <button class="botao-grande" id="botao-jogar-novamente">Jogar outra partida</button>
+</div>
+
+<!-- ======================= TELA DE JOGO ======================= -->
+<div id="tela-jogo" class="area-jogo escondido">
+  <div class="placar-topo">
+    <div class="chip-placar"><span class="d1" id="placar-d1">0</span>&nbsp;x&nbsp;<span class="d2" id="placar-d2">0</span></div>
+    <div class="chip-info" id="info-mao-rodada">MÃO 1 · RODADA 1/3</div>
+    <div class="chip-valor-mao" id="info-valor-mao">VALE 1 PONTO</div>
+    <button class="botao secundario" id="botao-novo-jogo-topo" title="Encerrar e voltar ao cadastro">🔄 Novo jogo</button>
+  </div>
+
+  <div class="mesa-oval">
+    <div class="vira-area">
+      <span class="rotulo-mini">VIRA</span>
+      <div id="vira-carta"></div>
+    </div>
+
+    <div id="assento-0" class="assento" data-pos="0"><div class="cartao-assento"></div></div>
+    <div id="assento-1" class="assento" data-pos="1"><div class="cartao-assento"></div></div>
+    <div id="assento-2" class="assento" data-pos="2"><div class="cartao-assento"></div></div>
+    <div id="assento-3" class="assento" data-pos="3"><div class="cartao-assento"></div></div>
+
+    <div class="centro-mesa">
+      <div id="cartas-na-mesa" class="cartas-na-mesa"></div>
+    </div>
+  </div>
+
+  <div class="aviso-mesa" id="aviso-mesa"></div>
+
+  <div class="painel-vez escondido" id="painel-vez">
+    <div class="quem" id="quem-joga"></div>
+    <div class="leque-mao" id="leque-mao"></div>
+  </div>
+</div>
+
+<!-- ======================= BARRA DE ACOES ======================= -->
+<div class="barra-acoes escondido" id="barra-acoes-wrapper">
+  <button class="botao truco" id="botao-truco">Pedir aumento</button>
+  <span style="position:relative;">
+    <button class="botao sinal" id="botao-sinal">🤝 Sinal</button>
+    <div class="popover-sinal escondido" id="popover-sinal">
+      <button class="botao secundario" data-gesto="1" title="Piscar">😉 Piscar</button>
+      <button class="botao secundario" data-gesto="2" title="Sobrancelha">🤨 Sobrancelha</button>
+      <button class="botao secundario" data-gesto="3" title="Tocar na mesa">👆 Mesa</button>
+    </div>
+  </span>
+  <button class="botao var" id="botao-var">🎥 VAR</button>
+  <button class="botao stats" id="botao-stats">📒 Caderneta</button>
+  <button class="botao ajuda" id="botao-ajuda">❓ Ajuda</button>
+</div>
+
+<!-- ======================= OVERLAY: PASSE O DISPOSITIVO ======================= -->
+<div class="sobreposicao escondido" id="overlay-pronto">
+  <div class="cartao-overlay">
+    <div class="padrao-dorso-grande"></div>
+    <h2>Passe o dispositivo</h2>
+    <div class="nome-destaque" id="overlay-pronto-nome"></div>
+    <p id="overlay-pronto-texto"></p>
+    <button class="botao-grande" id="botao-confirmar-pronto">Sou eu — revelar minha mão</button>
+  </div>
+</div>
+
+<!-- ======================= OVERLAY: NEGOCIACAO DE TRUCO ======================= -->
+<div class="sobreposicao escondido" id="overlay-negociacao">
+  <div class="cartao-overlay">
+    <h2>Pedido na mesa</h2>
+    <p id="negociacao-texto"></p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;">
+      <button class="botao truco" id="botao-aceitar">Aceitar</button>
+      <button class="botao secundario" id="botao-correr">Correr</button>
+      <button class="botao truco escondido" id="botao-aumentar">Aumentar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= OVERLAY: RESULTADO DE RODADA/MAO ======================= -->
+<div class="sobreposicao escondido" id="overlay-resultado">
+  <div class="cartao-overlay">
+    <h2 id="resultado-titulo"></h2>
+    <p id="resultado-texto"></p>
+    <button class="botao-grande" id="botao-continuar">Continuar</button>
+  </div>
+</div>
+
+<!-- ======================= MODAL: VAR ======================= -->
+<div class="sobreposicao escondido" id="modal-var">
+  <div class="modal-caixa">
+    <div class="modal-fechar-linha"><button class="botao secundario" id="var-fechar">Fechar ✕</button></div>
+    <h2>🎥 VAR do Bar — histórico da partida</h2>
+    <div id="var-conteudo"></div>
+    <div class="controle-var">
+      <button class="botao secundario" id="var-anterior">⟵ Anterior</button>
+      <span id="var-posicao"></span>
+      <button class="botao secundario" id="var-proxima">Próxima ⟶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= MODAL: ESTATISTICAS / CADERNETA ======================= -->
+<div class="sobreposicao escondido" id="modal-stats">
+  <div class="modal-caixa">
+    <div class="modal-fechar-linha"><button class="botao secundario" id="stats-fechar">Fechar ✕</button></div>
+    <h2>📒 Caderneta do Bar</h2>
+    <div id="stats-conteudo"></div>
+  </div>
+</div>
+
+<!-- ======================= MODAL: AJUDA ======================= -->
+<div class="sobreposicao escondido" id="modal-ajuda">
+  <div class="modal-caixa">
+    <div class="modal-fechar-linha"><button class="botao secundario" id="ajuda-fechar">Fechar ✕</button></div>
+    <h2>❓ Como jogar Truco Paulista</h2>
+    <ul class="lista-ajuda">
+      <li><b>Objetivo:</b> a primeira dupla a somar 12 pontos vence a partida.</li>
+      <li><b>Mão:</b> cada mão tem até 3 rodadas; cada jogador recebe 3 cartas.</li>
+      <li><b>Vira e manilha:</b> a carta virada no baralho define a manilha — a carta de valor seguinte, de qualquer naipe. Manilhas vencem qualquer carta comum. A manilha de Paus é o ZAP, a mais forte de todas.</li>
+      <li><b>Vencendo a mão:</b> quem ganha 2 das 3 rodadas (ou vence a 1ª e empata outra) leva os pontos da mão.</li>
+      <li><b>Truco, seis, doze:</b> qualquer jogador pode pedir aumento na sua vez. A dupla adversária aceita, aumenta o pedido ou corre (desiste e cede os pontos já valendo antes do pedido).</li>
+      <li><b>Sinais:</b> você pode combinar sinais fixos com o parceiro (piscar, sobrancelha, tocar na mesa) sem jogar carta nem perder a vez.</li>
+      <li><b>VAR:</b> a qualquer momento, sem perder a vez, você pode conferir as cartas já jogadas em cada rodada, inclusive a que está em andamento.</li>
+      <li><b>Caderneta:</b> mostra quantas mãos cada jogador já ganhou e sua taxa de fuga (corridas / pedidos recebidos).</li>
+    </ul>
+  </div>
+</div>
+
+<script id="motor-wasm-base64" type="application/octet-stream">AGFzbQEAAAABexNgA39/fwF/YAAAYAF/AX9gAn9/AX9gAAF/YAF/AX5gAX8AYAR/fn5/AGADf39/AGAFf39/f38Bf2AFf39/f38AYAR/f39/AX9gAn9/AGAGf39/f39/AGAGfn5+fn9/AGAFf35+fn4AYAR+fn5+AX9gAn5+AX9gAn98AANlZAEBAgICAwMDAAADBAUGBwIDCAIGAgADAwIAAwAJCAoLAAsGBgMGBgYDAwwMBgIMDAMLAAINAwMEBAYEBAgLAgQEDAQECAQBAQQEDAIMBAECAgIEAgIODw8PDxAPEAwMERESBwcEBQFwAQICBQQBAIMCBgkBfwFBgICACAsHmwMVBm1lbW9yeQIAD19fc3RhY2tfcG9pbnRlcgMAC19pbml0aWFsaXplAAERbW90b3Jfc2NyYXRjaF9wdHIANxFtb3Rvcl9zY3JhdGNoX3RhbQA4FW1vdG9yX2RlZmluaXJfc2VtZW50ZQA5EG1vdG9yX2VzdGFkb19wdHIAOhFtb3Rvcl9lc3RhZG9fanNvbgA7DW1vdG9yX3Zhcl9wdHIAPw5tb3Rvcl92YXJfanNvbgBAFm1vdG9yX2VzdGF0aXN0aWNhc19wdHIAQhdtb3Rvcl9lc3RhdGlzdGljYXNfanNvbgBDDW1vdG9yX2luaWNpYXIARRZtb3Rvcl9jb25maXJtYXJfcHJvbnRvAEgPbW90b3JfY29udGludWFyAEkRbW90b3Jfam9nYXJfY2FydGEASxNtb3Rvcl9wZWRpcl9hdW1lbnRvAE0PbW90b3JfcmVzcG9uZGVyAE8SbW90b3JfZW52aWFyX3NpbmFsAFAVbW90b3Jfc2luYWxfdGV4dG9fcHRyAFEPbW90b3JfcmVpbmljaWFyAFIJBwEAQQELASAKr4UCZAIACyMAAkBBACgCsKSAiABFDQAAC0EAQQE2ArCkgIgAEICAgIAACxsAQSBBACAAQZ9/akH/AXFBGkkbIABB/wFxcwsbAEEgQQAgAEG/f2pB/wFxQRpJGyAAQf8BcXILJwEDf0EAIQEDQCAAIAFqIQIgAUEBaiIDIQEgAi0AAA0ACyADQX9qCzIBAX9BACECA38CQAJAIAEgAkYNACAAIAJqLQAADQEgAiEBCyABDwsgAkEBaiECDAALCw4AIAAgAUF/EIiAgIAAC0EBA38CQCABEISAgIAAIgJBAWoiA0UNAEEAIQQDQCAAIARqIAEgBGotAAA6AAAgBEEBaiIEIANJDQALCyAAIAJqC2MBA38CQCAAIAFGDQBBACEDAkACQANAIAAgA2otAAAiBCABIANqLQAAIgVHDQFBACEFIARFDQIgAyACTw0CIANBAWohAwwACwsgAyACTw0BQX9BASAEIAVJGyEFCyAFDwtBAAtSAQJ/IAAgABCEgICAAGohAwJAIAEgAhCFgICAACIERQ0AQQAhAgNAIAMgAmogASACai0AADoAACACQQFqIgIgBEkNAAsLIAMgBGpBADoAACAACw8AIAAgARCHgICAABogAAsSAEGopICIABCMgICAAEIhiKcLTAEBfiAAIAApAwBClfip+pe33puef3wiATcDACABQh6IIAGFQrnLk+fR7ZGsv39+IgFCG4ggAYVC66PEmbG3kuiUf34iAUIfiCABhQsOAEEAIACtNwOopICIAAuzAgIEfwF+I4CAgIAAQRBrIgQkgICAgAACQAJAIAEgAiABIAIQ2oCAgABFDQBBACEFDAELQQAhBSACQjCIpyIGQf//AXEiB0H//wFGDQACQCAHDQAgASACQv///////z+DhFANASAEIAEgAiACQhCGIAFCMIiEIgh5IAFCEIZ5QsAAfCAIQgBSG6ciBUEBakH/AHEQ44CAgAAgBCkDAEIAIAVB/wBxQe8ASSIHGyEBQYKAfyAFayEFIAJCgICAgICAgICAf4MgBCkDCEL///////8/g0IAIAcbhEKAgICAgICA/z+EIQIMAQsgAkL///////+/gIB/g0KAgICAgICA/z+EIQIgBkH//wFxQYKAf2ohBQsgAyAFNgIAIAAgAjcDCCAAIAE3AwAgBEEQaiSAgICAAAs6AQF/AkAgAEEQakEEEJCAgIAAIgFFDQAgASAArUIFhkIEhDcDCCABQRBqDwtBAEEwNgK0pICIAEEAC+gBAQN/QQAhAgJAQX8gAEEEaiIDIAMgAEkbIgBBASABdCIBIAAgAUsbIgFBf2pnIgBFDQACQAJAQSAgAGsiAEH//wNxQX1qIgNBDU8NAEIBIACtQv//A4OGpyEEIANBAnQiACgC7KSAiAAiAUUNASAAQeykgIgAaiAEIAFqQXxqKAIANgIAIAEPCyABQYOABGpBEHYQkoCAgAAhAgwBCyAAQbikgIgAaiEBAkAgACgCuKSAiAAiAEH//wNxDQBBARCSgICAACIARQ0BIAEgACAEajYCACAADwsgASAAIARqNgIAIAAPCyACC6YBAQF/AkBBICABQQRqIgFBASACdCICIAEgAksbIgJBf2pnayIBQf//A3FBfWoiA0ENTw0AIABCASABrIanakF8aiADQQJ0IgIoAuykgIgANgIAIAIgADYC7KSAiAAPCyAAQgFBICACQYOABGpBEHZBf2pnayICrUL//wODhqdBEHRqQXxqIAJB//8DcUECdCICKAKgpYCIADYCACACIAA2AqClgIgAC2QBAn9CAUEgIABBf2pnayIArUL//wODhqchAQJAIABB//8DcUECdCICKAKgpYCIACIARQ0AIAJBoKWAiABqIAFBEHQgAGpBfGooAgA2AgAgAA8LQQAgAUAAIgBBEHQgAEF/RhsLNAIBfgJ/AkAgAEUNACAAQQEgAEF4aikDACIBpyICdCIDayADIAFCBYinaiACEJGAgIAACwtcAQF/IAAgACgCPCIBQX9qIAFyNgI8AkAgACgCACIBQQhxRQ0AIAAgAUEgcjYCAEF/DwsgAEIANwIEIAAgACgCKCIBNgIYIAAgATYCFCAAIAEgACgCLGo2AhBBAAv5AQEEfwJAAkAgAigCECIDDQBBACEEIAIQlICAgAANASACKAIQIQMLAkAgASADIAIoAhQiBWtNDQAgAiAAIAEgAigCIBGAgICAAICAgIAADwtBACEGAkAgAigCQEEASA0AIAFFDQAgACABaiEEQQAhAwJAA0AgBCADakF/ai0AAEEKRg0BIAEgA0F/aiIDag0AC0EAIQYMAQsgAiAAIAEgA2oiBiACKAIgEYCAgIAAgICAgAAiBCAGSQ0BIAYgAGohAEEAIANrIQEgAigCFCEFCwJAIAFFDQAgBSAAIAH8CgAACyACIAIoAhQgAWo2AhQgBiABaiEECyAECwQAIAALDAAgACABEJaAgIAAC1IBAX8CQEEAKAL8pYCIACIBDQBB5KWAiAAhAUEAQeSlgIgANgL8pYCIAAtBACAAIABBzABLG0EBdC8BkIyAiABBgICAiABqIAEoAhQQl4CAgAAL2QIBAX9BASEDAkAgAEUNAAJAIAFB/wBLDQAgACABOgAAQQEPCwJAQQAoAvylgIgAIgMNAEHkpYCIACEDQQBB5KWAiAA2AvylgIgACwJAAkAgAygCAA0AAkAgAUGAf3FBgL8DRg0AQQBBGTYCtKSAiAAMAgsgACABOgAAQQEPCwJAIAFB/w9LDQAgACABQT9xQYABcjoAASAAIAFBBnZBwAFyOgAAQQIPCwJAAkAgAUGAsANJDQAgAUGAQHFBgMADRw0BCyAAIAFBP3FBgAFyOgACIAAgAUEMdkHgAXI6AAAgACABQQZ2QT9xQYABcjoAAUEDDwsCQCABQYCAfGpB//8/Sw0AIAAgAUE/cUGAAXI6AAMgACABQRJ2QfABcjoAACAAIAFBBnZBP3FBgAFyOgACIAAgAUEMdkE/cUGAAXI6AAFBBA8LQQBBGTYCtKSAiAALQX8hAwsgAwsYAAJAIAANAEEADwsgACABQQAQmYCAgAAL9QIBA38jgICAgABBoAJrIgMkgICAgAAgAyACNgKcAiADQgA3A5ACIANCADcDiAIgA0IANwOAAiADQgA3A/gBIANCADcD8AEgAyACNgKYAgJAAkBBACABIANBmAJqIANB0ABqIANB8AFqEJyAgIAAQQBODQBBfyEADAELIAAgACgCACIEQV9xNgIAAkACQAJAAkAgACgCLA0AIABB0AA2AiwgAEEANgIYIABCADcDECAAKAIoIQUgACADNgIoDAELQQAhBSAAKAIQDQELQX8hAiAAEJSAgIAADQELIAAgASADQZgCaiADQdAAaiADQfABahCcgICAACECCyAEQSBxIQECQCAFRQ0AIABBAEEAIAAoAiARgICAgACAgICAABogAEEANgIsIAAgBTYCKCAAQQA2AhggACgCFCEFIABCADcDECACQX8gBRshAgsgACAAKAIAIgUgAXI2AgBBfyACIAVBIHEbIQALIANBoAJqJICAgIAAIAALrUsGGn8CfgV/AX4CfwF+I4CAgIAAQcA/ayIFJICAgIAAIAVBwANqIQYgBUHwA2pBfGohByAFQZkDaiEIIAVBlwNqIQkgBUG/A2ohCiAFQcADakF/aiELIAVBwANqQQhyIQwgBUHAA2pBCXIhDSAFQbQDakEKaiEOIAVBmANqIQ9BACEQQQAhEQJAAkADQEEAIRICQANAIAEhEyASIBFB/////wdzSg0BIBIgEWohEQJAAkACQAJAAkACQAJAAkACQCATLQAAIhJFDQAgEyEBA0ACQAJAAkAgEkH/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AigCAEEHakF4cSIBQQhqNgIAIAAgASkDADcDAAwECyACIAIoAgAiAUEEajYCACAAIAE0AgA3AwAMAwsgAiACKAIAIgFBBGo2AgAgACABNQIANwMADAILIAIgAigCAEEHakF4cSIBQQhqNgIAIAMgASsDABDhgICAACAAIAMpAwg3AwggACADKQMANwMADAELIAIgAigCAEEPakFwcSIBQRBqNgIAIAAgASkDADcDACAAIAEpAwg3AwgLIANBEGokgICAgAALowEBAX8jgICAgABBgAJrIgUkgICAgAACQCACIANMDQAgBEGAwARxDQACQCACIANrIgNBgAIgA0GAAkkiAhsiBEUNACAFIAEgBPwLAAsCQCACDQADQAJAIAAtAABBIHENACAFQYACIAAQlYCAgAAaCyADQYB+aiIDQf8BSw0ACwsgAC0AAEEgcQ0AIAUgAyAAEJWAgIAAGgsgBUGAAmokgICAgAALigEBAX8jgICAgABBgAFrIgQkgICAgAAgBCAAIARB/gBqIAEbIgA2AnQgBCABIAFBAEdrNgJ4IARBAEHwAPwLACAAQQA6AAAgBEF/NgJAIARBgYCAgAA2AiAgBCAEQfQAajYCRCAEIARB/wBqNgIoIAQgAiADEJuAgIAAIQEgBEGAAWokgICAgAAgAQvAAQEFfyAAKAJEIgMoAgAhBAJAIAMoAgQiBSAAKAIUIAAoAhgiBmsiByAFIAdJGyIHRQ0AAkAgB0UNACAEIAYgB/wKAAALIAMgAygCACAHaiIENgIAIAMgAygCBCAHayIFNgIECwJAIAUgAiAFIAJJGyIFRQ0AAkAgBUUNACAEIAEgBfwKAAALIAMgAygCACAFaiIENgIAIAMgAygCBCAFazYCBAsgBEEAOgAAIAAgACgCKCIDNgIYIAAgAzYCFCACCzkBAX8jgICAgABBEGsiBCSAgICAACAEIAM2AgwgACABIAIgAxCfgICAACEDIARBEGokgICAgAAgAwusAgIGfwF+I4CAgIAAQcACayIBJICAgIAAQQAhAiAAQQA2AsACQQAhAwNAIAJBCmohBCABIAJBA3RqIQIgAy0A4KGAiAAhBUFYIQYDQCACQQRqIAU6AAAgAiAGQZiigIgAaigCADYCACACQQhqIQIgBkEEaiIGDQALIAQhAiADQQFqIgNBBEcNAAsgAUG4AmohAkEoIQYDQBCLgICAACEFIAIpAwAhByACIAEgBSAGb0EDdGoiBSkDADcDACAFIAc3AwAgAkF4aiECIAZBf2oiBkEBSw0ACyAAKALAAiEGQQAhAgNAAkAgBkEnSg0AIAAgBkEDdGogASACaikDADcCACAAIAAoAsACQQFqIgY2AsACCyACQQhqIgJBwAJHDQALIAFBwAJqJICAgIAAC0wBAn8CQCAARQ0AIAAtAAAiAUUNACAAIQIDQCACIAFB/wFxEIOAgIAAOgAAIAJBAWoiAi0AACIBDQALIAAgAC0AABCCgICAADoAAAsLmgQBBn8jgICAgABBkAFrIgIkgICAgABBACEDAkAgAEUNAAJAIAAoAgAiBA0AQdQAEI+AgIAAIgRFDQEgBCABQcgA/AoAACAEQQA2AlAgBEIANwJIIAAgBDYCAEEBIQMMAQsCQAJAAkACQCABIAQQhoCAgAAiBUF/Sg0AIAIgAUHIAPwKAAAgBEHMAGoiAyACEKSAgIAARQ0CQX8hBUF/IQYCQCADKAIAIgNFDQAgAygCSCEGCwJAIAQoAlAiA0UNACADKAJIIQULQQEhAyAGIAVrIgUgBUEfdSIFcyAFa0ECSQ0DIAEgACgCACIFKAJMEIaAgIAAQX9MDQEgBUHMAGoQpYCAgAAMAQsgBUUNAyACQcgAaiABQcgA/AoAACAEQdAAaiIGIAJByABqEKSAgIAARQ0BQX8hA0F/IQUCQCAEKAJMIgdFDQAgBygCSCEFCwJAIAYoAgAiBkUNACAGKAJIIQMLAkAgBSADayIDIANBH3UiA3MgA2tBAk8NAEEBIQMMAwtBASEDAkAgASAAKAIAIgUoAlAQhoCAgABBAU4NACAFQdAAahCmgICAAAsgABClgICAAAwCCyAAEKaAgIAADAELQQAhAwtBfyEAQX8hAQJAIAQoAkwiBUUNACAFKAJIIQELAkAgBCgCUCIFRQ0AIAUoAkghAAsgBCABIAAgASAAShtBAWo2AkgLIAJBkAFqJICAgIAAIAMLnQEBBX8gACgCACIBIAEoAlAiASgCTDYCUCABIAAoAgAiAjYCTEF/IQNBfyEEAkAgAigCTCIFRQ0AIAUoAkghBAsCQCACKAJQIgVFDQAgBSgCSCEDCyACIAQgAyAEIANKG0EBaiIDNgJIAkACQCABKAJQIgINAEF/IQIMAQsgAigCSCECCyAAIAE2AgAgASACIAMgAiADShtBAWo2AkgLnQEBBX8gACgCACIBIAEoAkwiASgCUDYCTCABIAAoAgAiAjYCUEF/IQNBfyEEAkAgAigCTCIFRQ0AIAUoAkghBAsCQCACKAJQIgVFDQAgBSgCSCEDCyACIAQgAyAEIANKG0EBaiIDNgJIAkACQCABKAJMIgINAEF/IQIMAQsgAigCSCECCyAAIAE2AgAgASACIAMgAiADShtBAWo2AkgLKAACQCAARQ0AIAAoAkwQp4CAgAAgACgCUBCngICAACAAEJOAgIAACwtSAQJ/QQAhAgJAIABFDQAgAUUNACAAKAIAIgBFDQADQAJAIAAgARCGgICAACIDDQBBAQ8LQQAhAiAAQcwAQdAAIANBAEobaigCACIADQALCyACC+IBAQN/I4CAgIAAQZABayICJICAgIAAQQAhAwJAIABFDQAgAUUNACABLQAARQ0AIAEQ04CAgABBMUsNACABEKOAgIAAAkAgACABEKiAgIAADQBBACEDIAJByABqIAEQioCAgAAiBEEANgJEIARCADcCPCAEQgA3AjQgAiAEQcgA/AoAACAAIAIQpICAgABFDQELQQAhAyAAKAIAIgBFDQADQAJAIAAgARCGgICAACIEDQAgACEDDAILQQAhAyAAQcwAQdAAIARBAEobaigCACIADQALCyACQZABaiSAgICAACADC5YBAQR/I4CAgIAAQcAAayICJICAgIAAQXAhAwNAIANBsKKAiABqKAIAIQQgAkEEaiABEIqAgIAAIQUgAiAENgI8AkBBACAAKAKwAiIEQQFqIARBBEYbIgQgACgCrAJGDQAgACAENgKwAiAAIARBPGxqIAVBPPwKAAALIAFBHmohASADQQRqIgMNAAsgAkHAAGokgICAgAAL6gEDBH8BfgZ/AkAgAUECSA0AIABBIGoiAiEDQQIhBEEBIQUDQCACIAVBA3RqKQIAIganQX9qIgdBAnRBsKKAiABqIQggAyEAIAQhCQJAAkADQEEAIQpBACELAkAgACgCAEF/aiIMQQxLDQAgDEECdCgCsKKAiAAhCwsCQCAHQQxLDQAgCCgCACEKCyALIApNDQEgAEEIaiAAKQIANwIAIABBeGohACAJQX9qIglBAUoNAAtBACEADAELIAlBf2ohAAsgAiAAQQN0aiAG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npGAiAAhAQJAQQAoAuiugYgAIgJBBUsNACACQQJ0KAKYo4CIACEBCyAAQYQIakEAQTz8CwAgAEHABWpBiKeBiABBtAL8CgAAAkAgACgC7AciAyAAKALwB0YNACAAQQAgA0EBaiADQQRGGyIDNgLsByAAQYQIaiAAQcAFaiADQTxsakE8/AoAAAtBACEEQbypgYgAIQMCQANAIAMgAEGECGoQhoCAgABFDQEgA0EeaiEDIARBAWoiBEEERw0AC0F/IQQLIABBwAVqQcACQbivgYgAELyAgIAAIABB8AFqQRRqQQAoAtyqgYgANgIAIABB8AFqQRBqQQAoAoCvgYgAIAJBempBfUlBACgC7KqBiABBAEdyajYCACAAIAE2AvABIABBACgC9K6BiAA2AvQBIABBACkC+K6BiAA3A/gBQYCngIgAQYCAAUGYlICIACAAQfABahChgICAACEDIABBACkCtKqBiAA3A+gBQYCAASADIANBgKeAiABqQYCAASADayAAQegBakEAKAKIr4GIABC9gICAAGoiA2shASADQYCngIgAaiECAkACQEEAKAKIr4GIACIFQQFODQBB5ZOAiAAhBQwBCyAFEL6AgIAAIQULIAAgBTYC0AEgAEHJkYCIAEHOkYCIAEEAKALsroGIABs2AtQBIAAgAEHABWo2AtgBIAIgAUGknYCIACAAQdABahChgICAACADaiEDIAMgA0GAp4CIAGpBgIABIANrQZOTgIgAQQAQoYCAgABqIQYgAEHgCGohByAAQbABakEQaiEIIABBsAFqQRRqIQlBACEKA0AgAEHQAmpBiKeBiABBtAL8CgAAIApBHmxBvKmBiABqIQEgACgC/AQhAyAAKAKABSECAkADQAJAIAMgAkcNAEEAIQsMAgsgAEEAIANBAWogA0EERhsiAzYC/AQgAEGEBWogAEHQAmogA0E8bGpBPPwKAAAgAEGEBWogARCGgICAAA0ACyAAKAK8BSELCyAAQZACakE8IAEQvICAgAAgAEHACGpBiKeBiABBtAL8CgAAQdOdgIgAQfydgIgAIAobIQxBgIABIAZrIQ0gBkGAp4CIAGohDiAAKALsCiEDIAAoAvAKIQICQAJAA0AgAyACRg0BIABBACADQQFqIANBBEYbIgM2AuwKIABB9ApqIABBwAhqIANBPGxqQTz8CgAAIABB9ApqIAEQhoCAgAANAAtBA0EAKAKAr4GIAGshAgJAQQAoAuiugYgAIg9BA0cNAEEDIQ8MAgsCQCAPQX5xQQRHDQBBACgC7KqBiABFDQILQQAoAoSvgYgAIhBBAUgNAUEAIQFBACgChKeBiAAhEUGYBCEDA0AgAUEebEGYq4GIAGohBQJAIANBgKeBiABqLQAADQAgEUUNACARKAIEIhJFDQAgEiADakGUfGohBQsgA0EeaiEDIAFBAWohASACIABB9ApqIAUQhoCAgABFayECIBBBf2oiEA0ADAILC0EAIQJBACgC6K6BiAAhDwsgCCACNgIAIAAgCjYCtAEgCUHJkYCIAEHOkYCIACAPQQFGG0HOkYCIACAKIARGGzYCACAAIAw2ArABIAAgCzYCvAEgACAAQZACajYCuAEgDiANQdKQgIgAIABBsAFqEKGAgIAAIAZqIQMCQCAKIARHDQBBACgC6K6BiABBAUcNAEEAKALsroGIAEUNAEEAKAKAr4GIACEBIABBwAhqIABBhAhqQTz8CgAAIABBwAhqQQMgAWsiAhCrgICAACADQYCngIgAakGAgAEgA2tBs5OAiABBABChgICAACADaiEDAkAgAUECSg0AIAJBASACQQFKGyEFQQAhASAHIQIDQAJAIAFFDQAgA0GAp4CIAGpBgIABIANrQdOdgIgAQQAQoYCAgAAgA2ohAwsgACACKQIANwOoASADQYCngIgAakGAgAEgA2sgAEGoAWpBACgCiK+BiAAQvYCAgAAgA2ohAyACQQhqIQIgBSABQQFqIgFHDQALCyADQYCngIgAakGAgAEgA2tBmZKAiABBABChgICAACADaiEDCyADQYCngIgAakGAgAEgA2tBmpCAiABBABChgICAACADaiEGIApBAWoiCkEERw0ACyAGQYCngIgAakGAgAEgBmtBoZ2AiABBABChgICAACAGaiEDIAMgA0GAp4CIAGpBgIABIANrQbyTgIgAQQAQoYCAgABqIQoCQEEAKAKEr4GIAEEBSA0AQQAhBQNAIAVBHmwiA0GYq4GIAGohAgJAIAMtAJirgYgADQBBACgChKeBiAAiAUUNACABKAIEIgFFDQAgASADakEsaiECC0HTnYCIAEH8nYCIACAFGyEQQYCAASAKayEGIApBgKeAiABqIRFBACEBQbypgYgAIQMCQANAIAMgAhCGgICAAEUNASADQR5qIQMgAUEBaiIBQQRHDQALQX8hAQsgACABNgKkASAAIBA2AqABIBEgBkHnk4CIACAAQaABahChgICAACEDIAAgBUEDdCkCvKqBiAA3A5gBIAMgCmoiA0GAp4CIAGpBgIABIANrIABBmAFqQQAoAoivgYgAEL2AgIAAIANqIQMgAyADQYCngIgAakGAgAEgA2tBmpCAiABBABChgICAAGohCiAFQQFqIgVBACgChK+BiABIDQALCyAKQYCngIgAakGAgAEgCmtBoZ2AiABBABChgICAACAKaiEDQQAoAuyugYgAIQECQAJAAkBBACgC6K6BiAAiAkEBRw0AIAENAQtBACEFQQAoAoCvgYgAIQZBzpGAiAAhEEHOkYCIACEKDAELQQAhBUEAKAKAr4GIACEGQcmRgIgAIQpBzpGAiAAhECAAKAK8CCIRQX9qQQFLDQBBACgC7KqBiABBAUYNAEEAKALgqoGIAA0AQQAoAtyqgYgAIgRBDEYNAEEAKALoqoGIACARRg0AQQMhBUHJkYCIACEQQcmRgIgAIQoCQAJAAkAgBEF/ag4GAwIAAgIBAgtBBiEFQcmRgIgAIQoMAgtBDCEFQcmRgIgAIQoMAQtByZGAiAAhCkEAIQULQcmRgIgAIREgAEGEAWpByZGAiAA2AgAgAEGAAWpByZGAiABBzpGAiAAgARtBzpGAiAAgAkEBRhs2AgAgAEGIAWpBzpGAiABByZGAiABBzpGAiAAgAkF/akECSRsgARs2AgAgACAFNgJ8IAAgEDYCeCAAIAo2AnBBAyEBIABBAyAGazYCdCADQYCngIgAakGAgAEgA2tBwJmAiAAgAEHwAGoQoYCAgAAgA2ohAwJAAkBBACgC6K6BiABBAkcNACAAQcAIakE8QciugYgAELyAgIAAIABB0AJqQTxBjK6BiAAQvICAgABB/J2AiAAhAgJAAkACQAJAQQAoAuCqgYgAIgVBf2oOBgMCAAICAQILQQYhAUHMk4CIACECDAILQQwhAUHFk4CIACECDAELQd6TgIgAQfydgIgAIAVBDEYbIQJBzpGAiAAhEUEAIQELIABB0ABqIAU2AgAgAEHUAGogAjYCACAAQdgAaiARNgIAIABB3ABqIAE2AgAgAEHgAGpByZGAiABBzpGAiABBACgC7K6BiAAbNgIAIABBACgC5KqBiAA2AkQgAEEAKALEroGIADYCTCAAIABBwAhqNgJAIAAgAEHQAmo2AkggA0GAp4CIAGpBgIABIANrQeSagIgAIABBwABqEKGAgIAAIQEMAQsgA0GAp4CIAGpBgIABIANrQfWcgIgAQQAQoYCAgAAhAQtBgIABIAEgA2oiA2shASADQYCngIgAaiECAkACQEEAKALoroGIAEEDRw0AIABBACgCoK+BiAA2AjAgAiABQb6cgIgAIABBMGoQoYCAgAAhAQwBCyACIAFBiJ2AiABBABChgICAACEBC0GAgAEgASADaiIDayEBIANBgKeAiABqIQICQAJAQQAoAuiugYgAQQRHDQAgAEEAKQKkr4GIADcDICACIAFBlJyAiAAgAEEgahChgICAACEBDAELIAIgAUHfnICIAEEAEKGAgIAAIQELIAEgA2ohAwJAAkBBACgC6K6BiABBBUcNACAAQQApAqyvgYgANwIMIABBAUECQQAoAvSugYgAIgFBC0obNgIAIAAgAUEMIAFBDEgbNgIEIABBACgC+K6BiAAiAUEMIAFBDEgbNgIIIANBgKeAiABqQYCAASADa0HjjoCIACAAEKGAgIAAIQEMAQsgA0GAp4CIAGpBgIABIANrQbqRgIgAQQAQoYCAgAAhAQsgASADaiIDQYCngIgAakGAgAEgA2tBmpCAiABBABChgICAACEBIABBsAtqJICAgIAAIAMgAWoLlAEBA39BACEDAkAgAi0AACIERQ0AQQAhAwNAAkACQCAEQf8BcSIFQdwARg0AIAVBIkYNACADIQUMAQsgACADakHcADoAACADQQFqIQULAkAgBUEBaiIDIAFJDQAgBSEDDAILIAAgBWogAi0AADoAACACQQFqIgItAAAiBEUNASAFQQNqIAFJDQALCyAAIANqQQA6AAALkgIBA38jgICAgABBIGsiBCSAgICAAAJAAkAgAigCACIFQQBKDQAgACABQcCRgIgAQQAQoYCAgAAhBQwBCwJAAkACQAJAAkACQCACLQAEIgJBvX9qDgMCBAEAC0G+kICIACEGIAJBsX9qDgIEAgMLQcqQgIgAIQYMAwtBxJCAiAAhBgwCC0G5kICIACEGDAELQeWTgIgAIQYLIARBEGpByZGAiABBzpGAiAAgAkHQAEYbQc6RgIgAIAUgA0YiAhs2AgAg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KALEAyIBDQAMAQsgACABQX9qIgE2AsQDIABBhAFqIAFBA3RqKQIAIQILQQAgAjcCtKqBiAAgACACNwMYIABBGGogAEHgAGoQr4CAgABBACAAKAJgNgKIr4GIACAAQcgDakGIp4GIAEG0AvwKAAACQCAAKAL0BSIDIAAoAvgFRg0AIABBACADQQFqIANBBEYbIgE2AvQFIABBJGogAEHIA2ogAUE8bGpBPPwKAAAgACgCXCEBC0EAIAE2ApCvgYgAEMeAgIAAQQAoArSqgYgAIQNBACgC/K6BiAAhBAJAAkACQAJAAkACQEEALQC4qoGIACIFQb1/ag4DAgQBAAtBvpCAiAAhASAFQbF/ag4CBAIDC0HKkICIACEBDAMLQcSQgIgAIQEMAgtBuZCAiAAhAQwBC0Hlk4CIACEBCyAAIAE2AgggACADEL6AgIAANgIEIAAgBDYCACAAIABBJGo2AgxBuK+BiABBgAJB95WAiAAgABChgICAABogAEGABmokgICAgAALrQQBBn8jgICAgABBgANrIgAkgICAgABBAEEANgKEr4GIAEH4qoGIAEEAQfwC/AsAQQBBATYC9K2BiABBAEF/NgKEroGIAEFgIQEDQCABQZirgYgAakF/NgIAIAFBnKuBiABqQcEAOgAAIAFBCGoiAQ0AC0EAQX82AoCugYgAQQBCfzcC+K2BiABBAEEAKAL8roGIADYC8KqBiABBAEEAKAKIr4GIADYCiK6BiABBAEEAKALcqoGIADYC7K2BiABBAEEAKAKAr4GIAEEBajYC9KqBiABBASECQQAhAwNAIABByABqQYingYgAQbQC/AoAACAAKAL0AiEBIAAoAvgCIQQgAiEFAkADQCABIARGDQFBACABQQFqIAFBBEYbIQEgBUF/aiIFDQALIAAgATYC9AIgAEEMaiAAQcgAaiABQTxsakE8/AoAAAsgA0EebEGYq4GIAGogAEEMahCKgICAABogA0EDdCIBQcEAOgDAqoGIACABQX82AryqgYgAIAJBAWohAiADQQFqIgNBBEcNAAtBAEIBNwLoroGIACAAQcgAakGIp4GIAEG0AvwKAAACQCAAKAL0AiIBIAAoAvgCRg0AIABBACABQQFqIAFBBEYbIgE2AvQCIABBDGogAEHIAGogAUE8bGpBPPwKAAALIABBACgCgK+BiABBAWo2AgAgACAAQQxqNgIEQbivgYgAQYACQc+VgIgAIAAQoYCAgAAaIABBgANqJICAgIAACy0BAX9BACEAAkBBACgC6K6BiABBfWpBfkkNAEEBIQBBAEEBNgLsroGIAAsgAAtyAQF/QQAhAAJAAkACQAJAQQAoAuiugYgAQX1qDgIBAAMLEMaAgIAADAELAkBBlK+BiABBACgCgK+BiABBACgCkK+BiAAQsoCAgAAiAEUNACAAQQAoAtyqgYgAEMqAgIAADAELEMeAgIAAC0EBIQALIAAL8AQBBn8jgICAgABBkANrIgIkgICAgAACQEEAQQAoAoyvgYgAa0EDcSIDRQ0AA0BBiKeBiAAQrICAgAAgA0F/aiIDDQALCyAAQQJ0QfCugYgAaiIEIAQoAgAgAWo2AgBBACgCgKeBiAAhBSACQSBqQYingYgAQbQC/AoAAAJAIAIoAswCIgMgAigC0AIiBkYNAANAIAJBACADQQFqIANBBEYbIgM2AswCIAJB1AJqIAJBIGogA0E8bGpBPPwKAAACQCAFRQ0AIAIoAowDIABHDQAgBSACQdQCahCpgICAACIHRQ0AIAcgBygCOEEBajYCOAsgAyAGRw0ACwsCQCABQQAoAqyvgYgATA0AQQAgATYCrK+BiABBAEEAKAL8roGIADYCsK+BiAALQYingYgAEKyAgIAAQQAgATYCqK+BiABBACAANgKkr4GIAEEAQQA2AuyugYgAAkACQCAEKAIAQQxIDQBBACgCgKeBiAAhBSACQSBqQYingYgAQbQC/AoAAAJAIAIoAswCIgMgAigC0AIiBkYNAANAIAJBACADQQFqIANBBEYbIgM2AswCIAJB1AJqIAJBIGogA0E8bGpBPPwKAAACQCAFRQ0AIAUgAkHUAmoQqYCAgAAiB0UNACAHIAcoAjRBAWo2AjQLIAMgBkcNAAsLQQBBBTYC6K6BiAAgAiAANgIAIAJBACkCrK+BiAA3AgRBuK+BiABBgAJBoJeAiAAgAhChgICAABoMAQtBAEEENgLoroGIACACIAA2AhAgAiABNgIUQbivgYgAQYACQZSZgIgAIAJBEGoQoYCAgAAaCyACQZADaiSAgICAAAu0CgMFfwF+AX8jgICAgABBgARrIgEkgICAgABBACECAkBBACgC6K6BiABBAUcNAEEAKALsroGIAEUNAEEAIQJBACgCgK+BiAAhAyABQcABakGIp4GIAEG0AvwKAABBAyADayEEAkAgASgC7AMiBSABKALwA0YNACABQQAgBUEBaiAFQQRGGyIFNgLsAyABQYQBaiABQcABaiAFQTxsakE8/AoAAAsgAUGEAWogBBCrgICAACAAQQFIDQAgACAESg0AQQAoAoSvgYgAQQN0QbyqgYgAaiAAQQN0IAFBhAFqaiIFQRhqKQIANwIAAkAgACAETw0AIABBAiADayICIAAgAkobIABrQQFqIQIgBUEgaiEAA0AgAEF4aiAAKQIANwIAIABBCGohACACQX9qIgINAAsLAkBBACgChK+BiAAiAEEDSw0AIABBA3QiAikCvKqBiAAhBiABIAFBhAFqNgIwIABBHmxBmKuBiABqQR5BkpGAiAAgAUEwahChgICAABogAiAGNwL4qoGIAEEAKAKEr4GIACEACyAAQQN0IgBBvKqBiABqKAIAEL6AgIAAIQICQAJAAkACQAJAAkAgAEHAqoGIAGotAAAiBEG9f2oOAwIEAQALQb6QgIgAIQAgBEGxf2oOAgQCAwtBypCAiAAhAAwDC0HEkICIACEADAILQbmQgIgAIQAMAQtB5ZOAiAAhAAsgASAANgIoIAEgAjYCJCABIAFBhAFqNgIgQbivgYgAQYACQbyVgIgAIAFBIGoQoYCAgAAaAkBBACgCtKmBiAAiAEEAKAK4qYGIACICRg0AQQBBACAAQQFqIABBBEYbIgA2ArSpgYgACwJAQQAgAkEBaiACQQRGGyICIABGDQBBACACNgK4qYGIACACQTxsQYingYgAaiABQYQBakE8/AoAAAtBAEEAKAKEr4GIAEEBaiIANgKEr4GIAEEAQQA2AuyugYgAAkACQCAAQQRHDQBBASEDQQAhBQNAIAFBwAFqQYingYgAQbQC/AoAACABKALsAyEAIAEoAvADIQQgAyECAkADQCAAIARGDQFBACAAQQFqIABBBEYbIQAgAkF/aiICDQALIAFBwAFqIABBPGxqKAI4IQcLIAFBwABqIAVBAnRqIAc2AgAgA0EBaiEDIAVBAWoiBUEERw0AC0G8qoGIACABQcAAakEAKAKIr4GIACABQcABahCxgICAACEEIAEoAsABIgJBABDMgICAAAJAIARBf0wNAAJAIARFDQAgBCEAA0BBiKeBiAAQrICAgAAgAEF/aiIADQALC0EAQQAoAoyvgYgAIARqNgKMr4GIAAtBAEEAKAKAr4GIACIAQQFqNgKAr4GIACAAQQJ0QZSvgYgAaiACNgIAQQBBAzYC6K6BiABBACACNgKgr4GIAAJAIAJFDQAgASACNgIAQbivgYgAQYACQdGYgIgAIAEQoYCAgAAaDAILQQBBAC0A0JiAiAA6AMivgYgAQQBBACkAyJiAiAA3AsCvgYgAQQBBACkAwJiAiAA3ArivgYgADAELIAFBwAFqQYingYgAQbQC/AoAAAJAIAEoAuwDIgAgASgC8ANGDQAgAUEAIABBAWogAEEERhsiADYC7AMgAUHAAGogAUHAAWogAEE8bGpBPPwKAAALIAEgAUHAAGo2AhAgAUHAAWpBoAFBwZaAiAAgAUEQahChgICAABpBuK+BiAAgAUHAAWpB/wFBuK+BiAAQ04CAgABrEImAgIAAGgtBASECCyABQYAEaiSAgICAACACC+wCAQN/QQAgADYChK6BiABBAEEAKAL8roGIADYC8KqBiABBAEEAKAKAr4GIAEEBajYC9KqBiABBACgCiK+BiAAhAkFgIQADQCAAQZirgYgAaiAAQdyqgYgAaikCADcCACAAQQhqIgANAAtBACACNgKIroGIAAJAAkAgAUUNAEEAKALkqoGIACEDQQMhAEEAKALcqoGIACICIQQCQAJAAkAgAkF/ag4GBAIAAgIBAgtBASEEQQYhAAwDC0EBIQRBDCEADAILQQEhBEEAIQAMAQtBASECAkBBACgC3KqBiAAiAEEBRw0AQX8hAEF/IQNBfyEEDAELQQAhBEEAKALoqoGIACEDIAAhAgtBACAENgKAroGIAEEAIAM2AvytgYgAQQAgADYC+K2BiABBACABNgLwrYGIAEEAQQAoAqivgYgAIAIgARs2AuytgYgAQQBBADYC9K2BiABB8KqBiABBACgChKeBiAAQtYCAgAAaC+4BAQN/I4CAgIAAQYADayIAJICAgIAAQQAhAQJAQQAoAuiugYgAQQFHDQBBACgC7K6BiABFDQAgAEHIAGpBiKeBiABBtAL8CgAAQQAhASAAQQAgACgC9AIiAkEBaiACQQRGGyICNgL0AiAAQQxqIABByABqIAJBPGxqQTz8CgAAQdyqgYgAIAAoAkQQtoCAgABFDQACQEEAKAKAp4GIACIBRQ0AIAEgAEEMahCpgICAACIBRQ0AIAEgASgCPEEBajYCPAtByK6BiAAgAEEMahCKgICAABoQzoCAgABBASEBCyAAQYADaiSAgICAACABC+sCAQV/I4CAgIAAQdACayIAJICAgIAAQQAoAuSqgYgAIQEgAEEYakGIp4GIAEG0AvwKAABBAkEBIAFBAUYbIQIgACgCxAIhASAAKALIAiEDAkADQCABIANGDQEgAEEYakEAIAFBAWogAUEERhsiAUE8bGoiBCgCOCACRw0ACyAAIAE2AsQCQYyugYgAIARBOPwKAABBACACNgLEroGIAAsCQEEAKAKAp4GIACIBRQ0AIAFBjK6BiAAQqYCAgAAiAUUNACABIAEoAkRBAWo2AkQLQQBCAjcC6K6BiABBzJOAiAAhAQJAAkACQAJAAkBBACgC4KqBiAAiA0F9ag4EBAICAAELQcWTgIgAIQEMAwsgA0EMRg0BC0H8nYCIACEBDAELQd6TgIgAIQELIABBjK6BiAA2AgggACABNgIEIABByK6BiAA2AgBBuK+BiABBgAJB+paAiAAgABChgICAABogAEHQAmokgICAgAALnQYBBH8jgICAgABBgANrIgEkgICAgABBACECAkBBACgC6K6BiABBAkcNAEEAKALsroGIAEUNAAJAAkACQCAADgMBAgADC0EAIQJBACgC4KqBiAAiAEEGSw0CQQEgAHRBygBxRQ0CQQAhAkHwqoGIAEHIroGIAEEAKALkqoGIAEGMroGIACAAQdQAELSAgIAAAkBBACgCgKeBiAAiAEUNACAAQYyugYgAEKmAgIAAIgBFDQAgACAAKAI8QQFqNgI8C0HIroGIAEGMroGIABCKgICAABpBAEEAKALgqoGIACIANgLcqoGIAEEAKALEroGIACEDAkAgAEF/aiIAQQVLDQAgAEECdCgC5KOAiAAhAgtBACADNgLkqoGIAEEAIAI2AuCqgYgAEM6AgIAAQQEhAgwCC0HwqoGIAEHIroGIAEEAKALkqoGIAEGMroGIAEEAKALgqoGIAEHBABC0gICAAEEAQgE3AuiugYgAQQBBACgC4KqBiAAiADYC3KqBiABBAEEAKALkqoGIADYC6KqBiABBACAANgLsrYGIAEEAQgA3AuCqgYgAIAFByABqQYingYgAQbQC/AoAAAJAIAEoAvQCIgIgASgC+AJGDQAgAUEAIAJBAWogAkEERhsiAjYC9AIgAUEMaiABQcgAaiACQTxsakE8/AoAAAsgAUGMroGIADYCACABIAA2AgQgASABQQxqNgIIQbivgYgAQYACQZ6WgIgAIAEQoYCAgAAaQQEhAgwBC0HwqoGIAEHIroGIAEEAKALkqoGIAEGMroGIAEEAKALgqoGIAEHDABC0gICAAAJAQQAoAoCngYgAIgBFDQAgAEGMroGIABCpgICAACIARQ0AIAAgACgCQEEBajYCQAtBASECQQBBATYC7KqBiABBAEEAKALcqoGIACIDNgKor4GIAEEAQQA2AuCqgYgAQQAoAuSqgYgAIgRBARDMgICAAAJAQQRBACgChK+BiABrQQRvIgBBAUgNAANAQYingYgAEKyAgIAAIABBf2oiAA0ACwsgBCADEMqAgIAACyABQYADaiSAgICAACACC6kDAQV/I4CAgIAAQcADayIBJICAgIAAQQAhAgJAIABBfGpBfUkNAEEAKALoroGIAEEBRw0AQQAoAuyugYgARQ0AIAFBiAFqQYingYgAQbQC/AoAAAJAIAEoArQDIgIgASgCuAMiA0YNAEEAIAJBAWogAkEERhsiAiADRg0AIAFBiAFqIAJBPGxqKAI4IQQCQANAIAFBiAFqQQAgAkEBaiACQQRGGyICQTxsaiIFKAI4IARGDQEgAiADRg0CDAALCyABIAI2ArQDIAFBEGogBUE4/AoAACABIAQ2AkggAUGIAWpBiKeBiABBtAL8CgAAAkAgASgCtAMiAiABKAK4A0YNACABQQAgAkEBaiACQQRGGyICNgK0AyABQcwAaiABQYgBaiACQTxsakE8/AoAAAtBACECAkAgAEF/aiIDQQJLDQAgA0ECdCgC/KOAiAAhAgsgASACNgIEIAEgAUHMAGo2AgwgASABQRBqNgIIIAEgAUHMAGo2AgBBuK+BiABBgAJBlpWAiAAgARChgICAABpBASECDAELQQAhAgsgAUHAA2okgICAgAAgAgsnAQF/QQAhAQJAIABBf2oiAEECSw0AIABBAnQoAvyjgIgAIQELIAELXQEBfwJAQQAoAoSngYgAIgBFDQAgABCzgICAABpBAEEANgKEp4GIAAsCQEEAKAKAp4GIACIARQ0AIAAoAgAQp4CAgAAgABCTgICAAAtBgKeBiABBAEG8CvwLAEEBCycBA39BACEBA0AgACABaiECIAFBAWoiAyEBIAItAAANAAsgA0F/agtxAwF/An4BfyOAgICAAEEQayIBJICAgIAAIAEgACkDACICIAApAwgiAyADeSACeULAAHwgA0IAUhunQXFqIgRB/wBxEOOAgIAAIAAgASkDADcDACAAIAEpAwg3AwggAUEQaiSAgICAAEEBIARB/wFxawvsAgEMfiAFIAJC/////w+DIgYgAEIgiCIHfiIIIAJCIIgiAiAAQv////8PgyIAfnwiCUIghiIKIAYgAH58Igs3AwAgBSALIApUrSABQv////8PgyIKIAZ+IgwgAiAHfnwiDSADQv////8PgyILIAB+fCIOIAlCIIggCSAIVK1CIIaEfCIJIAYgAUIgiCIBfiIPIAogAn58IgggACADQiCIIgZ+fCIAIAsgB358IgNCIIZ8IhB8NwMIIAQgByAGfiIRIAIgAX58IgcgCyAKfnwiAiANIAxUrSAOIA1UrXx8Ig0gCyABfiIMIAogBn58IgpCIIZ8IgsgA0IgiCAIIA9UrSAAIAhUrXwgAyAAVK18QiCGhHwiACAJIA5UrSAQIAlUrXx8IgM3AwAgBCAHIBFUrSACIAdUrXwgBiABfnwgDSACVK18IAogDFStQiCGIApCIIiEfCALIA1UrXwgACALVK18IAMgAFStfDcDCAvECAQBfwJ+A38BfiOAgICAAEGAAWsiBSSAgICAACAFIARC////////P4MiBjcDWCAFIAM3A1AgBSACQv///////z+DNwNIIAUgATcDQCAEIAKFQoCAgICAgICAgH+DIQcgBEIwiKdB//8BcSEIAkACQAJAAkAgAkIwiKdB//8BcSIJQYGAfmpBgoB+SQ0AQQAhCiAIQYGAfmpBgoB+Tw0BCwJAIAFQIAJC////////////AIMiC0KAgICAgIDA//8AVCALQoCAgICAgMD//wBRGw0AIAJCgICAgICAIIQhBwwDCwJAIANQIARC////////////AIMiAkKAgICAgIDA//8AVCACQoCAgICAgMD//wBRGw0AIARCgICAgICAIIQhByADIQEMAwsCQAJAAkACQAJAIAEgC0KAgICAgIDA//8AhYRCAFINACADIAKEUEUNAUKAgICAgIDg//8AIQcMBgsgAyACQoCAgICAgMD//wCFhFANAyABIAuE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ACAJQoCAgICAgMD//wCEIQRCACEDDAELAkAgB0EASg0AIAUgAyAEQQQgB2sQ4oCAgAAgBSkDCCAJhCEEIAUpAwAhAwwBCyAHrUIwhiAEQgOIQv///////z+DhCAJhCADQgOIIARCPYaEIgggA0IHgyIDQgRWrXwiBCAIVK18IANCBFGtIASDQgGDIgggBHwiAyAIVK18IQQLIAAgAzcDACAAIAQ3AwggBUHgAGokgICAgAALSAEBfyOAgICAAEEQayIFJICAgIAAIAUgASACIAMgBBDYgICAACAFKQMIIQQgACAFKQMANwMAIAAgBDcDCCAFQRBqJICAgIAAC2MAIABCAFIgAUL///////////8AgyIAQoCAgICAgMD//wBWIABCgICAgICAwP//AFEbIAJCAFIgA0L///////////8AgyIAQoCAgICAgMD//wBWIABCgICAgICAwP//AFEbcguWAgIBfwJ+QYikgIgAIQUCQCABQgBSIAJC////////////AIMiBkKAgICAgIDA//8AViAGQoCAgICAgMD//wBRGw0AIANQIARC////////////AIMiB0KAgICAgIDA//8AVCAHQoCAgICAgMD//wBRG0UNAAJAIAMgAYQgByAGhIRQRQ0AQZCkgIgAIQUMAQsCQAJAAkAgBCACg0IAUw0AIAEgA1QgAiAEUyACIARRG0UNAQwCCyABIANWIAIgBFUgAiAEURsNAUGQpICIAEGgpICIACABIAOFIAIgBIWEUBshBQwCC0GQpICIAEGgpICIACABIAOFIAIgBIWEUBshBQwBC0GYpICIACEFCyAAIAUpAgA3AgALSwEDfyOAgICAAEEQayIEJICAgIAAIARBCGogACABIAIgAxDbgICAACAELQAMIQUgBCgCCCEGIARBEGokgICAgAAgBkEBIAVBAXEbC4cBAgF/An4jgICAgABBEGsiAiSAgICAAAJAAkAgAQ0AQgAhA0IAIQQMAQsgAiABrUIAQfAAIAFnQR9zIgFrEOOAgIAAIAGtQjCGIAIpAwhCgICAgICAwACFfEKAgICAgIDA/z98IQQgAikDACEDCyAAIAM3AwAgACAENwMIIAJBEGokgICAgAALqgEDAX8CfgF/I4CAgIAAQRBrIgIkgICAgAACQAJAIAENAEIAIQNCACEEDAELIAIgASABQR91IgVzIAVrIgWtQgBB8AAgBWdBH3MiBWsQ44CAgAAgBa1CMIYgAikDCEKAgICAgIDAAIV8QoCAgICAgMD/P3xCgICAgICAgICAf0IAIAFBAEgbhCEEIAIpAwAhAwsgACADNwMAIAAgBDcDCCACQRBqJICAgIAAC4YBAQR/I4CAgIAAQRBrIgIkgICAgABBACEDAkAgAUIAUw0AIAFCMIinIgRB//8BcSIFQf//AEkNAEF/IQMgBUHh/35qQWBJDQAgAiAAIAFC////////P4NCgICAgICAwACEQe8AIARrQf8AcRDigICAACACKAIAIQMLIAJBEGokgICAgAAgAwucAQEEfyOAgICAAEEQayICJICAgIAAQQAhAwJAIAFCMIinIgRB//8BcSIFQf//AEkNAAJAIAVB4v9+akFgSw0AIAFCP4enQf////8HcyEDDAELIAIgACABQv///////z+DQoCAgICAgMAAhEHvACAEa0H/AHEQ4oCAgAAgAigCACIDQQAgA2sgAUJ/VRshAwsgAkEQaiSAgICAACADC5ACAwF/A34BfyOAgICAAEEQayICJICAgIAAAkACQCABvSIDQv///////////wCDIgRCgICAgICAgHh8Qv/////////v/wBWDQAgBEI8hiEFIARCBIhCgICAgICAgIA8fCEEDAELAkAgBEKAgICAgICA+P8AVA0AIARCPIYhBSAEQgSIQoCAgICAgMD//wCEIQQMAQsCQCAEUEUNAEIAIQVCACEEDAELIAIgBEIAIAR5pyIGQTFqEOOAgIAAQYH4ACAGQfUAakH/AHFrrUIwhiACKQMIQoCAgICAgMAAhYQhBCACKQMAIQULIAAgBTcDACAAIAQgA0KAgICAgICAgIB/g4Q3AwggAkEQaiSAgICAAAtNAQF+AkACQCADQT9MDQAgAiADrYghAUIAIQIMAQsgA0UNACACQQAgA2uthiABIAOtIgSIhCEBIAIgBIghAgsgACABNwMAIAAgAjcDCAtNAQF+AkACQCADQT9MDQAgASADrYYhAkIAIQEMAQsgA0UNACABQQAgA2utiCACIAOtIgSGhCECIAEgBIYhAQsgACABNwMAIAAgAjcDCAsLwiQCAEGAgIAIC6gkU3VjY2VzcwBJbGxlZ2FsIGJ5dGUgc2VxdWVuY2UARG9tYWluIGVycm9yAFJlc3VsdCBub3QgcmVwcmVzZW50YWJsZQBOb3QgYSB0dHkAUGVybWlzc2lvbiBkZW5pZWQAT3BlcmF0aW9uIG5vdCBwZXJtaXR0ZWQATm8gc3VjaCBmaWxlIG9yIGRpcmVjdG9yeQBObyBzdWNoIHByb2Nlc3MARmlsZSBleGlzdHMAVmFsdWUgdG9vIGxhcmdlIGZvciBkYXRhIHR5cGUATm8gc3BhY2UgbGVmdCBvbiBkZXZpY2UAT3V0IG9mIG1lbW9yeQBSZXNvdXJjZSBidXN5AEludGVycnVwdGVkIHN5c3RlbSBjYWxsAFJlc291cmNlIHRlbXBvcmFyaWx5IHVuYXZhaWxhYmxlAEludmFsaWQgc2VlawBDcm9zcy1kZXZpY2UgbGluawBSZWFkLW9ubHkgZmlsZSBzeXN0ZW0ARGlyZWN0b3J5IG5vdCBlbXB0eQBDb25uZWN0aW9uIHJlc2V0IGJ5IHBlZXIAT3BlcmF0aW9uIHRpbWVkIG91dABDb25uZWN0aW9uIHJlZnVzZWQASG9zdCBpcyB1bnJlYWNoYWJsZQBBZGRyZXNzIGluIHVzZQBCcm9rZW4gcGlwZQBJL08gZXJyb3IATm8gc3VjaCBkZXZpY2Ugb3IgYWRkcmVzcwBObyBzdWNoIGRldmljZQBOb3QgYSBkaXJlY3RvcnkASXMgYSBkaXJlY3RvcnkAVGV4dCBmaWxlIGJ1c3kARXhlYyBmb3JtYXQgZXJyb3IASW52YWxpZCBhcmd1bWVudABBcmd1bWVudCBsaXN0IHRvbyBsb25nAFN5bWJvbGljIGxpbmsgbG9vcABGaWxlbmFtZSB0b28gbG9uZwBUb28gbWFueSBvcGVuIGZpbGVzIGluIHN5c3RlbQBObyBmaWxlIGRlc2NyaXB0b3JzIGF2YWlsYWJsZQBCYWQgZmlsZSBkZXNjcmlwdG9yAE5vIGNoaWxkIHByb2Nlc3MAQmFkIGFkZHJlc3MARmlsZSB0b28gbGFyZ2UAVG9vIG1hbnkgbGlua3MATm8gbG9ja3MgYXZhaWxhYmxlAFJlc291cmNlIGRlYWRsb2NrIHdvdWxkIG9jY3VyAFN0YXRlIG5vdCByZWNvdmVyYWJsZQBQcmV2aW91cyBvd25lciBkaWVkAE9wZXJhdGlvbiBjYW5jZWxlZABGdW5jdGlvbiBub3QgaW1wbGVtZW50ZWQATm8gbWVzc2FnZSBvZiBkZXNpcmVkIHR5cGUASWRlbnRpZmllciByZW1vdmVkAExpbmsgaGFzIGJlZW4gc2V2ZXJlZABQcm90b2NvbCBlcnJvcgBCYWQgbWVzc2FnZQBOb3QgYSBzb2NrZXQARGVzdGluYXRpb24gYWRkcmVzcyByZXF1aXJlZABNZXNzYWdlIHRvbyBsYXJnZQBQcm90b2NvbCB3cm9uZyB0eXBlIGZvciBzb2NrZXQAUHJvdG9jb2wgbm90IGF2YWlsYWJsZQBQcm90b2NvbCBub3Qgc3VwcG9ydGVkAE5vdCBzdXBwb3J0ZWQAQWRkcmVzcyBmYW1pbHkgbm90IHN1cHBvcnRlZCBieSBwcm90b2NvbABBZGRyZXNzIG5vdCBhdmFpbGFibGUATmV0d29yayBpcyBkb3duAE5ldHdvcmsgdW5yZWFjaGFibGUAQ29ubmVjdGlvbiByZXNldCBieSBuZXR3b3JrAENvbm5lY3Rpb24gYWJvcnRlZABObyBidWZmZXIgc3BhY2UgYXZhaWxhYmxlAFNvY2tldCBpcyBjb25uZWN0ZWQAU29ja2V0IG5vdCBjb25uZWN0ZWQAT3BlcmF0aW9uIGFscmVhZHkgaW4gcHJvZ3Jlc3MAT3BlcmF0aW9uIGluIHByb2dyZXNzAFN0YWxlIGZpbGUgaGFuZGxlAFF1b3RhIGV4Y2VlZGVkAE11bHRpaG9wIGF0dGVtcHRlZABDYXBhYmlsaXRpZXMgaW5zdWZmaWNpZW50AAAAdQJOANYB4gS5BBgBjgXtAhYE8gCXAwEDOAWvAYIBTwMvBB4A1AWiABIDHgPCAd4DCACsBQABZALxAWUFNAKMAs8CLQNMBOMFnwL4BBwFCAWxAksFFQJ4AFICPAPxA+QAwwN9BMwAqgN5BSQCbgFtAyIEqwREAPsBrgCDA2AA5QEHBJQEXgQrAFgBOQGSAMIFmwFDAkYB9gUlc3sibm9tZSI6IiVzIiwicGFydGlkYXMiOiVkLCJtYW9zX2dhbmhhcyI6JWQsInBlZGlkb3MiOiVkLCJyZWNlYmlkb3MiOiVkLCJjb3JyaWRvcyI6JWQsInRheGFfZnVnYSI6JS4yZiwidGVtX3BlZGlkb3MiOiVzfQB7InZhbG9yIjolZCwibmFpcGUiOiIlcyIsInJvdHVsbyI6IiVzIiwibWFuaWxoYSI6JXMsInphcCI6JXN9ACJmaW0iOnsiZHVwbGFfdmVuY2Vkb3JhIjolZCwicGxhY2FyMV9maW5hbCI6JWQsInBsYWNhcjJfZmluYWwiOiVkLCJtYWlvcl9tYW8iOiVkLCJudW1lcm9fbWFpb3JfbWFvIjolZH0AXX0AJXN7InBlZGl1IjoiJXMiLCJkdXBsYV9wZWRpdSI6JWQsInJlc3BvbmRldSI6IiVzIiwidmFsb3IiOiVkLCJyZXNwb3N0YSI6IiVjIn0ALSsgICAwWDB4AC0wWCswWCAwWC0weCsweCAweABwYXVzAG91cm9zAGNvcGFzAGVzcGFkYXMAJXN7ImFzc2VudG8iOiVkLCJub21lIjoiJXMiLCJkdXBsYSI6JWQsImNhcnRhc19uYV9tYW8iOiVkLCJ2ZXoiOiVzAGNhZGFzdHJvAGVycm8Aam9nYW5kbwBuZWdvY2lhY2FvAG5hbgAiZmltIjpudWxsAGluZgB0cnVlAGZhbHNlAG1hb19jb25jbHVpZGEAcm9kYWRhX2NvbmNsdWlkYQBmaW1fcGFydGlkYQBsZXZhbnRhIGEgc29icmFuY2VsaGEgXl9eAF0AeyJtYW8iOiVkLCJyb2RhZGEiOiVkLCJtYW5pbGhhIjoiJXMiLCJwb250b3NfZW1fam9nbyI6JWQsImVtX2FuZGFtZW50byI6JXMsImVuY2VycmFkYV9wb3JfZnVnYSI6JXMsImR1cGxhX3ZlbmNlZG9yYSI6JWQsImpvZ2Fkb3JlcyI6WwBdLCJuZWdvY2lhY29lcyI6WwAsIm1hbyI6WwAibWVzYSI6WwBTRUlTAFEAVFJVQ08ATkFOAEsASgBJTkYARE9aRQBBAD8AJXN7ImFzc2VudG8iOiVkLCJjYXJ0YSI6ACVzeyJub21lIjoiJXMiLCJjYXJ0YSI6AHsiZmFzZSI6IiVzIiwicGxhY2FyMSI6JWQsInBsYWNhcjIiOiVkLCJtYW8iOiVkLCJyb2RhZGEiOiVkLCJ2YWxvcl9tYW8iOiVkLCJ2aXJhIjoANwA2ADUANAAzADIATmFvIGZvaSBwb3NzaXZlbCBjYWRhc3RyYXIgJXMuACVzICVzIHBhcmEgJXMuIEEgdmV6IGNvbnRpbnVhIGNvbSAlcy4AJXMgam9nb3UgJXMgZGUgJXMuAFJvZGFkYSAlZC4gUGFzc2UgbyBkaXNwb3NpdGl2byBwYXJhICVzLgBNYW8gJWQuIFZpcmE6ICVzIGRlICVzLiBQYXNzZSBwYXJhICVzLgAlcyBhY2VpdG91LiBBIG1hbyB2YWxlICVkIHBvbnRvKHMpLiBQYXNzZSBwYXJhICVzLgBVc2UgdW0gbm9tZSBkaWZlcmVudGUgcGFyYSBjYWRhIGpvZ2Fkb3IuACVzIHBlZGl1ICVzLiBQYXNzZSBwYXJhICVzIHJlc3BvbmRlci4ARHVwbGEgJWQgdmVuY2V1IGEgcGFydGlkYSEgTWFvIG1haXMgY2FyYTogJWQgcG9udG8ocyksIG5hIG1hbyAlZC4ATWVtb3JpYSBpbnN1ZmljaWVudGUgcGFyYSBpbmljaWFyIGEgY2FkZXJuZXRhLgBQcmVlbmNoYSBvcyBxdWF0cm8gbm9tZXMsIHNlbSBwb250byBlIHZpcmd1bGEuAFJvZGFkYSBlbXBhdGFkYS4ARHVwbGEgJWQgdmVuY2V1IGEgcm9kYWRhLgBNZW1vcmlhIGluc3VmaWNpZW50ZSBwYXJhIGluaWNpYXIgbyBWQVIuAER1cGxhICVkIGdhbmhvdSBhIG1hbyBlIG1hcmNvdSAlZCBwb250byhzKS4AImFjb2VzIjp7InBvZGVfam9nYXIiOiVzLCJjYXJ0YXNfam9nYXZlaXMiOiVkLCJwb2RlX3BlZGlyIjolcywicGVkaWRvX3Bvc3NpdmVsIjolZCwicG9kZV9zaW5hbCI6JXMsInBvZGVfdmVyX3ZhciI6JXMsInBvZGVfdmVyX3N0YXRzIjp0cnVlLCJwcmVjaXNhX2NvbmZpcm1hciI6JXN9LAAibmVnb2NpYWNhbyI6eyJwZWRpdSI6IiVzIiwiZHVwbGFfcGVkaXUiOiVkLCJyZXNwb25kZW50ZSI6IiVzIiwicmVzcG9uZGVudGVfZHVwbGEiOiVkLCJ2YWxvcl9wZWRpZG8iOiVkLCJub21lX3BlZGlkbyI6IiVzIiwicG9kZV9hdW1lbnRhciI6JXMsInByb3hpbW9fdmFsb3IiOiVkLCJ2aXNpdmVsIjolc30sACJyZXN1bHRhZG9fbWFvIjp7ImR1cGxhIjolZCwicG9udG9zIjolZH0sACJyZXN1bHRhZG9fcm9kYWRhIjp7ImR1cGxhIjolZH0sACJyZXN1bHRhZG9fbWFvIjpudWxsLAAibmVnb2NpYWNhbyI6bnVsbCwAInJlc3VsdGFkb19yb2RhZGEiOm51bGwsAF0sACwibWFuaWxoYV92YWxvciI6IiVzIiwidmlzaXZlbCI6JXMsImF2aXNvIjoiJXMiLAAobnVsbCkAcGlzY2EgOykAdG9jYSBuYSBtZXNhOiB0b2MsIHRvYyEAAAAAGQALABkZGQAAAAAFAAAAAAAACQAAAAALAAAAAAAAAAAZAAoKGRkZAwoHAAEbCQsYAAAJBgsAAAsABhkAAAAZGRkAAAAAAAAAAAAAAAAAAAAADgAAAAAAAAAAGQALDRkZGQANAAACAAkOAAAACQAOAAAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAABMAAAAAEwAAAAAJDAAAAAAADAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAPAAAABA8AAAAACRAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEgAAAAAAAAAAAAAAEQAAAAARAAAAAAkSAAAAAAASAAASAAAaAAAAGhoaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoAAAAaGhoAAAAAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAAXAAAAABcAAAAACRQAAAAAABQAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFgAAAAAAAAAAAAAAFQAAAAAVAAAAAAkWAAAAAAAWAAAWAAAwMTIzNDU2Nzg5QUJDREVGQ09FUAAAAAAAAAAAAAAAAAEAAAACAAAAAwAAAAQAAAAFAAAABgAAAAcAAAALAAAADAAAAA0AAAAAAAAAAAAAAAEAAAACAAAAAQAAAAIAAAAIAAAACQAAAAoAAAABAAAAAgAAAAMAAAAEAAAAAAAAAAAAAAAAAAAABgAAAAUAAAAHAAAAAgAAAAMAAAAEAAAABQAAAAYAAAAHAAAADAAAAAAAAAAAAAAAAAAAAA0AAAALAAAAAQAAAJUIAAGjCAABqwgAAeIIAAHUCAAB8wgAAeMJAAF1CgABcwoAAXEKAAFvCgABbQoAAWsKAAHlCQAB5QkAAeUJAAHYCQABygkAAdYJAAEDAAAAAAAAAAYAAAAAAAAAAAAAAAwAAADcDgAB/wgAAeUOAAEAAAAAAAAAAAAAAAABAAAA/////wEAAAABAAAAAQAAAABBqKSACAsIAQAAAAAAAAA=</script>
+<script>
+// Bar do Pato | Truco - interface grafica
+//
+// Este arquivo NAO contem nenhuma regra do jogo. Todas as decisoes (quem
+// pode jogar, quem venceu a rodada, taxa de fuga, manilha, etc.) vem do
+// modulo WebAssembly compilado a partir do C existente (web/motor_web.c,
+// que inclui os mesmos arquivos de include/ usados por main.c). Este
+// arquivo so chama as funcoes exportadas pelo motor e desenha o
+// resultado na tela.
+
+(function () {
+  "use strict";
+
+  const NOME_MAX = 30;
+
+  // ---------------------------------------------------------------------
+  // Shim WASI minimo para as chamadas usadas pelo motor no navegador.
+  // ---------------------------------------------------------------------
+  function makeWasiShim(getMemory) {
+    function mem() { return new DataView(getMemory().buffer); }
+    function mem8() { return new Uint8Array(getMemory().buffer); }
+    return {
+      args_sizes_get(argcPtr, argvBufSizePtr) {
+        mem().setUint32(argcPtr, 0, true);
+        mem().setUint32(argvBufSizePtr, 0, true);
+        return 0;
+      },
+      args_get() { return 0; },
+      fd_close() { return 0; },
+      fd_fdstat_get() { return 8; },
+      fd_prestat_get() { return 8; },
+      fd_prestat_dir_name() { return 8; },
+      fd_read() { return 8; },
+      fd_seek() { return 8; },
+      fd_write(fd, iovsPtr, iovsLen, nwrittenPtr) {
+        let total = 0;
+        const view = mem();
+        for (let i = 0; i < iovsLen; i++) {
+          const base = iovsPtr + i * 8;
+          const ptr = view.getUint32(base, true);
+          const len = view.getUint32(base + 4, true);
+          total += len;
+          void mem8().slice(ptr, ptr + len); // descartado: a GUI nao usa stdout
+        }
+        view.setUint32(nwrittenPtr, total, true);
+        return 0;
+      },
+      proc_exit(code) { throw new Error("O motor encerrou inesperadamente (codigo " + code + ")."); },
+    };
+  }
+
+  let wasmExports = null;
+  let wasmMemory = null;
+
+  function lerCString(ptr, maxLen) {
+    const bytes = new Uint8Array(wasmMemory.buffer);
+    let end = ptr;
+    const limite = maxLen ? ptr + maxLen : bytes.length;
+    while (end < limite && bytes[end] !== 0) end++;
+    return new TextDecoder("utf-8").decode(bytes.slice(ptr, end));
+  }
+
+  function escreverNomeNoScratch(indice, nome) {
+    const base = wasmExports.motor_scratch_ptr();
+    const bytes = new Uint8Array(wasmMemory.buffer);
+    const slotBase = base + indice * NOME_MAX;
+    bytes.fill(0, slotBase, slotBase + NOME_MAX);
+    const codificado = new TextEncoder().encode(nome);
+    bytes.set(codificado, slotBase);
+  }
+
+  function obterEstado() {
+    const n = wasmExports.motor_estado_json();
+    return JSON.parse(lerCString(wasmExports.motor_estado_ptr(), n));
+  }
+  function obterVar() {
+    const n = wasmExports.motor_var_json();
+    return JSON.parse(lerCString(wasmExports.motor_var_ptr(), n));
+  }
+  function obterStats() {
+    const n = wasmExports.motor_estatisticas_json();
+    return JSON.parse(lerCString(wasmExports.motor_estatisticas_ptr(), n));
+  }
+
+  // ---------------------------------------------------------------------
+  // Carregamento do modulo (o .wasm vem embutido em base64 no proprio
+  // HTML: a pagina funciona sem servidor e sem internet).
+  // ---------------------------------------------------------------------
+  async function carregarMotor() {
+    const base64 = document.getElementById("motor-wasm-base64").textContent.trim();
+    const binario = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const memRef = { buffer: null };
+    const importObj = { wasi_snapshot_preview1: makeWasiShim(() => wasmMemory) };
+    const { instance } = await WebAssembly.instantiate(binario.buffer, importObj);
+    wasmExports = instance.exports;
+    wasmMemory = instance.exports.memory;
+    if (typeof wasmExports._initialize === "function") wasmExports._initialize();
+    void memRef;
+  }
+
+  // ---------------------------------------------------------------------
+  // Utilitarios de carta / UI
+  // ---------------------------------------------------------------------
+  const SIMBOLO_NAIPE = { ouros: "♦", espadas: "♠", copas: "♥", paus: "♣" };
+  const COR_NAIPE = { ouros: "vermelha", espadas: "preta", copas: "vermelha", paus: "preta" };
+
+  function elementoCarta(carta, { pequena = false, dorso = false, animar = false } = {}) {
+    const div = document.createElement("div");
+    div.className = "carta" + (pequena ? " pequena" : "");
+    if (dorso || !carta) {
+      div.classList.add("dorso");
+      return div;
+    }
+    div.classList.add(COR_NAIPE[carta.naipe]);
+    if (carta.manilha) div.classList.add("manilha");
+    if (carta.zap) div.classList.add("zap");
+    if (animar) div.classList.add("carta-entra");
+    const simbolo = SIMBOLO_NAIPE[carta.naipe] || "?";
+    div.innerHTML =
+      `<div class="canto superior">${carta.rotulo}<br>${simbolo}</div>` +
+      `<div class="naipe-centro">${simbolo}</div>` +
+      `<div class="canto inferior">${carta.rotulo}<br>${simbolo}</div>`;
+    return div;
+  }
+
+  function nomeDaDupla(estado, dupla) {
+    return estado.jogadores.filter((j) => j.dupla === dupla).map((j) => j.nome).join(" + ");
+  }
+
+  // ---------------------------------------------------------------------
+  // Referencias de DOM
+  // ---------------------------------------------------------------------
+  const telaCadastro = document.getElementById("tela-cadastro");
+  const telaJogo = document.getElementById("tela-jogo");
+  const telaFim = document.getElementById("tela-fim");
+  const formCadastro = document.getElementById("form-cadastro");
+  const erroCadastro = document.getElementById("erro-cadastro");
+
+  const elPlacar1 = document.getElementById("placar-d1");
+  const elPlacar2 = document.getElementById("placar-d2");
+  const elMaoRodada = document.getElementById("info-mao-rodada");
+  const elValorMao = document.getElementById("info-valor-mao");
+  const elVira = document.getElementById("vira-carta");
+  const elCartasMesa = document.getElementById("cartas-na-mesa");
+  const elAviso = document.getElementById("aviso-mesa");
+  const elPainelVez = document.getElementById("painel-vez");
+  const elQuemJoga = document.getElementById("quem-joga");
+  const elLequeMao = document.getElementById("leque-mao");
+  const assentosEl = [0, 1, 2, 3].map((i) => document.getElementById("assento-" + i));
+
+  const botaoTruco = document.getElementById("botao-truco");
+  const botaoSinal = document.getElementById("botao-sinal");
+  const popoverSinal = document.getElementById("popover-sinal");
+  const botaoVar = document.getElementById("botao-var");
+  const botaoStats = document.getElementById("botao-stats");
+  const botaoAjuda = document.getElementById("botao-ajuda");
+  const botaoNovoJogo = document.getElementById("botao-novo-jogo-topo");
+  const barraAcoes = document.getElementById("barra-acoes-wrapper");
+
+  const overlayPronto = document.getElementById("overlay-pronto");
+  const overlayProntoNome = document.getElementById("overlay-pronto-nome");
+  const overlayProntoTexto = document.getElementById("overlay-pronto-texto");
+  const botaoConfirmarPronto = document.getElementById("botao-confirmar-pronto");
+
+  const overlayNegociacao = document.getElementById("overlay-negociacao");
+  const negociacaoTexto = document.getElementById("negociacao-texto");
+  const botaoAceitar = document.getElementById("botao-aceitar");
+  const botaoCorrer = document.getElementById("botao-correr");
+  const botaoAumentar = document.getElementById("botao-aumentar");
+
+  const overlayResultado = document.getElementById("overlay-resultado");
+  const resultadoTitulo = document.getElementById("resultado-titulo");
+  const resultadoTexto = document.getElementById("resultado-texto");
+  const botaoContinuar = document.getElementById("botao-continuar");
+
+  const modalVar = document.getElementById("modal-var");
+  const varConteudo = document.getElementById("var-conteudo");
+  const modalStats = document.getElementById("modal-stats");
+  const statsConteudo = document.getElementById("stats-conteudo");
+  const modalAjuda = document.getElementById("modal-ajuda");
+
+  const elTrofeuTexto = document.getElementById("fim-vencedor");
+  const elFimPlacar = document.getElementById("fim-placar");
+  const elFimMaoCara = document.getElementById("fim-mao-cara");
+  const botaoJogarNovamente = document.getElementById("botao-jogar-novamente");
+
+  let ultimaQtdMesa = -1;
+  let ultimaMao = -1;
+
+  function fecharTodosOsOverlaysSecundarios() {
+    modalVar.classList.add("escondido");
+    modalStats.classList.add("escondido");
+    modalAjuda.classList.add("escondido");
+    popoverSinal.classList.add("escondido");
+  }
+
+  // ---------------------------------------------------------------------
+  // Renderizacao principal: le o estado do motor e desenha tudo.
+  // ---------------------------------------------------------------------
+  function renderizar() {
+    const estado = obterEstado();
+
+    elPlacar1.textContent = estado.placar1;
+    elPlacar2.textContent = estado.placar2;
+    elMaoRodada.textContent = `MÃO ${estado.mao} · RODADA ${estado.rodada}/3`;
+    elValorMao.textContent =
+      estado.valor_mao === 1 ? "VALE 1 PONTO" : `VALE ${estado.valor_mao} PONTOS!`;
+    elAviso.textContent = estado.aviso || "";
+
+    elVira.innerHTML = "";
+    elVira.appendChild(elementoCarta(estado.vira, { pequena: true }));
+
+    // assentos ao redor da mesa
+    estado.jogadores.forEach((j, i) => {
+      const el = assentosEl[i];
+      el.classList.toggle("vez", !!j.vez);
+      const dorsos = Array.from({ length: j.cartas_na_mao })
+        .map(() => '<span class="mini-dorso"></span>')
+        .join("");
+      el.querySelector(".cartao-assento").innerHTML =
+        `<div class="nome">${escaparHtml(j.nome)}</div>` +
+        `<span class="dupla-tag d${j.dupla}">Dupla ${j.dupla}</span>` +
+        `<div class="mini-cartas-dorso">${dorsos}</div>`;
+    });
+
+    // cartas jogadas na mesa nesta rodada
+    const novaRodada = estado.mesa.length < ultimaQtdMesa || estado.mao !== ultimaMao;
+    if (novaRodada) elCartasMesa.innerHTML = buildSlots();
+    estado.mesa.forEach((entrada) => {
+      const slot = elCartasMesa.querySelector(`[data-pos="${entrada.assento}"]`);
+      if (slot && !slot.dataset.preenchido) {
+        slot.innerHTML = "";
+        slot.appendChild(elementoCarta(entrada.carta, { animar: true }));
+        slot.dataset.preenchido = "1";
+      }
+    });
+    ultimaQtdMesa = estado.mesa.length;
+    ultimaMao = estado.mao;
+
+    // painel do jogador da vez (visivel apenas quando a mao foi revelada)
+    const jogadorVez = estado.jogadores.find((j) => j.vez);
+    if (estado.fase === "jogando" && estado.visivel && jogadorVez && jogadorVez.mao) {
+      elPainelVez.classList.remove("escondido");
+      elQuemJoga.textContent = `Sua vez, ${jogadorVez.nome} (Dupla ${jogadorVez.dupla})`;
+      elLequeMao.innerHTML = "";
+      jogadorVez.mao.forEach((carta, idx) => {
+        const el = elementoCarta(carta);
+        el.classList.add("carta-jogavel");
+        el.title = "Jogar " + carta.rotulo + " de " + carta.naipe;
+        el.addEventListener("click", () => jogarCarta(el, idx + 1));
+        elLequeMao.appendChild(el);
+      });
+    } else {
+      elPainelVez.classList.add("escondido");
+    }
+
+    // botoes de acao
+    botaoTruco.disabled = !estado.acoes.pode_pedir;
+    botaoTruco.textContent = estado.acoes.pode_pedir
+      ? `Pedir ${nomePedido(estado.acoes.pedido_possivel)}`
+      : "Pedir aumento";
+    botaoSinal.disabled = !estado.acoes.pode_sinal;
+
+    // overlays conforme a fase
+    overlayPronto.classList.toggle("escondido", !estado.acoes.precisa_confirmar);
+    if (estado.acoes.precisa_confirmar) {
+      const alvo =
+        estado.fase === "negociacao"
+          ? estado.negociacao.respondente
+          : (jogadorVez ? jogadorVez.nome : "");
+      overlayProntoNome.textContent = alvo;
+      overlayProntoTexto.textContent =
+        estado.fase === "negociacao"
+          ? `${estado.negociacao.pediu} pediu ${estado.negociacao.nome_pedido}. Confira se é mesmo ${alvo} antes de tocar.`
+          : "Confira se o dispositivo está com a pessoa certa antes de revelar as cartas.";
+    }
+
+    overlayNegociacao.classList.toggle(
+      "escondido",
+      !(estado.fase === "negociacao" && estado.visivel)
+    );
+    if (estado.fase === "negociacao" && estado.visivel) {
+      const neg = estado.negociacao;
+      negociacaoTexto.innerHTML =
+        `<b>${escaparHtml(neg.pediu)}</b> (Dupla ${neg.dupla_pediu}) pediu <b>${neg.nome_pedido}</b>.<br>` +
+        `${escaparHtml(neg.respondente)} (Dupla ${neg.respondente_dupla}), a mão passaria a valer <b>${neg.valor_pedido}</b> ponto(s).`;
+      botaoAumentar.classList.toggle("escondido", !neg.pode_aumentar);
+      if (neg.pode_aumentar) botaoAumentar.textContent = `Pedir ${neg.proximo_valor}`;
+    }
+
+    overlayResultado.classList.toggle(
+      "escondido",
+      !(estado.fase === "rodada_concluida" || estado.fase === "mao_concluida")
+    );
+    if (estado.fase === "rodada_concluida") {
+      resultadoTitulo.textContent = "Fim da rodada";
+      resultadoTexto.textContent =
+        estado.resultado_rodada.dupla === 0
+          ? "Rodada empatada."
+          : `Dupla ${estado.resultado_rodada.dupla} venceu a rodada (${nomeDaDupla(estado, estado.resultado_rodada.dupla)}).`;
+    } else if (estado.fase === "mao_concluida") {
+      resultadoTitulo.textContent = "Fim da mão";
+      resultadoTexto.textContent =
+        `Dupla ${estado.resultado_mao.dupla} (${nomeDaDupla(estado, estado.resultado_mao.dupla)}) ` +
+        `fez ${estado.resultado_mao.pontos} ponto(s). Placar: ${estado.placar1} x ${estado.placar2}.`;
+    }
+
+    if (estado.fase === "fim_partida") {
+      telaJogo.classList.add("escondido");
+      barraAcoes.classList.add("escondido");
+      telaFim.classList.remove("escondido");
+      fecharTodosOsOverlaysSecundarios();
+      const vencedora = estado.fim.dupla_vencedora;
+      elTrofeuTexto.textContent = `Dupla ${vencedora} venceu a partida! (${nomeDaDupla(estado, vencedora)})`;
+      elFimPlacar.textContent = `Placar final: ${estado.fim.placar1_final} x ${estado.fim.placar2_final}`;
+      elFimMaoCara.textContent =
+        estado.fim.maior_mao > 0
+          ? `Mão mais cara da partida: ${estado.fim.maior_mao} ponto(s), na mão ${estado.fim.numero_maior_mao}.`
+          : "";
+    }
+
+    return estado;
+  }
+
+  function buildSlots() {
+    return [0, 1, 2, 3].map((p) => `<div class="carta-mesa-pos" data-pos="${p}"></div>`).join("");
+  }
+
+  function escaparHtml(txt) {
+    const d = document.createElement("div");
+    d.textContent = txt;
+    return d.innerHTML;
+  }
+
+  const NOMES_PEDIDO = { 3: "TRUCO", 6: "SEIS", 12: "DOZE" };
+  function nomePedido(v) { return NOMES_PEDIDO[v] || ""; }
+
+  // ---------------------------------------------------------------------
+  // Acoes do jogador (cada uma chama o motor e depois re-renderiza)
+  // ---------------------------------------------------------------------
+  function jogarCarta(elCarta, indice) {
+    elCarta.classList.add("carta-saindo");
+    elCarta.style.pointerEvents = "none";
+    setTimeout(() => {
+      if (!wasmExports.motor_jogar_carta(indice)) {
+        alert("Essa jogada não é válida agora.");
+      }
+      renderizar();
+    }, 160);
+  }
+
+  botaoConfirmarPronto.addEventListener("click", () => {
+    wasmExports.motor_confirmar_pronto();
+    renderizar();
+  });
+
+  botaoTruco.addEventListener("click", () => {
+    if (wasmExports.motor_pedir_aumento()) renderizar();
+  });
+
+  botaoAceitar.addEventListener("click", () => { wasmExports.motor_responder(0); renderizar(); });
+  botaoCorrer.addEventListener("click", () => { wasmExports.motor_responder(1); renderizar(); });
+  botaoAumentar.addEventListener("click", () => { wasmExports.motor_responder(2); renderizar(); });
+
+  botaoSinal.addEventListener("click", () => {
+    popoverSinal.classList.toggle("escondido");
+  });
+  popoverSinal.querySelectorAll("[data-gesto]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const gesto = parseInt(btn.dataset.gesto, 10);
+      wasmExports.motor_enviar_sinal(gesto);
+      popoverSinal.classList.add("escondido");
+      renderizar();
+    });
+  });
+
+  botaoContinuar.addEventListener("click", () => {
+    wasmExports.motor_continuar();
+    renderizar();
+  });
+
+  botaoVar.addEventListener("click", () => {
+    abrirVar();
+  });
+  let varIndiceAtual = 0;
+  function abrirVar() {
+    const lista = obterVar();
+    varIndiceAtual = lista.length - 1;
+    desenharVar(lista);
+    modalVar.classList.remove("escondido");
+  }
+  function desenharVar(lista) {
+    if (lista.length === 0) {
+      varConteudo.innerHTML = "<p>O VAR ainda não tem nenhuma rodada registrada.</p>";
+      return;
+    }
+    const r = lista[varIndiceAtual];
+    let html = `<div class="linha-var-rodada ${r.em_andamento ? "andamento" : ""}">`;
+    html += `<div class="titulo-var">Mão ${r.mao} · Rodada ${r.rodada}${r.em_andamento ? " (em andamento)" : ""}</div>`;
+    r.jogadores.forEach((j) => {
+      html += `<div class="jogada-var"><span>${escaparHtml(j.nome)}</span><span>${
+        j.carta ? j.carta.rotulo + " de " + j.carta.naipe + (j.carta.manilha ? (j.carta.zap ? " (ZAP)" : " (manilha)") : "") : "ainda não jogou"
+      }</span></div>`;
+    });
+    html += `<div class="negociacao-var">Manilha: ${r.manilha} · valor em jogo: ${r.pontos_em_jogo} ponto(s)</div>`;
+    r.negociacoes.forEach((n) => {
+      const verbo = n.resposta === "A" ? "aceitou" : n.resposta === "C" ? "correu" : "aumentou";
+      html += `<div class="negociacao-var">${escaparHtml(n.pediu)} pediu ${n.valor}; ${escaparHtml(n.respondeu)} ${verbo}.</div>`;
+    });
+    if (!r.em_andamento) {
+      html += `<div class="negociacao-var">${
+        r.encerrada_por_fuga
+          ? `Mão encerrada por fuga: Dupla ${r.dupla_vencedora} recebeu os pontos.`
+          : r.dupla_vencedora === 0
+          ? "Rodada empatada."
+          : `Dupla vencedora da rodada: ${r.dupla_vencedora}.`
+      }</div>`;
+    }
+    html += `</div>`;
+    varConteudo.innerHTML = html;
+    document.getElementById("var-posicao").textContent = `Rodada ${varIndiceAtual + 1} de ${lista.length}`;
+  }
+  document.getElementById("var-anterior").addEventListener("click", () => {
+    const lista = obterVar();
+    if (varIndiceAtual > 0) varIndiceAtual--;
+    desenharVar(lista);
+  });
+  document.getElementById("var-proxima").addEventListener("click", () => {
+    const lista = obterVar();
+    if (varIndiceAtual < lista.length - 1) varIndiceAtual++;
+    desenharVar(lista);
+  });
+  document.getElementById("var-fechar").addEventListener("click", () => modalVar.classList.add("escondido"));
+
+  botaoStats.addEventListener("click", () => {
+    const stats = obterStats();
+    let html = `<table class="tabela-stats"><thead><tr>
+      <th>Jogador</th><th>Partidas</th><th>Mãos</th><th>Pedidos</th><th>Recebidos</th><th>Fugas</th><th>Taxa de fuga</th>
+      </tr></thead><tbody>`;
+    stats.forEach((p) => {
+      html += `<tr><td>${escaparHtml(p.nome)}</td><td>${p.partidas}</td><td>${p.maos_ganhas}</td>` +
+        `<td>${p.pedidos}</td><td>${p.recebidos}</td><td>${p.corridos}</td>` +
+        `<td>${p.tem_pedidos ? p.taxa_fuga.toFixed(1) + "%" : "sem pedidos recebidos"}</td></tr>`;
+    });
+    html += "</tbody></table>";
+    statsConteudo.innerHTML = html;
+    modalStats.classList.remove("escondido");
+  });
+  document.getElementById("stats-fechar").addEventListener("click", () => modalStats.classList.add("escondido"));
+
+  botaoAjuda.addEventListener("click", () => modalAjuda.classList.remove("escondido"));
+  document.getElementById("ajuda-fechar").addEventListener("click", () => modalAjuda.classList.add("escondido"));
+
+  function irParaCadastro() {
+    telaFim.classList.add("escondido");
+    telaJogo.classList.add("escondido");
+    barraAcoes.classList.add("escondido");
+    fecharTodosOsOverlaysSecundarios();
+    telaCadastro.classList.remove("escondido");
+    formCadastro.reset();
+    erroCadastro.textContent = "";
+  }
+  botaoNovoJogo.addEventListener("click", () => {
+    if (confirm("Encerrar a partida atual e voltar ao cadastro?")) {
+      wasmExports.motor_reiniciar();
+      irParaCadastro();
+    }
+  });
+  botaoJogarNovamente.addEventListener("click", () => {
+    wasmExports.motor_reiniciar();
+    irParaCadastro();
+  });
+
+  // ---------------------------------------------------------------------
+  // Cadastro dos quatro jogadores
+  // ---------------------------------------------------------------------
+  formCadastro.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const nomes = [0, 1, 2, 3].map((i) => document.getElementById("nome-jogador-" + i).value.trim());
+    if (nomes.some((nome) => new TextEncoder().encode(nome).length >= NOME_MAX)) {
+      erroCadastro.textContent = "Um dos nomes ficou muito longo. Use um nome mais curto.";
+      return;
+    }
+    for (let i = 0; i < 4; i++) escreverNomeNoScratch(i, nomes[i]);
+    wasmExports.motor_definir_semente(Date.now() & 0x7fffffff);
+    const ok = wasmExports.motor_iniciar();
+    if (!ok) {
+      const estado = obterEstado();
+      erroCadastro.textContent = estado.aviso || "Não foi possível iniciar a partida.";
+      return;
+    }
+    telaCadastro.classList.add("escondido");
+    telaFim.classList.add("escondido");
+    telaJogo.classList.remove("escondido");
+    barraAcoes.classList.remove("escondido");
+    ultimaQtdMesa = -1;
+    ultimaMao = -1;
+    elCartasMesa.innerHTML = buildSlots();
+    renderizar();
+  });
+
+  // ---------------------------------------------------------------------
+  // Boot
+  // ---------------------------------------------------------------------
+  carregarMotor()
+    .then(() => {
+      document.getElementById("carregando").classList.add("escondido");
+      telaCadastro.classList.remove("escondido");
+    })
+    .catch((erro) => {
+      document.getElementById("carregando").textContent =
+        "Não foi possível carregar o motor do jogo: " + erro.message;
+      console.error(erro);
+    });
+})();
+
+</script>
+</body>
+</html>

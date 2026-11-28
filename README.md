@@ -2,7 +2,7 @@
 
 Projeto de Algoritmos e Estrutura de Dados do curso de Engenharia da Computação do SENAI CIMATEC, semestre 2026.2.
 
-Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. O jogo é executado no terminal por `main.c`, com placar, cartas e comandos visíveis durante a jogada.
+Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. O jogo é executado no terminal por `main.c`, com placar, cartas e comandos visíveis durante a jogada. Há também uma interface gráfica de navegador, em `web/`, construída sobre a mesma lógica em C compilada para WebAssembly (veja "Interface gráfica (navegador)" abaixo).
 
 ## Como compilar e executar
 
@@ -52,17 +52,68 @@ No encerramento, o programa anuncia a dupla vencedora e o placar. Após a pausa 
 
 No Windows, `caderneta.txt` e `historico.txt` ficam na mesma pasta do executável. No Linux/macOS, ficam na pasta de onde o programa foi executado. O terminal informa essa pasta ao iniciar a partida.
 
-Antes do cadastro, o programa procura a caderneta nessa pasta. Se ela nao existir, comeca vazia. Jogadores encontrados pelo mesmo nome mantem seus contadores; novos jogadores entram zerados. A comparacao diferencia maiusculas e minusculas.
+Antes do cadastro, o programa procura a caderneta nessa pasta. Se ela nao existir, comeca vazia. Jogadores encontrados pelo mesmo nome mantem seus contadores; novos jogadores entram zerados. Os nomes seguem a padronizacao da caderneta: primeira letra maiuscula e demais minusculas. A validacao de nomes repetidos usa essa mesma forma no terminal e no navegador.
 
 Ao iniciar a partida com os quatro nomes, o programa cria ou atualiza **os dois arquivos**. A caderneta e salva a cada pedido/resposta de truco, ao fim de cada mao e no encerramento. O historico recebe o inicio e as duplas, pedidos e respostas, as rodadas com os nomes e cartas de cada jogador, os pontos de cada mao e o resultado final. Sair antes do fim nao registra uma partida concluida, mas preserva as acoes ja gravadas.
 
 A caderneta tem um bloco descritivo por jogador, com partidas, maos ganhas, trucos pedidos, recebidos, fugas e taxa de fuga. As linhas com os seis campos `nome;partidas;maos;pedidos;corridos;recebidos` continuam presentes para recuperar a AVL; os comentarios explicativos comecam com `#`. Arquivos anteriores com os seis campos continuam sendo lidos. Nao e necessario editar os arquivos manualmente.
 
-A gravacao usa `caderneta.txt.tmp` e substitui a caderneta somente apos concluir a escrita. Um arquivo invalido ou antigo, sem pedidos recebidos, e preservado e impede o inicio do jogo ate que o problema seja resolvido. Falhas de gravacao informam o caminho do arquivo e o motivo; os dados da caderneta continuam na memoria. Se houver falha, confira a permissao de escrita e se outro programa bloqueou o arquivo. A caderneta, o historico e o temporario sao dados locais ignorados pelo Git.
+A gravacao usa `caderneta.txt.tmp` e substitui a caderneta somente apos concluir a escrita. Um arquivo invalido ou antigo, sem pedidos recebidos, e preservado e impede o inicio do jogo ate que o problema seja resolvido. Nomes de arquivos anteriores tambem sao padronizados durante a carga, mantendo os contadores. Se dois registros passarem a ter o mesmo nome, a carga e interrompida e o arquivo e preservado para revisao, sem somar ou apagar fichas automaticamente. Falhas de gravacao informam o caminho do arquivo e o motivo; os dados da caderneta continuam na memoria. Se houver falha, confira a permissao de escrita e se outro programa bloqueou o arquivo. A caderneta, o historico e o temporario sao dados locais ignorados pelo Git.
 
 As estatísticas são acumuladas por nome: pedidos feitos, pedidos recebidos, fugas e mãos ganhas são atualizados durante o jogo; uma partida jogada é registrada para os quatro jogadores ao concluir a partida. Cada pedido de truco, seis ou doze conta uma vez para quem efetivamente responde, mesmo que digite opções inválidas antes de decidir. A taxa de fuga é `corridos / recebidos × 100`; sem pedidos recebidos, o mural informa essa condição. Cada mão ganha conta para os dois integrantes da dupla vencedora.
 
 No encerramento, o programa mostra a mão de maior valor efetivamente pontuado (1, 3, 6 ou 12); em empate, mantém a primeira. O VAR identifica quem jogou cada carta e registra toda a negociação realizada em cada rodada, incluindo aumentos, aceite e fuga.
+
+## Interface gráfica (navegador)
+
+Além da versão de terminal, a pasta `web/` traz uma interface gráfica no tema
+"Bar do Pato": mesa de feltro, cartas grandes com manilhas e ZAP em destaque,
+placar, vira e valor da mão, pedidos de truco/seis/doze, sinais fixos entre
+parceiros e consulta ao VAR e à caderneta sem perder a vez. A mão de quem
+está jogando fica escondida sempre que o controle passa para outro jogador,
+até a pessoa confirmar que está pronta — pensado para "passar o celular/PC"
+em volta da mesa.
+
+**A interface gráfica não reimplementa as regras.** O arquivo
+`web/motor_web.c` inclui e chama diretamente os mesmos arquivos de
+`include/` usados por `main.c` (a pilha do baralho, a fila dos jogadores, a
+negociação de aposta, a AVL da caderneta e a lista do VAR); ele só expõe
+essas funções para a página em vez de um laço de terminal. Esse arquivo é
+compilado para WebAssembly e roda inteiramente no navegador: não é preciso
+instalar nada, nem ter permissão de administrador, nem ter compilador C
+instalado para **jogar**.
+
+### Como jogar (sem compilar nada)
+
+Abra `web/dist/index.html` com dois cliques em qualquer navegador atual
+(Chrome, Edge, Firefox) — funciona offline, sem servidor e sem internet,
+inclusive no Windows. O arquivo já traz o motor compilado embutido.
+
+### Como recompilar a interface gráfica (opcional)
+
+Só é necessário se você alterar o motor em C ou os arquivos da interface.
+Requer Python 3 e um compilador com suporte a `wasm32-wasi`: o
+[WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases) ou o
+[Zig](https://ziglang.org/). O script pode ser executado da raiz do projeto.
+
+```bash
+# baixe e extraia o wasi-sdk (ex.: wasi-sdk-24.0-x86_64-linux.tar.gz)
+WASI_SDK_PATH=/caminho/para/wasi-sdk ./web/build_web.sh
+# alternativa, usada na compilacao desta versao:
+ZIG=/caminho/para/zig ./web/build_web.sh
+# gera web/dist/index.html e web/dist/motor.wasm
+```
+
+O motor e compilado como modulo WASI reactor, inicializado pela pagina.
+O script atualiza o binario e o HTML juntos; nao e necessario manter um
+servidor para abrir o arquivo final. Esta versao foi recompilada com Zig 0.17.1.
+
+A persistência em disco (`caderneta.txt`/`historico.txt`, `include/disco.h`)
+continua sendo exclusiva da versão de terminal: um módulo WebAssembly rodando
+no navegador não tem acesso ao sistema de arquivos do jogador. Na interface
+gráfica, a caderneta (mesma árvore AVL, mesmas regras de taxa de fuga) é
+calculada em memória durante a sessão do navegador e reinicia a cada "Novo
+jogo"; a versão de terminal continua salvando tudo em arquivo, como antes.
 
 ## Organização do projeto
 
@@ -84,6 +135,12 @@ O arquivo `main.c` organiza o carregamento da caderneta, o cadastro, a partida, 
 - `caderneta.h`: cadastro em árvore AVL, busca por nome, percursos e liberação da árvore.
 - `mural.h`: ordenação e exibição dos murais de mãos ganhas e taxa de fuga.
 - `disco.h`: leitura e gravação da caderneta; registro de participantes, negociações, rodadas e resultados no histórico.
+
+A pasta `web/` contém a interface gráfica (veja a seção acima):
+`motor_web.c` (adaptador que chama a lógica de `include/` e expõe o estado
+do jogo em JSON), `index_template.html`, `style.css` e `app.js` (fonte da
+página) e `build_web.sh` (script que compila para WebAssembly e monta o
+arquivo final `web/dist/index.html`).
 
 ## 1ª unidade
 

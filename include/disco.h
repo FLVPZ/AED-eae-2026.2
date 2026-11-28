@@ -162,6 +162,7 @@ int disco_ler_registro(char *linha, info_caderneta *registro) {
     }
     if (!disco_nome_valido(campos[0])) return 0;
     strcpy(registro->nome_jogador, campos[0]);
+    primeira_letra_maiuscula(registro->nome_jogador);
     int *contadores[5] = {&registro->partidas_jogadas, &registro->maos_ganhas,
         &registro->trucos_pedidos, &registro->trucos_corridos, &registro->trucos_recebidos};
     for (int i = 0; i < 5; i++) {
@@ -186,7 +187,12 @@ int ler_caderneta_preOrd(ArvAVL* raiz, FILE* arquivo) {
         if (tamanho > 0 && linha[tamanho - 1] == '\r') linha[--tamanho] = '\0';
         if (tamanho == 0 || (linha[0] == '#' && strchr(linha, ';') == NULL)) continue;
         info_caderneta registro = {0};
-        if (!disco_ler_registro(linha, &registro) || !inserir(raiz, registro)) return 0;
+        if (!disco_ler_registro(linha, &registro)) return 0;
+        if (consultarValorAVL(raiz, registro.nome_jogador)) {
+            errno = EEXIST;
+            return 0;
+        }
+        if (!inserir(raiz, registro)) return 0;
     }
     return !ferror(arquivo);
 }
@@ -205,11 +211,15 @@ int carregar_caderneta(ArvAVL* raiz) {
         fclose(arquivo);
         return DISCO_ERRO;
     }
+    errno = 0;
     int ok = ler_caderneta_preOrd(carregada, arquivo);
+    int nomes_repetidos = !ok && errno == EEXIST;
     if (fclose(arquivo) != 0) ok = 0;
     if (!ok) {
-        errno = EINVAL;
-        disco_falha(DISCO_ARQUIVO_CADERNETA, "Caderneta invalida ou incompleta. Arquivo preservado");
+        errno = nomes_repetidos ? EEXIST : EINVAL;
+        disco_falha(DISCO_ARQUIVO_CADERNETA, nomes_repetidos
+                    ? "Nomes repetidos apos padronizacao. Arquivo preservado"
+                    : "Caderneta invalida ou incompleta. Arquivo preservado");
         liberaABB(carregada);
         return DISCO_ERRO;
     }

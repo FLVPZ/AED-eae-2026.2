@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bar do Pato | Truco</title>
+<style>
+__CSS__
+</style>
+</head>
+<body>
+
+<div class="topo-bar">
+  <div class="logo-bar">BAR <span class="pato">🦆</span> DO PATO</div>
+  <div class="subtitulo-bar">Truco Paulista — 4 jogadores, 2 duplas, 12 pontos</div>
+</div>
+
+<div id="carregando" style="text-align:center;padding:30px;">Carregando a mesa…</div>
+
+<!-- ======================= TELA DE CADASTRO ======================= -->
+<div id="tela-cadastro" class="tela-cadastro escondido">
+  <h2>Quem senta na mesa?</h2>
+  <p class="explicacao">Jogadores 1 e 3 formam a Dupla 1; jogadores 2 e 4 formam a Dupla 2. Sentem-se alternados, como numa mesa de bar de verdade.</p>
+  <form id="form-cadastro">
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d1">Dupla 1</span>
+      <input id="nome-jogador-0" maxlength="29" placeholder="Jogador 1" required autocomplete="off">
+    </div>
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d2">Dupla 2</span>
+      <input id="nome-jogador-1" maxlength="29" placeholder="Jogador 2" required autocomplete="off">
+    </div>
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d1">Dupla 1</span>
+      <input id="nome-jogador-2" maxlength="29" placeholder="Jogador 3" required autocomplete="off">
+    </div>
+    <div class="campo-dupla">
+      <span class="rotulo-dupla d2">Dupla 2</span>
+      <input id="nome-jogador-3" maxlength="29" placeholder="Jogador 4" required autocomplete="off">
+    </div>
+    <div class="erro-cadastro" id="erro-cadastro"></div>
+    <button class="botao-grande" type="submit">Abrir a mesa 🂠</button>
+  </form>
+  <button class="botao secundario" type="button" id="botao-ajuda-cadastro" style="margin-top:10px;width:100%;" onclick="document.getElementById('modal-ajuda').classList.remove('escondido')">? Nunca joguei truco — como funciona?</button>
+</div>
+
+<!-- ======================= TELA DE FIM DE PARTIDA ======================= -->
+<div id="tela-fim" class="tela-fim escondido">
+  <div class="trofeu">🏆</div>
+  <div class="vencedor" id="fim-vencedor"></div>
+  <p id="fim-placar"></p>
+  <p id="fim-mao-cara"></p>
+  <button class="botao-grande" id="botao-jogar-novamente">Jogar outra partida</button>
+</div>
+
+<!-- ======================= TELA DE JOGO ======================= -->
+<div id="tela-jogo" class="area-jogo escondido">
+  <div class="placar-topo">
+    <div class="chip-placar"><span class="d1" id="placar-d1">0</span>&nbsp;x&nbsp;<span class="d2" id="placar-d2">0</span></div>
+    <div class="chip-info" id="info-mao-rodada">MÃO 1 · RODADA 1/3</div>
+    <div class="chip-valor-mao" id="info-valor-mao">VALE 1 PONTO</div>
+    <button class="botao secundario" id="botao-novo-jogo-topo" title="Encerrar e voltar ao cadastro">🔄 Novo jogo</button>
+  </div>
+
+  <div class="mesa-oval">
+    <div class="vira-area">
+      <span class="rotulo-mini">VIRA</span>
+      <div id="vira-carta"></div>
+    </div>
+
+    <div id="assento-0" class="assento" data-pos="0"><div class="cartao-assento"></div></div>
+    <div id="assento-1" class="assento" data-pos="1"><div class="cartao-assento"></div></div>
+    <div id="assento-2" class="assento" data-pos="2"><div class="cartao-assento"></div></div>
+    <div id="assento-3" class="assento" data-pos="3"><div class="cartao-assento"></div></div>
+
+    <div class="centro-mesa">
+      <div id="cartas-na-mesa" class="cartas-na-mesa"></div>
+    </div>
+  </div>
+
+  <div class="aviso-mesa" id="aviso-mesa"></div>
+
+  <div class="painel-vez escondido" id="painel-vez">
+    <div class="quem" id="quem-joga"></div>
+    <div class="leque-mao" id="leque-mao"></div>
+  </div>
+</div>
+
+<!-- ======================= BARRA DE ACOES ======================= -->
+<div class="barra-acoes escondido" id="barra-acoes-wrapper">
+  <button class="botao truco" id="botao-truco">Pedir aumento</button>
+  <span style="position:relative;">
+    <button class="botao sinal" id="botao-sinal">🤝 Sinal</button>
+    <div class="popover-sinal escondido" id="popover-sinal">
+      <button class="botao secundario" data-gesto="1" title="Piscar">😉 Piscar</button>
+      <button class="botao secundario" data-gesto="2" title="Sobrancelha">🤨 Sobrancelha</button>
+      <button class="botao secundario" data-gesto="3" title="Tocar na mesa">👆 Mesa</button>
+    </div>
+  </span>
+  <button class="botao var" id="botao-var">🎥 VAR</button>
+  <button class="botao stats" id="botao-stats">📒 Caderneta</button>
+  <button class="botao ajuda" id="botao-ajuda">❓ Ajuda</button>
+</div>
+
+<!-- ======================= OVERLAY: PASSE O DISPOSITIVO ======================= -->
+<div class="sobreposicao escondido" id="overlay-pronto">
+  <div class="cartao-overlay">
+    <div class="padrao-dorso-grande"></div>
+    <h2>Passe o dispositivo</h2>
+    <div class="nome-destaque" id="overlay-pronto-nome"></div>
+    <p id="overlay-pronto-texto"></p>
+    <button class="botao-grande" id="botao-confirmar-pronto">Sou eu — revelar minha mão</button>
+  </div>
+</div>
+
+<!-- ======================= OVERLAY: NEGOCIACAO DE TRUCO ======================= -->
+<div class="sobreposicao escondido" id="overlay-negociacao">
+  <div class="cartao-overlay">
+    <h2>Pedido na mesa</h2>
+    <p id="negociacao-texto"></p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;">
+      <button class="botao truco" id="botao-aceitar">Aceitar</button>
+      <button class="botao secundario" id="botao-correr">Correr</button>
+      <button class="botao truco escondido" id="botao-aumentar">Aumentar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= OVERLAY: RESULTADO DE RODADA/MAO ======================= -->
+<div class="sobreposicao escondido" id="overlay-resultado">
+  <div class="cartao-overlay">
+    <h2 id="resultado-titulo"></h2>
+    <p id="resultado-texto"></p>
+    <button class="botao-grande" id="botao-continuar">Continuar</button>
+  </div>
+</div>
+
+<!-- ======================= MODAL: VAR ======================= -->
+<div class="sobreposicao escondido" id="modal-var">
+  <div class="modal-caixa">
+    <div class="modal-fechar-linha"><button class="botao secundario" id="var-fechar">Fechar ✕</button></div>
+    <h2>🎥 VAR do Bar — histórico da partida</h2>
+    <div id="var-conteudo"></div>
+    <div class="controle-var">
+      <button class="botao secundario" id="var-anterior">⟵ Anterior</button>
+      <span id="var-posicao"></span>
+      <button class="botao secundario" id="var-proxima">Próxima ⟶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= MODAL: ESTATISTICAS / CADERNETA ======================= -->
+<div class="sobreposicao escondido" id="modal-stats">
+  <div class="modal-caixa">
+    <div class="modal-fechar-linha"><button class="botao secundario" id="stats-fechar">Fechar ✕</button></div>
+    <h2>📒 Caderneta do Bar</h2>
+    <div id="stats-conteudo"></div>
+  </div>
+</div>
+
+<!-- ======================= MODAL: AJUDA ======================= -->
+<div class="sobreposicao escondido" id="modal-ajuda">
+  <div class="modal-caixa">
+    <div class="modal-fechar-linha"><button class="botao secundario" id="ajuda-fechar">Fechar ✕</button></div>
+    <h2>❓ Como jogar Truco Paulista</h2>
+    <ul class="lista-ajuda">
+      <li><b>Objetivo:</b> a primeira dupla a somar 12 pontos vence a partida.</li>
+      <li><b>Mão:</b> cada mão tem até 3 rodadas; cada jogador recebe 3 cartas.</li>
+      <li><b>Vira e manilha:</b> a carta virada no baralho define a manilha — a carta de valor seguinte, de qualquer naipe. Manilhas vencem qualquer carta comum. A manilha de Paus é o ZAP, a mais forte de todas.</li>
+      <li><b>Vencendo a mão:</b> quem ganha 2 das 3 rodadas (ou vence a 1ª e empata outra) leva os pontos da mão.</li>
+      <li><b>Truco, seis, doze:</b> qualquer jogador pode pedir aumento na sua vez. A dupla adversária aceita, aumenta o pedido ou corre (desiste e cede os pontos já valendo antes do pedido).</li>
+      <li><b>Sinais:</b> você pode combinar sinais fixos com o parceiro (piscar, sobrancelha, tocar na mesa) sem jogar carta nem perder a vez.</li>
+      <li><b>VAR:</b> a qualquer momento, sem perder a vez, você pode conferir as cartas já jogadas em cada rodada, inclusive a que está em andamento.</li>
+      <li><b>Caderneta:</b> mostra quantas mãos cada jogador já ganhou e sua taxa de fuga (corridas / pedidos recebidos).</li>
+    </ul>
+  </div>
+</div>
+
+<script id="motor-wasm-base64" type="application/octet-stream">__WASM_BASE64__</script>
+<script>
+__JS__
+</script>
+</body>
+</html>

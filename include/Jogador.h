@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 #include "fila.h"
+#include "caderneta.h"
 
 void limpar_buffer() { //limpa o buffer do teclado
     int c;
@@ -67,6 +68,7 @@ int cadastrar_jogadores(char nomes[4][NOME_MAX]) {
             while (tamanho > 0 && isspace((unsigned char)nomes[i][tamanho - 1])) {
                 nomes[i][--tamanho] = '\0';
             }
+            primeira_letra_maiuscula(nomes[i]);
             int repetido = 0;
             int nome_invalido = 0;
             for (size_t j = 0; j < tamanho; j++) {
