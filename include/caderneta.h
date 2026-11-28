@@ -3,6 +3,7 @@
 #include <string.h>
 #ifndef CADERNETA_H
 #define CADERNETA_H
+#include <ctype.h>
 
 typedef struct{
     char nome_jogador[50];
@@ -30,6 +31,7 @@ struct NO* acessar_jogador(ArvAVL* raiz, char nome[]);
 int maior(int x, int y);
 int alt_NO(struct NO* no);
 int fb_NO(struct NO* no);
+void primeira_letra_maiuscula(char valor[]);
 void RotacaoLL(ArvAVL* raiz);
 void RotacaoRR(ArvAVL* raiz);
 void RotacaoRL(ArvAVL* raiz);
@@ -42,6 +44,16 @@ ArvAVL* criarAVL(){
 	}
 	return raiz;
 }
+
+void primeira_letra_maiuscula(char valor[]){
+	for(int i=0; valor[i] != '\0'; i++){
+		valor[i] = tolower((unsigned char)valor[i]);
+	}
+	valor[0] = toupper((unsigned char)valor[0]);
+}
+
+
+
 
 // Uma linha por jogador; a main apresenta o cabecalho da tabela.
 void emOrd(ArvAVL* raiz){
@@ -147,6 +159,7 @@ int consultarValorAVL(ArvAVL* raiz, char valor[]){
 }
 
 struct NO* acessar_jogador(ArvAVL* raiz, char nome[]){
+	primeira_letra_maiuscula(nome);
 	if(raiz == NULL || nome == NULL || nome[0] == '\0'
 	   || strlen(nome) >= sizeof(((info_caderneta*)0)->nome_jogador)) return NULL;
 	if(consultarValorAVL(raiz, nome)==0){
