@@ -2,9 +2,39 @@
 
 Projeto de Algoritmos e Estrutura de Dados do curso de Engenharia da Computação do SENAI CIMATEC, semestre 2026.2.
 
-Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. O jogo é executado no terminal por `main.c`, com placar, cartas e comandos visíveis durante a jogada. Há também uma interface gráfica de navegador, em `web/`, construída sobre a mesma lógica em C compilada para WebAssembly (veja "Interface gráfica (navegador)" abaixo).
+Jogo em C baseado nas regras de Truco Paulista definidas no enunciado: quatro jogadores, duas duplas alternadas na mesa e partidas até uma dupla atingir 12 pontos. Usa baralho de 40 cartas, vira, manilhas e pedidos de truco, seis e doze. Oferece uma interface gráfica no navegador, pronta para abrir, e uma versão de terminal em `main.c`. A interface gráfica reutiliza os módulos em C por meio de WebAssembly.
 
-## Como compilar e executar
+## Como acessar o jogo
+
+**Para jogar no navegador, basta baixar o projeto e abrir o arquivo pronto. Não é necessário instalar Dev-C++, GCC ou outro compilador.**
+
+1. Acesse o [repositório no GitHub](https://github.com/FLVPZ/AED-eae-2026.2) e selecione a branch **main**.
+2. Clique no botão verde **Code** e escolha **Download ZIP**.
+3. No Windows, clique com o botão direito no ZIP baixado e selecione **Extrair Tudo**. Abra a pasta extraída `AED-eae-2026.2-main`.
+4. Entre na pasta **web** e depois na pasta **dist**.
+5. Dê dois cliques em **index.html**. Se precisar escolher um programa, use **Abrir com → Google Chrome ou Microsoft Edge**. Com as extensões ocultas, o arquivo pode aparecer apenas como `index`.
+6. Informe os quatro nomes e clique em **Abrir a mesa**. Jogadores 1 e 3 formam a Dupla 1; jogadores 2 e 4 formam a Dupla 2.
+7. Na troca de jogador, entregue o dispositivo à pessoa indicada e clique em **Sou eu — revelar minha mão**. Depois, clique na carta que deseja jogar.
+
+O caminho do arquivo é **`web/dist/index.html`**, dentro da pasta extraída. Abra esse arquivo no computador; a página de arquivos do GitHub exibe o código HTML. O jogo funciona localmente e, após o download, pode ser usado offline.
+
+### Comandos da interface gráfica
+
+| Ação | Como fazer |
+| --- | --- |
+| Jogar uma carta | Clique em uma das cartas da sua mão após revelá-la. |
+| Pedir truco ou aumentar | Use **Pedir TRUCO**, **Pedir SEIS** ou **Pedir DOZE**, conforme a opção disponível. |
+| Responder a um pedido | Confirme o jogador e escolha **Aceitar**, **Correr** ou o próximo aumento permitido. |
+| Enviar um sinal | Clique em **Sinal** e escolha um dos três gestos fixos. |
+| Consultar as jogadas | Clique em **VAR**; use **Anterior** e **Próxima** para navegar entre as rodadas. |
+| Consultar os contadores | Clique em **Caderneta**. |
+| Avançar após um resultado | Clique em **Continuar**. |
+| Consultar as instruções | Clique em **Ajuda**. |
+| Começar outra partida | Use **Novo jogo** ou **Jogar novamente** no encerramento. |
+
+No navegador, a caderneta fica em memória: **recarregar a página ou iniciar um Novo jogo reinicia os dados da sessão**. Os arquivos `caderneta.txt` e `historico.txt` são gravados pela versão de terminal, explicada a seguir.
+
+## Como compilar e executar no terminal
 
 É necessário um compilador C com suporte a C99, como o GCC. Abra o terminal na pasta raiz do projeto, onde estão `main.c` e a pasta `include/`. Compile somente `main.c`; os módulos `.h` são incluídos pelo programa.
 
@@ -85,9 +115,8 @@ instalado para **jogar**.
 
 ### Como jogar (sem compilar nada)
 
-Abra `web/dist/index.html` com dois cliques em qualquer navegador atual
-(Chrome, Edge, Firefox) — funciona offline, sem servidor e sem internet,
-inclusive no Windows. O arquivo já traz o motor compilado embutido.
+Siga o passo a passo em [Como acessar o jogo](#como-acessar-o-jogo), no início
+deste README. O arquivo `web/dist/index.html` já traz o motor compilado embutido.
 
 ### Como recompilar a interface gráfica (opcional)
 
